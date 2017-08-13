@@ -1,0 +1,23 @@
+
+	<hr>
+	<h4>Vorgemerkte Eink&#228;ufe von {{userName.username}}</h4>
+
+	<div class="eingerueckt">
+
+		<p class="itemsDef">
+			Item | # | &#8364;
+		</p>
+
+		<div class="dropdownt">
+			<button class="dropbtnt">Eingekaufte Ware</button>
+			<div class="dropdown-contentt">
+				{% for item in seineVorgemerktenEinkaeufe %}
+					<a href="#" onclick="goOnWithWare('{{item.produktname}}',{{item.anzahlElemente}}, '{{item.einkaufspreis|floatformat:2}}',{{userName.id}})">
+						{{item.produktname}} | {{item.anzahlElemente}} | <{{item.einkaufspreis | floatformat:2}}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	

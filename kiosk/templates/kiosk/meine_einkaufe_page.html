@@ -1,0 +1,35 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h4> Details zu meiner Einkaufsliste: </h4>
+	<br>
+	<div class="eingerueckt">
+
+		<table class="konto">
+			<tr class="konto">
+				<th class="konto" style="min-width:50px;text-align: center;">Item</th>
+				<th class="konto" style="width:20px;text-align: center;">#</th>
+				<th class="konto" style="width:50px;;text-align: center;">max. &#8364;</th>
+				<th class="konto">Comment</th>
+			</tr>
+			{% for item in persEinkaufsliste %}
+			<tr class="konto">
+				<td class="konto" style="text-align: center;">{{item.produktname}}</td>				
+				<td class="konto" style="text-align: right;">{{item.anzahlElemente}}</td>
+				<td class="konto" style="text-align: center;">{{item.einkaufspreis | floatformat:2}}</td>
+				<td class="konto">{{item.kommentar}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

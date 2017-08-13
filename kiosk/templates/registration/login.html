@@ -1,0 +1,35 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+    <h4>Login</h4>
+    <br>
+
+    <div class="eingerueckt">
+	
+    	{% if form.errors %}
+            <p>Your username and password didn't match. Please try again.</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+            <table style="width: 70%;border-spacing: 10px;text-align: left;">
+            <tr>
+                <td>{{ form.username.label_tag }}</td>
+                <td>{{ form.username }}</td>
+            </tr>
+            <tr>
+                <td>{{ form.password.label_tag }}</td>
+                <td>{{ form.password }}</td>
+            </tr>
+            </table>
+
+            <input type="submit" class="btn" value="Login" />
+            <input type="hidden" name="next" value="{{ next }}" />
+        </form>
+    </div>
+
+    <hr>
+    <a href="{% url 'start_page' %}">zur&#252;ck</a><br>
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h3> Neuen Nutzer anlegen </h3>
+
+	<div class="eingerueckt">
+
+		<div style="color: {{ color }};">
+			<br>
+			{{msg}}
+			<br><br>
+		</div>
+		
+		<form method="POST">{% csrf_token %}
+			
+			<table>
+				{{ form.as_table }}
+				{{confPW}}
+			</table>
+
+			<br>
+			<button type="submit" class="save btn btn-default">Nutzer anlegen</button>
+
+		</form>
+
+		<script>
+			$(function() {
+		    	$( ".datepicker" ).datepicker({
+			      changeMonth: true,
+			      changeYear: true,
+			      yearRange: "2017:2100",
+			      dateFormat: "dd.mm.yy"
+			      // You can put more options here.
+		  	  	});
+		  	});
+  		</script>
+	
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+{% endblock %}

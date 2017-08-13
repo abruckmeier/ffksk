@@ -1,0 +1,50 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h4> Meine Kontobewegungen: </h4>
+	<br>
+	<div class="eingerueckt">
+
+		{% if prevpage >= 1 %}
+			<a href="{% url 'kontobewegungen_page_next' s=prevpage %}">j&#252;nger</a>
+		{% else %}
+			<br>
+		{% endif %}
+
+		<table class="konto">
+			<tr class="konto">
+				<th class="konto" style="width:30px;text-align: center;">#</th>
+				<th class="konto" style="width:50px;text-align: right;">&#8364;</th>
+				<th class="konto" style="min-width:100px;;text-align: center;">Time</th>
+				<th class="konto">Comment</th>
+			</tr>
+			{% for item in kontobewegungen %}
+			<tr class="konto">
+				<td class="konto" style="text-align: center;">{{item.AutoTrans_ID}}</td>				
+				<td class="konto" style="text-align: right;"><b>{{item.betrag | floatformat:2}}</b></td>
+				<td class="konto" style="text-align: center;">{{item.datum}}</td>
+				<td class="konto">{{item.kommentar}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+		{% if nextpage <= maxpage %}
+		<a href="{% url 'kontobewegungen_page_next' s=nextpage %}">&#228;lter</a>
+		{% else %}
+			<br>
+		{% endif %}
+
+		<br><br>
+		Stand: <b> {{kontostand | floatformat:2}} &#8364; </b>
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

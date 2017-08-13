@@ -1,0 +1,33 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+	<h4>Herzlich Willkommen im FfE-Kiosk!</h4>
+	<br>
+	<div class="eingerueckt">
+		<div>
+			Bereits registriert? Hier geht es zum pers&#246;nlichen Bereich:<br>
+			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
+				<b><a href="{% url 'home_page' %}">zum pers&#246;nlichen Bereich</a></b>
+			</p>
+		</div><br>
+
+		<div>
+			Ich m&#246;chte beitreten!<br>
+			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
+				<b><a href="{% url 'neuerNutzer_page' %}">Konto erstellen</a><br></b>
+			</p>
+		</div><br>
+
+		<div>
+			Ich m&#246;chte Eink&#228;ufer oder Verwalter werden!<br>
+			Melde dich dazu bei einem Administrator.
+		</div><br>
+
+		<div>
+			Ich habe Vorschl&#228;ge zu den Produkten oder sonstige Anmerkungen!<br>
+			Melde dich dazu bei einem Administrator.
+		</div><br>
+	</div>
+
+{% endblock %}

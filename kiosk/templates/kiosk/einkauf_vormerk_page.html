@@ -1,0 +1,120 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+
+	<h3>Offene Einkaufslisten</h3>
+
+	<div class="eingerueckt">
+
+		<div style="color: {{color}};">
+			<br>
+			{{msg}}
+			<br><br>
+		</div>
+
+		{% if isInstr == False %}
+			<div style="color: red;">
+				<br>
+				Bevor du das erste Mal einen Einkauf unternimmst, lese dir kurz folgende Instruktionen durch und best&#228;tige, dass du diese zur Kenntnis genommen hast und diese befolgen wirst.
+				<br><br>
+			</div>
+			<div>
+				<ul>
+				<li>F&#252;hre nach Ank&#252;ndigung eines Einkaufes diesen auch z&#252;gig durch (1-2 Tage), das Kiosk soll nicht leer werden.</li>
+				<li>Kaufe genau die auf deiner Liste stehende Menge ein, mehr kann nicht angenommen werden. Ein Einkauf kann aber auf mehrere Teileink&#228;ufe verteilt werden.</li>
+				<li>Beachte, dass du Ware nur unterhalb des Annahmepreises im Kiosk kaufst. Anderweitig wird diese Ware nicht angenommen.</li>
+				<li>Bringe deine Ware in den Kiosk und ordne deinen Einkauf sorgsam ein. Kein anderer wird dies tun, das ist deine Aufgabe.</li>
+				<li>Bei zu k&#252;hlender Ware, achte bitte darauf, dass du die K&#252;hlkette nicht unterbrichst.</li>
+				<li>Nimm beim Einkauf stets die Rechnung mit und gebe diese dann einem Verwalter oder Admin, sodass er dir den Einkauf dann erstatten kann</li>
+				</ul>
+			</div>
+			<div>
+				<form method="POST" class="">{% csrf_token %}
+					
+					<table><tr>
+					<td style="padding-right:20px;padding-left: 5px;">
+						<input type="checkbox" name="best" id="best">
+					</td>
+					<td><label for="best">Diese Instruktionen habe ich zur Kenntnis genommen und werde diese befolgen.</label></td>
+					</tr></table>
+
+					<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
+						Weiter
+					</button>
+				</form>	
+			</div>
+		{% else %}
+
+			<p class="itemsDef">
+				(List) Item | # | max. &#8364; 
+			</p>
+
+			<div class="dropdown">
+				<button class="dropbtn">Listenauswahl</button>
+				<div class="dropdown-content">
+					{% for item in einkaufslisteComp %}
+						<a href="#" onclick="toSelection({{item.gruppen_id}},'{{item.einkaufspakete}}')">
+							<b>({{item.gruppen_id}})</b> {{item.einkaufspakete}}
+						</a>
+					{% endfor %}
+				</div>
+			</div>
+
+			<script>
+				function toSelection(ekID,ekPakete) {
+					$("div#divSelectionContainer").show(200);
+				    $("input#ekID").val(ekID);
+				    $("div#ekID").html(ekID)
+				    $("input#ekPakete").val(ekPakete);
+				    $("div#ekPakete").html(ekPakete);
+
+				    $(document).ready(
+						$.ajax({
+							type: "GET",
+							url: "{% url 'einkauf_vormerk_page' %}",
+							data: {'gruppen_id': ekID, 'getCommentsOnProduct': true},
+							success: function(data){
+										$("div#comment").html(data);
+									}
+						})
+					);
+				}
+			</script>	
+
+			<br><br>
+			
+			<div id="divSelectionContainer" style="padding-left: 10vw;">
+				<br>
+				<form method="POST" class="">{% csrf_token %}
+					<input type="text" name="ekID" id="ekID" style="display:none" readonly>
+					<b>(Liste</b> 
+					<div class="formDiv" id="ekID"></div>) 
+					<div class="formDiv" id="ekPakete"></div> &#8364; 
+					<input type="text" name="ekPakete" id="ekPakete" readonly style="display:none">
+					<br><br>
+					<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
+						Kaufe ich ein!
+					</button>
+				</form>	
+
+				<br><br>
+				<h5>Kommentar zum Produkt:</h5>
+				<small><div id="comment"></div></small>  <!-- Kommt per GET-Request -->
+
+			</div>
+
+			<script type="text/javascript">
+				$(document).ready(function(){
+					$("div#divSelectionContainer").hide();
+				});
+			</script>
+		{% endif %}
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% load staticfiles %}
+<html>
+	<head>
+		<title>FfE-Kiosk</title>
+		<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+		<script type="text/javascript" 
+			src="{% static 'js/jquery-3.2.1.min.js' %}">
+		</script>
+		<link rel="stylesheet" type="text/css" 
+			href="{% static 'css/bootstrap.min.css' %}">
+
+
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  		<link rel="stylesheet" href="/resources/demos/style.css">
+  		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+  		<script type="text/javascript">
+  			var isClicked = false;
+  			var isClickedt = false;
+
+  			$(document).ready(function(){
+  				$("div.dropdown-content").hide(500);
+  				$("button.dropbtn").click(function(){
+  					if (!isClicked) {
+  						$("div.dropdown-content").show(500);
+  						isClicked = true;
+  						setTimeout(
+							function(){
+		  						$("div.dropdown-contentt").hide(200);
+		  						isClickedt = false;
+		  					},300);
+  					} else {
+  						$("div.dropdown-content").hide(500);
+  						isClicked = false;
+  					}
+  				});
+  				$("div.dropdown-content").click(function(e){
+  					e.preventDefault();
+  					$("div.dropdown-content").hide(500);
+  					isClicked = false;
+  				});
+
+  			});
+  		</script>
+
+	</head>
+	<body>
+
+		<div class="headDivHeading">
+			<h2 class="headHeading">FfE-Kiosk</h2>
+		</div>
+
+		<div class="headDivLinks">
+			<a href="{% url 'start_page' %}">Startseite</a>
+			<hr class="small">
+			{% if user.is_authenticated %}
+				Eingeloggt als <b>{{ user.username }}</b> <br>
+				<a href="{% url 'logout' %}">Logout</a><br>
+				<a href="{% url 'home_page' %}">Zu meinem pers&#246;nlichen Bereich</a>
+			{% else %}
+				<a href="{% url 'login' %}">Login</a>
+			{% endif %}	
+		</div>
+
+		<hr>
+		
+		<div class="mainDiv">
+			{% block content %}
+			{% endblock %}
+			<hr>
+		</div>
+
+		<div class="allgInfoDiv">
+			
+			<div>
+				<h4> Im Kiosk: </h4>
+				<div class="eingeruecktklein">
+					<p class="itemsDef">
+						Item | # | &#8364; 
+					</p>
+					
+					{% for item in kioskItems %}
+						<p class="items">
+							{{item.produktName}}  | 
+							{{item.anzahl}} | 
+							{{item.verkaufspreis | floatformat:2}} 
+						</p>
+					{% endfor %}
+				</div>
+			</div>
+
+			<hr>
+
+			<div>
+				<h4>offene Einkaufslisten: </h4>
+				<div class="eingeruecktklein">
+					<p class="itemsDef">
+						Item | # 
+					</p>
+
+					{% for item in einkaufsliste %}
+						<b>Liste {{item.gruppenID}}:</b><br>
+						<div class="eingeruecktklein">
+							{{item.paket |safe}}
+						</div>
+						<br>
+					{% endfor %}
+				</div>
+			</div>
+			<hr>
+		</div>
+
+	</body>
+</html>
