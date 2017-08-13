@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 # Besorgen der sensitiven Einstellungen von security_settings.py
 try:
     from .security_settings import *
@@ -22,10 +26,6 @@ except:
 
 # Angabe, welche Datenbasis verwendet wird (für 'queries.py')
 DB_IN_USE = 'SQLite' #'SQLite'
-
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Application definition

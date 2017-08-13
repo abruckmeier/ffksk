@@ -4,8 +4,9 @@ from django.db import connection
 
 def readFromDatabase(fileToQuery, queryArgumentList=[]):
 	dbInUse = getattr(settings,'DB_IN_USE') # 'Postgre','SQLite'
+	BASE_DIR = getattr(settings,'BASE_DIR')
 
-	fileName = "kiosk/queries/" + fileToQuery + "_" + dbInUse + ".sql"
+	fileName = BASE_DIR + "/kiosk/queries/" + fileToQuery + "_" + dbInUse + ".sql"
 	# Hier sollte dann auf dem Server der absolute Pfad stehen. Siehe OneNotecur
 
 	with open(fileName,"r") as file:
