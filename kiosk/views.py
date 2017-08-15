@@ -1,4 +1,4 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import redirect, render, render_to_response
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt 
@@ -64,6 +64,9 @@ def kauf_page(request):
 		wannaBuyItem = request.POST.get("produktName")
 		buySuccess = False
 		buySuccess = Kiosk.buyItem(wannaBuyItem,request.user)
+
+		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
+		checkKioskContentAndFillUp()
 
 		# Hole den Kioskinhalt
 		kioskItems = Kiosk.getKioskContent()
@@ -416,4 +419,4 @@ def fillKioskUp(request):
 
 	checkKioskContentAndFillUp()
 
-	return home_page(request)
+	return redirect('home_page')

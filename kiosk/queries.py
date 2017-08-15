@@ -7,7 +7,7 @@ def readFromDatabase(fileToQuery, queryArgumentList=[]):
 	BASE_DIR = getattr(settings,'BASE_DIR')
 
 	fileName = BASE_DIR + "/kiosk/queries/" + fileToQuery + "_" + dbInUse + ".sql"
-	# Hier sollte dann auf dem Server der absolute Pfad stehen. Siehe OneNotecur
+	# Hier sollte dann auf dem Server der absolute Pfad stehen. Siehe OneNote
 
 	with open(fileName,"r") as file:
 		query = file.read()
