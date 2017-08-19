@@ -1,4 +1,4 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import redirect, render, render_to_response
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt 
@@ -64,6 +64,9 @@ def kauf_page(request):
 		wannaBuyItem = request.POST.get("produktName")
 		buySuccess = False
 		buySuccess = Kiosk.buyItem(wannaBuyItem,request.user)
+
+		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
+		checkKioskContentAndFillUp()
 
 		# Hole den Kioskinhalt
 		kioskItems = Kiosk.getKioskContent()
@@ -398,6 +401,32 @@ def meine_einkaufe_page(request):
 	# Hole die eigene Liste, welche einzukaufen ist
 	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
 
+	# Bearbeitung eines Loeschvorgangs
+	if request.method == "POST":
+		# Ueberpruefung des Inputs
+		idToDelete = int(request.POST.get("productID"))
+		for item in persEinkaufsliste:
+			if item["id"] == idToDelete:
+				maxNumToDelete = item["anzahlElemente"]
+				break
+			else:
+				maxNumToDelete = 0
+		
+		numToDelete = int(request.POST.get("noToDelete"))
+		
+		# Wenn Input passt, dann wird gelöscht
+		if numToDelete <= maxNumToDelete:
+			ZumEinkaufVorgemerkt.objects.filter(pk__in=ZumEinkaufVorgemerkt.objects.filter(produktpalette__id=idToDelete).values_list('pk')[:numToDelete]).delete()
+
+		# delete the POST-Element
+		# delattr(request,"POST")
+
+	
+	# Ausfuehren der normalen Seitendarstellung
+
+	# Hole die eigene Liste, welche einzukaufen ist
+	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
@@ -416,4 +445,4 @@ def fillKioskUp(request):
 
 	checkKioskContentAndFillUp()
 
-	return home_page(request)
+	return redirect('home_page')

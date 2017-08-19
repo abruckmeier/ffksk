@@ -29,5 +29,7 @@ def checkKioskContentAndFillUp():
 					eg.save()
 				
 				maxGroup = maxGroup + 1
+	
+	print("Bot has performed a Fill-Up.")
 
 	return

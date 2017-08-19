@@ -1,4 +1,5 @@
 select 
+  b.id as id,
   b."produktName" as produktname,
   count(*) as anzahlElemente,
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
