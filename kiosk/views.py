@@ -414,12 +414,12 @@ def meine_einkaufe_page(request):
 		
 		numToDelete = int(request.POST.get("noToDelete"))
 		
-		# Wenn Input passt, dann wird gelöscht
+		# Wenn Input passt, dann wird geloescht
 		if numToDelete <= maxNumToDelete:
 			ZumEinkaufVorgemerkt.objects.filter(pk__in=ZumEinkaufVorgemerkt.objects.filter(produktpalette__id=idToDelete).values_list('pk')[:numToDelete]).delete()
 
-		# delete the POST-Element
-		# delattr(request,"POST")
+			# Testen, ob wieder Produkte auf die allgemeine Einkaufsliste muessen
+			checkKioskContentAndFillUp()
 
 	
 	# Ausfuehren der normalen Seitendarstellung
