@@ -327,7 +327,7 @@ def neuerNutzer_page(request):
 			g = Group.objects.get(name='Nutzer')
 			g.user_set.add(u)
 
-			k = Kontostand(nutzer_id = u.id, stand=Decimal(0))
+			k = Kontostand(nutzer_id = u.id, stand=0)
 			k.save()
 
 

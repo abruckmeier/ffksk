@@ -94,7 +94,7 @@ class Einkaufsliste(models.Model):
 		return True
 
 	def getCommentsOnProducts(ekGroupID):
-		# Gebe die Kommentare aller Produkte zurück
+		# Gebe die Kommentare aller Produkte zurueck
 		comments = readFromDatabase('getCommentsOnProductsInEkList',[ekGroupID])
 		return comments
 
