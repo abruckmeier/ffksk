@@ -14,4 +14,5 @@ urlpatterns = [
 	url(r'^menu/einzahlung$', views.einzahlung_page, name = 'einzahlung_page'),
 	url(r'^menu/meineeinkaufe$', views.meine_einkaufe_page, name = 'meine_einkaufe_page'),
 	url(r'^menu/fillKioskUp$', views.fillKioskUp, name = 'fillKioskUp'),
+	url(r'^menu/inventory$', views.inventory, name = 'inventory'),
 ]

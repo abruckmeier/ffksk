@@ -1,8 +1,8 @@
 from django.shortcuts import redirect, render, render_to_response
 from django.db.models import Count
 from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt 
-from .models import GeldTransaktionen, ProduktVerkaufspreise
+from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt
+from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm, ConfirmPW
 from django.template.loader import render_to_string
@@ -446,3 +446,60 @@ def fillKioskUp(request):
 	checkKioskContentAndFillUp()
 
 	return redirect('home_page')
+
+
+@login_required
+@permission_required('profil.do_verwaltung', raise_exception=True)
+def inventory(request):
+	currentUser = request.user
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	# Get the kiosk-content, prepared for inventory form
+	inventoryList = Kiosk.getKioskContentForInventory()
+
+	# Processing the response of the inventory form
+	if request.method == "POST":
+
+		report = ZuVielBezahlt.makeInventory(request, currentUser, inventoryList)
+
+		# Calculate the overall loss within this inventory
+		loss = 0
+		for item in report:
+			if item['verlust'] == True:
+				loss = loss + item["anzahl"] * item["verkaufspreis_ct"]
+		loss = loss / 100
+
+		tooMuch = 0
+		for item in report:
+			if item['verlust'] == False:
+				tooMuch = tooMuch + item["anzahl"] * item["verkaufspreis_ct"]
+		tooMuch = tooMuch / 100
+		
+		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
+		checkKioskContentAndFillUp()
+
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
+
+		# Einkaufsliste abfragen
+		einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+		return render(request,'kiosk/inventory_conducted_page.html',
+			{'loss': loss, 'tooMuch':tooMuch,  'report': report,'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste})
+
+	
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/inventory_page.html', 
+		{'currentUser': currentUser, 'inventoryList': inventoryList,
+		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}) 
