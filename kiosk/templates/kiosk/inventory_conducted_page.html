@@ -1,0 +1,53 @@
+{% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
+
+{% block content %}
+	
+	<h4> Inventur erfolgreich durchgef&#252;hrt: </h4>
+	<br>
+	<h5> Ergebnisse: </h5>
+	<br>
+	<div class="eingerueckt">
+
+		
+			<table class="konto">
+				<tr class="konto">
+					<th class="konto" style="min-width:30%;text-align: center;">Item</th>
+					<th class="konto" style="min-width:50px;text-align: center;">Msg</th>
+				</tr>
+				{% for item in report %}
+				<tr class="konto">
+					<td class="konto" style="text-align: center;">
+						{{item.produkt_name}}
+					</td>
+
+					<td class="konto" style="text-align: center;">
+						{{item.message}}			
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+
+			<br><br>
+
+			<div>
+				Gesamter Verlust (bei dieser Inventur identifiziert):
+				<br>
+				<b>{{loss | floatformat:2}} &#8364;</b>
+			</div>
+			<div>
+				Gesamter Zugewinn (bei dieser Inventur identifiziert):
+				<br>
+				<b>{{tooMuch | floatformat:2}} &#8364;</b>
+			</div>
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

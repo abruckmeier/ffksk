@@ -1,0 +1,47 @@
+{% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
+
+{% block content %}
+	
+	<h4> Inventur durchf&#252;hren: </h4>
+	<br>
+	<div class="eingerueckt">
+
+		<form method="POST">{% csrf_token %}
+			<table class="konto">
+				<tr class="konto">
+					<th class="konto" style="width:50px;text-align: center;">Beachten?</th>
+					<th class="konto" style="min-width:50px;text-align: center;">Item</th>
+					<th class="konto" style="width:100px;text-align: center;"># Soll</th>
+					<th class="konto" style="width:100px;text-align: center;"># Ist</th>
+				</tr>
+				{% for item in inventoryList %}
+				<tr class="konto">
+					<td class="konto" style="text-align: center;">
+						<input type="checkbox" id="{{item.checkbutton_id_name}}" name="{{item.checkbutton_id_name}}" value="yes" checked>
+					</td>
+					<td class="konto" style="text-align: right;">{{item.produkt_name}}</td>
+					<td class="konto" style="text-align: center;">{{item.anzahl}}</td>
+					<td class="konto" style="text-align: center;">
+						<input type="text" name="{{item.count_id_name}}" id="{{item.count_id_name}}" value="{{item.anzahl}}" style="width: 50px;">					
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+			<br><br>
+			<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
+				Inventur abschicken
+			</button>
+
+		</form>
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

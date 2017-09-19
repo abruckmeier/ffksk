@@ -11,6 +11,7 @@ from django.db import connection
 from django.conf import settings
 from django.template.loader import render_to_string
 from .queries import readFromDatabase
+from django.db.models import Max
 
 
 # Create your models here.
@@ -94,7 +95,7 @@ class Einkaufsliste(models.Model):
 		return True
 
 	def getCommentsOnProducts(ekGroupID):
-		# Gebe die Kommentare aller Produkte zurück
+		# Gebe die Kommentare aller Produkte zurueck
 		comments = readFromDatabase('getCommentsOnProductsInEkList',[ekGroupID])
 		return comments
 
@@ -238,6 +239,10 @@ class Kiosk(models.Model):
 	def getKioskContent():
 		kioskItems = readFromDatabase('getKioskContent')
 		return(kioskItems)
+
+	def getKioskContentForInventory():
+		kioskItems = readFromDatabase('getKioskContentForInventory')
+		return(kioskItems)	
 
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
@@ -409,3 +414,96 @@ class Kontostand(models.Model):
 	def __str__(self):
 		stnd = '%.2f' % (self.stand/100)
 		return(str(self.nutzer) + ": " + str(stnd) + "  "+chr(8364))
+
+
+
+# At inventory, here the paid but not taken items are registered
+class ZuVielBezahlt(models.Model):
+	produkt = models.ForeignKey(
+		Produktpalette,on_delete=models.CASCADE)
+	datum = models.DateTimeField(auto_now_add=True)
+	preis = models.IntegerField()
+
+
+	def __str__(self):
+		preis = '%.2f' % (self.preis/100)
+		return(self.produkt.produktName + ": " + str(preis) + "  "+chr(8364))
+
+
+	@transaction.atomic
+	def makeInventory(request, currentUser, inventoryList):
+		report = []
+		# Go through all items in the kiosk
+		for item in inventoryList:
+			# Check, if the item should be considered
+			if not request.POST.get(item["checkbutton_id_name"]) is None:
+				# Get the should- and is- count of the item
+				isVal = int(request.POST.get(item["count_id_name"]))
+				shouldVal = item["anzahl"]
+				
+				# Check, if stock is higher, lower or equal
+				if shouldVal == isVal:
+					diff = 0
+					report.append({'id': item["id"], 
+						'produkt_name': item["produkt_name"], 
+						'verkaufspreis_ct': item["verkaufspreis_ct"],
+						'verlust': False,
+						'anzahl': diff,
+						'message': 'OK.'})
+
+				if shouldVal < isVal:
+					# Too much has been bought. Now, a new item will be created in the list and be pushed to the kiosk. Notice in table of to much bought items will be given.
+					diff = isVal - shouldVal
+
+					datum = timezone.now()
+					p = Produktpalette.objects.get(id=item["id"])
+					maxGroup = EinkaufslisteGroups.objects.all().aggregate(Max('gruppenID'))
+					maxGroup = maxGroup["gruppenID__max"] + 1	
+
+					for i in range(0,diff):
+						e = Einkaufsliste(produktpalette = p)
+						e.save()
+						eg = EinkaufslisteGroups(einkaufslistenItem=e,gruppenID=maxGroup)
+						eg.save()
+						ok = Einkaufsliste.einkaufGroupVormerken(maxGroup,currentUser.id)
+
+						z = ZuVielBezahlt(produkt = p, datum = datum, preis = int(item["verkaufspreis_ct"]))
+						z.save()
+
+					angeliefert = ZumEinkaufVorgemerkt.objects.filter(einkaeufer__id=currentUser.id,
+						produktpalette__id=item["id"]).order_by('kiosk_ID')[:diff]
+
+					# Eintragen der Werte und Schreiben ins Kiosk
+					for an in angeliefert:
+						k = Kiosk(kiosk_ID=an.kiosk_ID,bedarfErstelltUm=an.bedarfErstelltUm,
+							produktpalette_id=an.produktpalette_id, einkaufsvermerkUm=an.einkaufsvermerkUm,
+							einkaeufer_id = an.einkaeufer_id, geliefertUm = datum,
+							verwalterEinpflegen_id = currentUser.id, einkaufspreis = 0)
+						k.save()
+						an.delete()
+
+
+					report.append({'id': item["id"], 
+						'produkt_name': item["produkt_name"], 
+						'verkaufspreis_ct': item["verkaufspreis_ct"],
+						'verlust': False,
+						'anzahl': diff,
+						'message': str(diff) + ' zu viel gekauft.'})
+				
+				if shouldVal > isVal:
+					# Items have not been payed. Now, the "thieve" "buys" them.
+					diff = shouldVal-isVal
+					user = KioskUser.objects.get(username='Dieb')
+					buyItem = item["produkt_name"]
+
+					for x in range(0,diff):
+						buySuccess = Kiosk.buyItem(buyItem,user)
+
+					report.append({'id': item["id"], 
+						'produkt_name': item["produkt_name"], 
+						'verkaufspreis_ct': item["verkaufspreis_ct"],
+						'verlust': True,
+						'anzahl': diff,
+						'message': str(diff) + ' nicht bezahlt. Nun "kauft" diese der Dieb.'})
+
+		return(report)
