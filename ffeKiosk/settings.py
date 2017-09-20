@@ -24,7 +24,7 @@ except:
     raise Exception("No security_settings.py found")
 
 
-# Angabe, welche Datenbasis verwendet wird (für 'queries.py')
+# Angabe, welche Datenbasis verwendet wird (fuer 'queries.py')
 DB_IN_USE = 'SQLite' #'SQLite'
 
 
