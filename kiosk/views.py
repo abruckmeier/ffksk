@@ -538,7 +538,8 @@ def statistics(request):
 
 
 	# Bezahlte und unbezahlte Ware im Kiosk (Tabelle gekauft)
-	unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[timezone.now().strftime('%Y-%m-%d %H:%M:%S')])
+	datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+	unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
 	for item in unBezahlt:
 		if item['what'] == 'bezahlt': vkValueBezahlt = item['preis']
 		if item['what'] == 'Dieb': stolenValue = item['preis']
@@ -587,7 +588,7 @@ class Chart_Un_Bezahlt(Chart):
 	responsive = True
 
 	def get_datasets(self, **kwargs):
-		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now)])
+		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now),str(timezone.now),str(timezone.now)])
 		for item in data:
 			if item['what'] == 'bezahlt': bezahlt = item['preis']
 			if item['what'] == 'Dieb': dieb = item['preis']
@@ -679,7 +680,8 @@ class Chart_Profits(Chart):
 		buyersProvision = round(theoAlloverProfit - theoProfit,2)
 		adminsProvision = 0
 		profitHandback = 0
-		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[timezone.now().strftime('%Y-%m-%d %H:%M:%S')])
+		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
 		for item in unBezahlt:
 			if item['what'] == 'Dieb': stolenValue = item['preis']
 		expProfit = round(theoProfit - stolenValue - adminsProvision - profitHandback,2)
