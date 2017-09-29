@@ -94,6 +94,54 @@
 			</table>
 		</div>
 
+		<br><br>
+
+		<h5> Prduktstatistik (bezahlte Produkte)</h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td style="width:50%;">
+						Gesamtgewinn der Produkte in &#8364;:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_ProductsWin.as_html }}
+						</div>
+					</td>
+					<td style="width:50%;">
+						Anzahl gekaufter Produkte:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_ProductsCount.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<br><br>
+
+		<h5> Prduktstatistik (unbezahlte Produkte)</h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td style="width:50%;">
+						Unbezahlter Wert der Produkte in &#8364;:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_Stolen_ProductsWin.as_html }}
+						</div>
+					</td>
+					<td style="width:50%;">
+						Anteil unbezahlter Produkte in %:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_StolenProductsShare.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
 	</div>
 
 	

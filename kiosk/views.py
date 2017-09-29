@@ -571,6 +571,10 @@ def statistics(request):
 		'chart_UmsatzHistorie': Chart_UmsatzHistorie(),
 		'chart_DaylyVkValue': Chart_DaylyVkValue(),
 		'chart_Profits': Chart_Profits(),
+		'chart_ProductsWin': Chart_ProductsWin(),
+		'chart_ProductsCount': Chart_ProductsCount(),
+		'chart_Stolen_ProductsWin': Chart_Stolen_ProductsWin(),
+		'chart_StolenProductsShare': Chart_StolenProductsShare(),
 		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft, 
 		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0, 
 		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue, 
@@ -696,3 +700,96 @@ class Chart_Profits(Chart):
 	def get_labels(self, **kwargs):
 		return( ['Provision der Eink&#228;fer in &#8364;', 'Provision f&#252;r Admin und Verwalter', 
 			'Gewinnaussch&#252;ttung', 'gestohlener Geldwert','erwarteter Gewinn'] )
+
+
+class Chart_ProductsWin(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['gewinn'],2))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_ProductsCount(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['anzahl']))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_Stolen_ProductsWin(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['stolen_vk'],2))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_StolenProductsShare(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['rel_stolen'],1))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
