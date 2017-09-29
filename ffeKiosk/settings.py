@@ -31,6 +31,7 @@ DB_IN_USE = 'SQLite' #'SQLite'
 # Application definition
 
 INSTALLED_APPS = [
+    'jchart',
     'django.contrib.humanize',
     'kiosk.apps.KioskConfig',
     'profil.apps.ProfilConfig',

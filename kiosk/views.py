@@ -21,6 +21,9 @@ from django.db import transaction
 
 from .bot import checkKioskContentAndFillUp
 
+from jchart import Chart
+from jchart.config import Axes, DataSet, rgba
+
 
 
 # Create your views here.
@@ -503,3 +506,191 @@ def inventory(request):
 	return render(request, 'kiosk/inventory_page.html', 
 		{'currentUser': currentUser, 'inventoryList': inventoryList,
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}) 
+
+
+
+
+@login_required
+@permission_required('profil.do_admin_tasks',raise_exception=True)
+def statistics(request):
+
+	# Geldwerte
+	vkValueKiosk = readFromDatabase('getKioskValue')
+	vkValueKiosk = vkValueKiosk[0]['value']
+	vkValueAll = readFromDatabase('getVkValueAll')
+	vkValueAll = vkValueAll[0]['value']
+
+	ekValueKiosk = readFromDatabase('getKioskEkValue')
+	ekValueKiosk = ekValueKiosk[0]['value']
+	ekValueAll = readFromDatabase('getEkValueAll')
+	ekValueAll = ekValueAll[0]['value']
+
+	priceIncrease = round((vkValueAll-ekValueAll)/ekValueAll * 100.0, 1)
+
+	kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
+	kioskBankValue = kioskBankValue.stand / 100.0
+
+	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
+	bargeld = - bargeld.stand / 100.0
+
+	usersMoneyValue = readFromDatabase('getUsersMoneyValue')
+	usersMoneyValue = usersMoneyValue[0]['value']
+
+
+	# Bezahlte und unbezahlte Ware im Kiosk (Tabelle gekauft)
+	unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[timezone.now().strftime('%Y-%m-%d %H:%M:%S')])
+	for item in unBezahlt:
+		if item['what'] == 'bezahlt': vkValueBezahlt = item['preis']
+		if item['what'] == 'Dieb': stolenValue = item['preis']
+		if item['what'] == 'alle': vkValueGekauft = item['preis']
+
+
+	# Gewinn & Verlust
+	theoAlloverProfit = vkValueAll - ekValueAll
+	theoProfit = vkValueKiosk + kioskBankValue
+	buyersProvision = theoAlloverProfit - theoProfit
+
+	adminsProvision = 0
+	profitHandback = 0
+
+	expProfit = theoProfit - stolenValue - adminsProvision - profitHandback
+
+	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue
+	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/statistics_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'chart_Un_Bezahlt': Chart_Un_Bezahlt(), 
+		'chart_UmsatzHistorie': Chart_UmsatzHistorie(),
+		'chart_DaylyVkValue': Chart_DaylyVkValue(),
+		'chart_Profits': Chart_Profits(),
+		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft, 
+		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0, 
+		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue, 
+		'vkValueAll': vkValueAll, 'ekValueAll': ekValueAll, 'ekValueKiosk': ekValueKiosk,
+		'bargeld': bargeld, 'usersMoneyValue': usersMoneyValue, 
+		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit, 
+		'theoProfit': theoProfit, 'buyersProvision': buyersProvision, 
+		'adminsProvision': adminsProvision, 'profitHandback': profitHandback, 
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit}) 
+
+
+
+class Chart_Un_Bezahlt(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now)])
+		for item in data:
+			if item['what'] == 'bezahlt': bezahlt = item['preis']
+			if item['what'] == 'Dieb': dieb = item['preis']
+		data = [bezahlt, dieb]
+
+		return [DataSet(
+			data = data,
+			backgroundColor = [rgba(0,255,0,0.2), rgba(255,0,0,0.2)]
+		)]
+
+	def get_labels(self, **kwargs):
+		return( ['bezahlter Warenwert in &#8364;', 'unbezahlter Warenwert in &#8364;'] )
+
+
+class Chart_UmsatzHistorie(Chart):
+	chart_type = 'line'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Anteiliger Geldwert in %'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
+		data = []
+		for item in umsatzHistorie:
+			data.append(round(item['dieb'] / item['allesUmsatz']*100.0,1))
+		
+		return [DataSet(
+			data = data,
+			label = 'unbezahlter Geldwert (Entwicklung)',
+			backgroundColor = [rgba(0,0,255,0.2)]
+		)]
+
+	def get_labels(self, **kwargs):
+		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
+		data = []
+		for item in umsatzHistorie:
+			data.append(item['datum'])
+
+		return( data )
+
+
+class Chart_DaylyVkValue(Chart):
+	chart_type = 'line'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in &#8364;'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		daylyVKValue = readFromDatabase('getDaylyVKValue')
+		data = []
+		for item in daylyVKValue:
+			data.append(item['dayly_value'])
+		
+		return [DataSet(
+			data = data,
+			label = 't&#228;licher Umsatz',
+			backgroundColor = [rgba(0,0,255,0.2)]
+		)]
+
+	def get_labels(self, **kwargs):
+		daylyVKValue = readFromDatabase('getDaylyVKValue')
+		data = []
+		for item in daylyVKValue:
+			data.append(item['datum'])
+
+		return( data )
+
+
+class Chart_Profits(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+
+		vkValueKiosk = readFromDatabase('getKioskValue')
+		vkValueKiosk = vkValueKiosk[0]['value']
+		vkValueAll = readFromDatabase('getVkValueAll')
+		vkValueAll = vkValueAll[0]['value']
+		ekValueAll = readFromDatabase('getEkValueAll')
+		ekValueAll = ekValueAll[0]['value']
+		kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
+		kioskBankValue = kioskBankValue.stand / 100.0
+		theoAlloverProfit = vkValueAll - ekValueAll
+		theoProfit = vkValueKiosk + kioskBankValue
+		buyersProvision = round(theoAlloverProfit - theoProfit,2)
+		adminsProvision = 0
+		profitHandback = 0
+		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[timezone.now().strftime('%Y-%m-%d %H:%M:%S')])
+		for item in unBezahlt:
+			if item['what'] == 'Dieb': stolenValue = item['preis']
+		expProfit = round(theoProfit - stolenValue - adminsProvision - profitHandback,2)
+
+		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit]
+
+		return [DataSet(
+			data = data,
+			backgroundColor = [rgba(0,0,255,0.2), rgba(0,0,255,0.4), rgba(0,0,255,0.6), rgba(0,0,255,0.8), rgba(0,255,0,0.6)]
+		)]
+
+	def get_labels(self, **kwargs):
+		return( ['Provision der Eink&#228;fer in &#8364;', 'Provision f&#252;r Admin und Verwalter', 
+			'Gewinnaussch&#252;ttung', 'gestohlener Geldwert','erwarteter Gewinn'] )

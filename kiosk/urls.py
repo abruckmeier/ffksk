@@ -15,4 +15,5 @@ urlpatterns = [
 	url(r'^menu/meineeinkaufe$', views.meine_einkaufe_page, name = 'meine_einkaufe_page'),
 	url(r'^menu/fillKioskUp$', views.fillKioskUp, name = 'fillKioskUp'),
 	url(r'^menu/inventory$', views.inventory, name = 'inventory'),
+	url(r'^menu/statistics$', views.statistics, name = 'statistics'),
 ]
