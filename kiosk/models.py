@@ -26,6 +26,14 @@ class Produktpalette(models.Model):
 	def __str__(self):
 		return ('ID ' + str(self.id) + ': ' + self.produktName)
 
+class Produktkommentar(models.Model):
+	produktpalette = models.ForeignKey(Produktpalette, on_delete=models.CASCADE)
+	erstellt = models.DateTimeField(auto_now_add=timezone.now)
+	kommentar = models.TextField(max_length=512,blank=True)
+
+	def __str__(self):
+		return (self.produktpalette.produktName + ' (' + str(self.erstellt) + ' )')
+
 
 class Kioskkapazitaet(models.Model):
 	produktpalette = models.OneToOneField(

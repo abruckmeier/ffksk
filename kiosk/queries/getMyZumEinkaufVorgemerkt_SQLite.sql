@@ -3,7 +3,7 @@ select
   b."produktName" as produktname,
   count(*) as anzahlElemente,
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
-  b.kommentar as kommentar
+  e.kommentar as kommentar
 from
   kiosk_zumEinkaufVorgemerkt a
 join kiosk_produktpalette b
@@ -30,5 +30,22 @@ join
   using (produktpalette_id,"gueltigAb")
 ) d
   using(produktpalette_ID)
+join (
+  select
+    produktpalette_id,
+    erstellt,
+    kommentar
+  from kiosk_produktkommentar
+  join (
+    select
+      produktpalette_id,
+      max(erstellt) as erstellt
+    from kiosk_produktkommentar
+    where erstellt < current_timestamp
+    group by produktpalette_id  
+  )
+  using(produktpalette_id,erstellt)
+) e
+  on b.id = e.produktpalette_id
 where c.id = %s
 group by b."produktName"
