@@ -30,6 +30,35 @@ from jchart.config import Axes, DataSet, rgba
 
 def start_page(request):
 	
+	# Einkaeufer des Monats
+	data = readFromDatabase('getEinkaeuferDesMonats')
+	bestBuyers = []
+	for item in data:
+		bestBuyers.append(item['first_name'] + ' ' + item['last_name'])
+	bestBuyers = ', '.join(bestBuyers)
+
+	# Verwalter des Monats
+	data = readFromDatabase('getVerwalterDesMonats')
+	bestVerwalter = []
+	for item in data:
+		bestVerwalter.append(item['first_name'] + ' ' + item['last_name'])
+	bestVerwalter = ', '.join(bestVerwalter)
+
+	# Administrator
+	data = KioskUser.objects.filter(visible=True, rechte='Admin')
+	admins = []
+	for item in data:
+		admins.append(item.first_name + ' ' + item.last_name)
+	admins = ', '.join(admins)
+
+	# Verwalter
+	data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+	accountants = []
+	for item in data:
+		accountants.append(item.first_name + ' ' + item.last_name)
+	accountants = ', '.join(accountants)
+	
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
@@ -37,7 +66,10 @@ def start_page(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
  
 	return render(request, 'kiosk/start_page.html', 
-		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
+		'admins': admins, 'accountants': accountants, 
+		'chart_DaylyVkValue': Chart_DaylyVkValue(), })
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
@@ -641,7 +673,7 @@ class Chart_DaylyVkValue(Chart):
 	responsive = True
 	scales = {
 		'xAxes': [Axes(type='time', position='bottom')],
-		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in &#8364;'}}]
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in Euro'}}]
 	}
 
 	def get_datasets(self, **kwargs):
@@ -652,8 +684,8 @@ class Chart_DaylyVkValue(Chart):
 		
 		return [DataSet(
 			data = data,
-			label = 't&#228;licher Umsatz',
-			backgroundColor = [rgba(0,0,255,0.2)]
+			label = 'taeglicher Umsatz im FfE-Kiosk',
+			backgroundColor = [rgba(65,143,190,0.5)]
 		)]
 
 	def get_labels(self, **kwargs):
@@ -844,3 +876,16 @@ def produktKommentieren(request, s):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'allCommentsOfProduct': allCommentsOfProduct, 
 		'productName': productName, 'productID': productID, 'latestComment': latestComment, })
+
+
+
+def anleitung(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/anleitung_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})

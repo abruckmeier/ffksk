@@ -6,28 +6,62 @@
 	<br>
 	<div class="eingerueckt">
 		<div>
-			Bereits registriert? Hier geht es zum pers&#246;nlichen Bereich:<br>
+			<b>Bereits registriert? Hier geht es zum pers&#246;nlichen Bereich:</b><br>
 			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
 				<b><a href="{% url 'home_page' %}">zum pers&#246;nlichen Bereich</a></b>
 			</p>
 		</div><br>
 
 		<div>
-			Ich m&#246;chte beitreten!<br>
+			<b>Ich m&#246;chte beitreten!</b><br>
 			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
 				<b><a href="{% url 'neuerNutzer_page' %}">Konto erstellen</a><br></b>
 			</p>
 		</div><br>
 
 		<div>
-			Ich m&#246;chte Eink&#228;ufer oder Verwalter werden!<br>
-			Melde dich dazu bei einem Administrator.
+			<b>Wie genau funktioniert das? Was muss ich wissen?</b><br>
+			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
+				<b><a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a><br></b>
+			</p>
 		</div><br>
 
 		<div>
-			Ich habe Vorschl&#228;ge zu den Produkten oder sonstige Anmerkungen!<br>
-			Melde dich dazu bei einem Administrator.
+			<b>Ich m&#246;chte Eink&#228;ufer oder Verwalter werden!</b><br>
+			Melde dich dazu bei einem Administrator oder Verwalter.
 		</div><br>
+
+		<div>
+			<b>Ich habe Vorschl&#228;ge zu den Produkten oder sonstige Anmerkungen!</b><br>
+			Beteilige dich an den Kommentaren im <a href="{% url 'produkt_kommentare_page' %}">Pers&#246;nlichen Bereich --> Produkte kommentieren</a> oder 
+			melde dich bei einem Administrator oder Verwalter.
+		</div>
+
+		<br>
+		<hr>
+
+		<b>Administrator: </b>{{ admins }}
+		<br>
+		<b>Verwalter: </b>{{ accountants }}
+		<br>
+
+		<br>
+		<hr>
+		<small>
+			<b>Eink&#228;ufer des Monats: </b>{{bestBuyers}}
+			<br>
+			<b>Verwalter des Monats: </b>{{bestVerwalter}}
+			<br>
+			Dankeschön dafür!!!
+		</small>
+
+		<br>
+		<hr>
+		<div style="min-width: 300px;max-width: 500px;">
+			{{ chart_DaylyVkValue.as_html }}
+		</div>
+
+
 	</div>
 
 {% endblock %}
