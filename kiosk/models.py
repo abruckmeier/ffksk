@@ -21,7 +21,7 @@ class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
-	kommentar = models.TextField(max_length=512,blank=True)
+	#kommentar = models.TextField(max_length=512,blank=True)
 
 	def __str__(self):
 		return ('ID ' + str(self.id) + ': ' + self.produktName)
