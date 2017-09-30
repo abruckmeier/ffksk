@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render, render_to_response
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt
-from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt
+from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm, ConfirmPW
 from django.template.loader import render_to_string
@@ -793,3 +793,54 @@ class Chart_StolenProductsShare(Chart):
 			data.append(item['name'])
 
 		return( data )
+
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def produktKommentare(request):
+
+	# Besorge Liste aller Produktkommentare
+	allProductComments = readFromDatabase('getAllProductComments')
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/produkt_kommentare_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allProductComments': allProductComments, })
+
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def produktKommentieren(request, s):
+	
+	# Processing a new comment from the site
+	if request.method == "POST":
+		productID = int(request.POST.get("productID"))
+		comment = request.POST.get("kommentar")
+
+		p = Produktpalette.objects.get(id=productID)
+		k = Produktkommentar(produktpalette = p, kommentar = comment)
+		k.save()
+
+	
+	productID = s
+
+	# Besorge Liste aller Produktkommentare
+	allCommentsOfProduct = readFromDatabase('getAllCommentsOfProduct',[productID])
+	productName = allCommentsOfProduct[0]["produkt_name"]
+	latestComment = allCommentsOfProduct[0]["kommentar"]
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/produkt_kommentieren_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allCommentsOfProduct': allCommentsOfProduct, 
+		'productName': productName, 'productID': productID, 'latestComment': latestComment, })

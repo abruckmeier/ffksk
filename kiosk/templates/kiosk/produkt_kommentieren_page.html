@@ -1,0 +1,51 @@
+{% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
+
+{% block content %}
+	
+	<h4> {{ productName }} - Kommentieren: </h4>
+	<br>
+
+	<div class="eingerueckt">
+
+		<h4>Editieren:</h4>
+
+		<form method="POST" class="">{% csrf_token %}
+			<input type="text" name="productID" id="productID" style="display: none" readonly value="{{productID}}">
+
+			<textarea name="kommentar" rows="5" cols="150" wrap="soft"
+				id="kommentar" class="form-control" maxlength="512"
+				style="">{{latestComment}}</textarea>
+
+			<br>
+			<button type="submit" class="btn">Kommentar abgeben </button>
+			<a href="{% url 'produkt_kommentare_page' %}"> Abbrechen & zur&#252;ck</a>
+		</form>
+
+		<br>
+
+		<h4>Historie:</h4>
+		<div class="eingerueckt">
+			<table class="konto">
+				<tr class="konto">
+					<th class="konto" style="width:100px;text-align: center;">Date</th>
+					<th class="konto">Comment</th>
+				</tr>
+				{% for item in allCommentsOfProduct %}
+				<tr class="konto">
+					<td class="konto" style="text-align: center;">{{item.erstellt}}</td>
+					<td class="konto">{{item.kommentar}}</td>
+				</tr>
+				{% endfor %}
+			</table>
+		</div>
+	</div>
+
+	<hr>
+	<a href="{% url 'produkt_kommentare_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

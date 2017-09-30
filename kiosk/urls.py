@@ -16,4 +16,7 @@ urlpatterns = [
 	url(r'^menu/fillKioskUp$', views.fillKioskUp, name = 'fillKioskUp'),
 	url(r'^menu/inventory$', views.inventory, name = 'inventory'),
 	url(r'^menu/statistics$', views.statistics, name = 'statistics'),
+	url(r'^menu/produktKommentare$', views.produktKommentare, name = 'produkt_kommentare_page'),
+	url(r'^menu/produktKommentieren/(?P<s>\d+)/$', views.produktKommentieren, name='produkt_kommentieren_page'),
+	
 ]
