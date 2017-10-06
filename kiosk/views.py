@@ -919,6 +919,8 @@ def rueckbuchung(request):
 
 	# Abfrage aller Nutzer
 	allActiveUsers = KioskUser.objects.filter(is_active=True,visible=True)
+	dieb = KioskUser.objects.filter(username='Dieb')
+	allActiveUsers = allActiveUsers.union(dieb)
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
