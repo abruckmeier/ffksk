@@ -14,6 +14,8 @@ from .queries import readFromDatabase
 from django.db.models import Max
 
 
+
+
 # Create your models here.
 
 
@@ -219,10 +221,13 @@ class ZumEinkaufVorgemerkt(models.Model):
 			# Einkaufsliste abfragen
 			einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-			return render_to_string('kiosk/einkauf_angenommen_page.html',
+			
+
+			return {'returnHttp': render_to_string('kiosk/einkauf_angenommen_page.html',
 				{'gesPreis':gesPreis/100, 'user':currentUser,'userAnlieferer':userAnlieferer,
 				'produktName':produktName,'anzahlElemente':anzahlElemente,'kioskItems': kioskItems,
-					'einkaufsliste': einkaufsliste})
+					'einkaufsliste': einkaufsliste}),
+				'angeliefert': angeliefert}
 
 
 class Kiosk(models.Model):
@@ -376,6 +381,13 @@ class Gekauft(models.Model):
 
 
 
+
+from .bot import slack_MsgToUserAboutNonNormalBankBalance
+
+
+
+
+
 class GeldTransaktionen(models.Model):
 	AutoTrans_ID = models.AutoField(primary_key=True)
 	vonnutzer = models.ForeignKey(
@@ -416,7 +428,6 @@ class GeldTransaktionen(models.Model):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
 		# Besorge den Kontostand des 'vonNutzer' und addiere neuen Wert
-		print(t.betrag)
 		vonNutzerKonto = Kontostand.objects.get(nutzer_id=t.vonnutzer)
 		vonNutzerKonto.stand = vonNutzerKonto.stand - t.betrag
 		vonNutzerKonto.save()
@@ -427,6 +438,15 @@ class GeldTransaktionen(models.Model):
 		zuNutzerKonto.save()
 
 		t.save()
+
+		# Message to the users if their bank balance becomes too high / too low
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+			try:
+				slack_MsgToUserAboutNonNormalBankBalance(t.vonnutzer.id, vonNutzerKonto.stand)
+				slack_MsgToUserAboutNonNormalBankBalance(t.zunutzer.id, zuNutzerKonto.stand)
+			except:
+				pass
+
 
 
 	@transaction.atomic

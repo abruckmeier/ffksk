@@ -19,7 +19,7 @@ from .queries import readFromDatabase
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel
 
 from jchart import Chart
 from jchart.config import Axes, DataSet, rgba
@@ -256,8 +256,15 @@ def einkauf_annahme_page(request):
 		form = EinkaufAnnahmeForm(request.POST)
 		currentUser = request.user
 
-		returnHttp = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
-		return HttpResponse(returnHttp)
+		returnDict = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
+
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+			try:
+				slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
+			except:
+				pass
+
+		return HttpResponse(returnDict['returnHttp'])
 
 	else:
 

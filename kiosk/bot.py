@@ -1,14 +1,104 @@
 from kiosk.queries import readFromDatabase
-from kiosk.models import Einkaufsliste, Produktpalette, EinkaufslisteGroups
+from kiosk.models import Produktpalette, Einkaufsliste, EinkaufslisteGroups
+from profil.models import KioskUser
 from django.db import transaction
 from django.db.models import Max
 import math
+
+from django.conf import settings
+from slackclient import SlackClient
+
+
+# Neue Produkte sind im Kiosk: Im Channel informieren
+def slack_PostNewProductsInKioskToChannel(angeliefert):
+
+	ang = set()
+	for item in angeliefert:
+		ang.add(item.produktpalette.produktName)
+
+	textToChannel = ':tada: Frisch angliefert: ' + ', '.join(ang) + ':grey_exclamation:'
+
+	slack_token = getattr(settings,'SLACK_TOKEN')
+	slackSettings = getattr(settings,'SLACK_SETTINGS')
+
+	sc = SlackClient(slack_token)
+	sc.api_call(
+		"chat.postMessage",
+		channel=slackSettings['channelToPost'],
+		text = textToChannel,
+	)
+
+	return
+
+
+# Neue Elemente in der Einkaufsliste in den Channel posten
+def slack_PostNewItemsInShoppingListToChannel(newItems):
+
+	if not newItems==set():
+		textToChannel = ':mailbox_with_mail: Neue Produkte in der Einkaufsliste: ' + ', '.join(newItems) + ':grey_exclamation:'
+
+		slack_token = getattr(settings,'SLACK_TOKEN')
+		slackSettings = getattr(settings,'SLACK_SETTINGS')
+
+		sc = SlackClient(slack_token)
+
+		sc.api_call(
+			"chat.postMessage",
+			channel=slackSettings['channelToPost'],
+			text = textToChannel,
+		)
+
+	return
+
+
+# Information an Nutzer mit >30 Euro oder <1 Euro um Geld ausbezahlen zu lassen oder Geld einzuzahlen.
+def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
+	
+	user = KioskUser.objects.get(id = userID)
+
+	# Functional Users (bank, thief) do not need messages
+	if user.visible == False:
+		return
+
+	slack_token = getattr(settings,'SLACK_TOKEN')
+	slackSettings = getattr(settings,'SLACK_SETTINGS')
+
+	if bankBalance > slackSettings['MaxBankBalance']:
+		number = '%.2f' % (slackSettings['MaxBankBalance']/100.0)
+		textToChannel = ':money_with_wings: Dein Kontostand ist sehr hoch ( > ' + str(number) + ' Euro ). Bitte lass dir von einem Verwalter etwas Geld auszahlen :grey_exclamation:'
+
+	elif bankBalance < slackSettings['MinBankBalance']:
+		number = '%.2f' % (slackSettings['MinBankBalance']/100.0)
+		textToChannel = ':dollar: Dein Kontostand ist niedrig ( < ' + str(number) + ' Euro ). Denke daran, rechtzeitig bei einem Verwalter wieder Geld einzubezahlen. :grey_exclamation:'
+
+	else:
+		return
+
+	userAdress = '@' + user.slackName
+
+	sc = SlackClient(slack_token)
+
+	sc.api_call(
+		"chat.postMessage",
+		channel=userAdress,
+		text = textToChannel,
+	)
+
+	return
+
+
+
+# Nutzer inaktiv setzen, wenn letzter Tag zu Ende.
+# Automatische DB-Sicherung
+# Warnung an Admin und Verwalter, wenn Nutzer seinen letzten Tag haben wird (1 Woche vorher)
+# Wenn Einkaufslisten-Elemente zu lange in persoenlicher Einkaufsliste verweilen, soll zuerst Meldung gegeben werden (5 Tage) und nach weiteren zwei Tagen wird das Element aus der persoenlichen Liste genommen.
 
 
 @transaction.atomic
 def checkKioskContentAndFillUp():
 	# Alle Produkte im Umlauf (Kiosk, persoenliche und offene Einkaufsliste) werden zusammengezaehlt und der maximalen Anzahl im Kiosk gegenuebergestellt. Wird die Bestellschwelle unterschritten, werden entsprechend Produkte auf die Einkaufsliste gesetzt.
 
+	newItems = set()
 	kioskBilanz = readFromDatabase('getItemsInWholeKiosk')
 
 	for item in kioskBilanz:
@@ -27,9 +117,18 @@ def checkKioskContentAndFillUp():
 					e.save()
 					eg = EinkaufslisteGroups(einkaufslistenItem=e,gruppenID=maxGroup)
 					eg.save()
+
+					newItems.add(e.produktpalette.produktName)
 				
 				maxGroup = maxGroup + 1
 	
-	print("Bot has performed a Fill-Up.")
+	# Send message to the channel to inform about new Items in the shopping list
+	if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+		try:
+			slack_PostNewItemsInShoppingListToChannel(newItems)
+		except:
+			pass
+
 
 	return
+
