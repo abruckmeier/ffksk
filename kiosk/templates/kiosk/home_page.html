@@ -49,6 +49,7 @@
 			{% endif %}
 			{% if perms.profil.do_verwaltung %}
 				<a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
+				<a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
 				<a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a><br><br>
 				<a href="{% url 'inventory' %}">Inventur durchf&#252;hren</a><br>
 			{% endif %}

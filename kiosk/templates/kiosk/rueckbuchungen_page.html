@@ -1,0 +1,126 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h3>R&#252;ckbuchung von K&#228;ufen</h3>
+	<br>
+
+	<div class="eingerueckt">
+
+		<div class="dropdown">
+			<button class="dropbtn">K&#228;ufer w&#228;hlen</button>
+			<div class="dropdown-content">
+				{% for item in allActiveUsers %}
+					<a href="#" onclick="goOnWithUser({{item.id}})">
+						{{item.username}} ({{item.first_name}} {{item.last_name}})
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+
+		<script>
+			function goOnWithUser(userID) {
+				$(document).ready(
+					$.ajax({
+						type: "GET",
+						url: "{% url 'rueckbuchungen_page' %}",
+						data: {'userID': userID, 'getUserData': true},
+						success: function(data){
+									$("div#divSeineEinkaeufe").html(data);
+								}
+					})
+				);
+				$("div#divWarenAuswahl").hide();
+				$("input#anzahlZurueck").val(1);
+				$("div#divSeineEinkaeufe").show(200);
+
+				setTimeout(
+					function(){
+						$("div.dropdown-contentt").hide(500);
+		  				$("button.dropbtnt").click(function(){
+		  					if (!isClickedt) {
+		  						$("div.dropdown-contentt").show(500);
+		  						isClickedt = true;
+		  						$("div.dropdown-content").hide(500);
+		  						isClicked = false;
+		  					} else {
+		  						$("div.dropdown-contentt").hide(500);
+		  						isClickedt = false;
+		  					}
+		  				});
+		  				$("div.dropdown-contentt").click(function(e){
+		  					e.preventDefault();
+		  					$("div.dropdown-contentt").hide(500);
+		  					isClickedt = false;
+		  				});
+  					}
+  				,300);
+			}
+		</script>	
+
+
+		<div class="eingerueckt">
+
+			<!--  Wird von 'rueckbuchungen_gekauft_liste eingetragen'  -->
+			<div id="divSeineEinkaeufe"></div>
+
+			<script type="text/javascript">
+				
+				$(document).ready(function(){
+					$("div#divSeineEinkaeufe").hide();
+				});
+
+				function goOnWithWare(product_name,productID,max_count,userID){
+					$("input#anzahlZurueck").val(1);
+				    $("div#divWarenAuswahl").show(200);
+				    $("input#productID").val(productID);
+				    $("input#userID").val(userID);
+				    $("input#anzahlElemente").val(max_count);
+					$("div#produktName").html(product_name);
+				    $("div#anzahlElemente").html(max_count);
+				};
+			</script>
+
+
+			<br>
+
+			<div id="divWarenAuswahl" style="padding-left: 8vw;">
+				<br>
+				<form method="POST" class="">{% csrf_token %}
+					<input type="text" name="userID" id="userID" style="display: none" readonly>
+					<input type="text" name="productID" id="productID" style="display: none" readonly>
+					<input type="text" name="anzahlElemente" id="anzahlElemente" style="display: none" readonly>
+					
+					<div class="formDiv" id="produktName"></div> | 
+					<div class="formDiv" id="anzahlElemente"></div>
+					
+					<br><br>
+					
+					<table style="width: 60%;border-spacing: 5px;text-align: left;">
+						<tr>
+							<td><label>r&#252;ckzubuchende St&#252;ckzahl</label></td>
+							<td><input type="text" name="anzahlZurueck" id="anzahlZurueck" 
+							class="form-control" style="width: 80px;display: inline;"></td>
+						</tr>
+					</table>
+
+					<br>
+					<button type="submit" class="btn">Ware r&#252;ckbuchen</button>
+				</form>	
+
+			</div>
+			<script type="text/javascript">
+				$(document).ready(function(){
+					$("div#divWarenAuswahl").hide();
+				});
+			</script>
+
+		</div>
+
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+{% endblock %}

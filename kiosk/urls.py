@@ -19,6 +19,7 @@ urlpatterns = [
 	url(r'^menu/produktKommentare$', views.produktKommentare, name = 'produkt_kommentare_page'),
 	url(r'^menu/produktKommentieren/(?P<s>\d+)/$', views.produktKommentieren, name='produkt_kommentieren_page'),
 	url(r'^menu/anleitung$', views.anleitung, name = 'anleitung_page'),
+	url(r'^menu/rueckbuchung$', views.rueckbuchung, name = 'rueckbuchungen_page'),
 
 	
 ]

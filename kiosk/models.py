@@ -307,6 +307,75 @@ class Gekauft(models.Model):
 			str(self.kaeufer) + " um " + str(self.gekauftUm))
 
 
+	@transaction.atomic
+	def rueckbuchen(form, currentUser):
+
+		eingabefehler = False
+
+		# Checken, ob Eingaben syntaktisch korrekt sind
+		if not form.is_valid():
+
+			errorMsg = "Fehler in Eingabe. Wurde eine korrekte Anzahl eingegeben?"
+			eingabefehler = True
+		else:
+			userID = int(form['userID'].value())
+			productID = int(form['productID'].value())
+			anzahlElemente = int(form['anzahlElemente'].value())
+			anzahlZurueck = int(form['anzahlZurueck'].value())
+
+			# Pruefen, ob nicht mehr zurueck gegeben werden soll, als gekauft wurde
+			if anzahlZurueck > anzahlElemente:
+				errorMsg = "Die Anzahl zur"+chr(252)+"ckzubuchender Elemente ist zu gro"+chr(223)+"."
+				eingabefehler = True
+
+		if eingabefehler == True:
+
+			# Hole den Kioskinhalt
+			kioskItems = Kiosk.getKioskContent()
+			# Einkaufsliste abfragen
+			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
+			return render_to_string('kiosk/fehler_message_rueckbuchung.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			
+			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
+
+		else:
+
+			productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
+
+			price = 0
+			for item in productsToMove:
+				k = Kiosk(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
+					bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
+					einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
+					verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis)
+				k.save()
+				k.geliefertUm = item.geliefertUm
+				k.save()
+				price = price + item.verkaufspreis
+
+				userBank = KioskUser.objects.get(username='Bank')
+				user = KioskUser.objects.get(id=userID)
+				GeldTransaktionen.doTransaction(userBank,user,item.verkaufspreis,timezone.now,
+					"R"+chr(252)+"ckbuchung Kauf von " + item.produktpalette.produktName)
+
+				item.delete()
+				
+
+			# Hole den Kioskinhalt
+			kioskItems = Kiosk.getKioskContent()
+			# Einkaufsliste abfragen
+			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+			product = Produktpalette.objects.get(id=productID)
+
+			return render_to_string('kiosk/rueckbuchungen_done_page.html', 
+				{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+				'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product})
+
+
+
 class GeldTransaktionen(models.Model):
 	AutoTrans_ID = models.AutoField(primary_key=True)
 	vonnutzer = models.ForeignKey(

@@ -1,14 +1,14 @@
 from django.shortcuts import redirect, render, render_to_response
 from django.db.models import Count
 from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt
+from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
 from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm, ConfirmPW
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 
-from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm
+from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm, RueckbuchungForm
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -889,3 +889,46 @@ def anleitung(request):
 
 	return render(request, 'kiosk/anleitung_page.html', 
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def rueckbuchung(request):
+
+	currentUser = request.user
+
+	if request.method == "POST":
+
+		currentUser = request.user
+		form = RueckbuchungForm(request.POST)
+
+		html = Gekauft.rueckbuchen(form,currentUser)
+		return HttpResponse(html)
+
+	else:
+
+		if not request.GET.get("getUserData") is None:
+			# Kaeufer wurde ausgewaehlt, jetzt wird die Liste seiner Einkaeufe ausgegeben.
+			userID = request.GET.get("userID")
+			userName = KioskUser.objects.get(id=userID)
+			seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
+
+			html = render_to_string('kiosk/rueckbuchungen_gekauft_liste.html',{'userID': userID, 'userName': userName, 'seineKaeufe': seineKaeufe})
+			return HttpResponse(html)
+
+
+	# Abfrage aller Nutzer
+	allActiveUsers = KioskUser.objects.filter(is_active=True,visible=True)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/rueckbuchungen_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allActiveUsers': allActiveUsers, })
+
+
+
