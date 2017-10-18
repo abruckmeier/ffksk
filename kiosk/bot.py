@@ -9,6 +9,27 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
+def slack_PostWelcomeMessage(user):
+	# Verwalter
+	data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+	accountants = []
+	for item in data:
+		accountants.append(item.first_name + ' ' + item.last_name)
+	accountants = ', '.join(accountants)
+
+	textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n' + 'Als erstes, lade Guthaben auf dein Konto bei einem Verwalter (' + accountants + '). Dort bekommst du auch weitere Informationen zum Kiosk.\n' + 'In diesem Thread bekommst du weitere persoenliche Nachrichten zu Veraenderungen bei deinem Kontostand. Außerdem bekommst du allen wichtigen Informationen zu Neuanlieferungen, zu neuen Produkten in der Einkaufsliste und zu allen weiteren wichtigen Themen im #kiosk-Channel.\n\n' + 'Möchtest du mehr zum Kiosk beitragen? Gerne kannst du dich als Einkaeufer freischalten lassen und machst dann Besorgungen fuer das Kiosk.'
+	userAdress = '@' + user.slackName
+
+	slack_token = getattr(settings,'SLACK_TOKEN')
+	sc = SlackClient(slack_token)
+	sc.api_call(
+		"chat.postMessage",
+		channel=userAdress,
+		text = textToChannel,
+	)
+
+	return
+
 # Neue Produkte sind im Kiosk: Im Channel informieren
 def slack_PostNewProductsInKioskToChannel(angeliefert):
 
@@ -16,7 +37,7 @@ def slack_PostNewProductsInKioskToChannel(angeliefert):
 	for item in angeliefert:
 		ang.add(item.produktpalette.produktName)
 
-	textToChannel = ':tada: Frisch angliefert: ' + ', '.join(ang) + ':grey_exclamation:'
+	textToChannel = ':tada: Frisch angeliefert: ' + ', '.join(ang) + ':grey_exclamation:'
 
 	slack_token = getattr(settings,'SLACK_TOKEN')
 	slackSettings = getattr(settings,'SLACK_SETTINGS')

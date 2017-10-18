@@ -19,7 +19,7 @@ from .queries import readFromDatabase
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage
 
 from jchart import Chart
 from jchart.config import Axes, DataSet, rgba
@@ -375,6 +375,12 @@ def neuerNutzer_page(request):
 
 			msg = 'Nutzer wurde angelegt.'
 			color = '#00ff00'
+
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				try:
+					slack_PostWelcomeMessage(u)
+				except:
+					pass
 
 
 	form = UserErstellenForm()
