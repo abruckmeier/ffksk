@@ -473,7 +473,8 @@ class GeldTransaktionen(models.Model):
 				'type':'manTransaction',
 				'userFrom':userFrom,
 				'userTo':userTo,
-				'betrag':betrag/100
+				'betrag':betrag/100,
+				'user':currentUser
 				}
 
 
@@ -509,7 +510,8 @@ class GeldTransaktionen(models.Model):
 				'type':ezaz,
 				'userFrom':userFrom,
 				'userTo':userTo,
-				'betrag':betrag/100
+				'betrag':betrag/100,
+				'user':currentUser
 				}
 
 
