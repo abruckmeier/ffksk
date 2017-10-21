@@ -19,7 +19,7 @@ from .queries import readFromDatabase
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation
 
 from jchart import Chart
 from jchart.config import Axes, DataSet, rgba
@@ -319,7 +319,14 @@ def transaktion_page(request):
 
 		else:
 			returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
-			return HttpResponse(returnHttp)
+
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				try:
+					slack_PostTransactionInformation(returnHttp)
+				except:
+					pass
+
+			return HttpResponse(returnHttp['http'])
 			
 	# Besorge alle User
 	#allUsers = KioskUser.objects.filter(visible=True).order_by('username')
@@ -425,7 +432,14 @@ def einzahlung_page(request):
 
 			else:
 				returnHttp = GeldTransaktionen.makeEinzahlung(form,currentUser)
-				return HttpResponse(returnHttp)
+
+				if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+					try:
+						slack_PostTransactionInformation(returnHttp)
+					except:
+						pass
+					
+				return HttpResponse(returnHttp['http'])
 			
 	# Besorge alle User
 	allUsers = readFromDatabase('getUsersForEinzahlung')

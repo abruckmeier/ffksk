@@ -9,6 +9,30 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
+def slack_PostTransactionInformation(info):
+
+	if info['type'] == 'manTransaction':
+		textToChannel = 'Es wurde eine Ueberweisung von ' + info['userFrom'].slackName + ' an ' + info['userTo'].slackName + ' in Hoehe von ' + str('%.2f' % info['betrag']) + ' Euro getaetigt.'
+	elif info['type'] == 'eingezahlt':
+		textToChannel = 'Es wurden ' + str('%.2f' % info['betrag']) + ' Euro auf dein Konto eingezahlt.'
+	elif info['type'] == 'ausgezahlt':
+		textToChannel = 'Es wurden ' + str('%.2f' % info['betrag']) + ' Euro von deinem Konto ausgezahlt.'
+
+	slack_token = getattr(settings,'SLACK_TOKEN')
+	sc = SlackClient(slack_token)
+
+	for user in [info['userFrom'], info['userTo']]:
+		if user.visible == True:
+			userAdress = '@' + user.slackName
+			sc.api_call(
+				"chat.postMessage",
+				channel=userAdress,
+				text = textToChannel,
+			)
+
+	return
+
+
 def slack_PostWelcomeMessage(user):
 	# Verwalter
 	data = KioskUser.objects.filter(visible=True, rechte='Accountant')

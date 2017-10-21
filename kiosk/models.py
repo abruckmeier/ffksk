@@ -466,9 +466,15 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return render_to_string('kiosk/transaktion_done_page.html',
-			{'userFrom':userFrom, 'user':currentUser,'userTo':userTo,
-			'betrag':betrag/100})
+		return {'http': 
+					render_to_string('kiosk/transaktion_done_page.html',
+					{'userFrom':userFrom, 'user':currentUser,'userTo':userTo,
+					'betrag':betrag/100}),
+				'type':'manTransaction',
+				'userFrom':userFrom,
+				'userTo':userTo,
+				'betrag':betrag/100
+				}
 
 
 	@transaction.atomic
@@ -496,9 +502,15 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return render_to_string('kiosk/einzahlung_done_page.html',
-			{'ezaz':ezaz, 'user':currentUser,
-			'betrag':betrag/100})
+		return {'http': 
+					render_to_string('kiosk/einzahlung_done_page.html',
+					{'ezaz':ezaz, 'user':currentUser,
+					'betrag':betrag/100}),
+				'type':ezaz,
+				'userFrom':userFrom,
+				'userTo':userTo,
+				'betrag':betrag/100
+				}
 
 
 
