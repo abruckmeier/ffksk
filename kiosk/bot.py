@@ -37,11 +37,11 @@ def slack_TestMsgToUser(user):
 def slack_PostTransactionInformation(info):
 
 	if info['type'] == 'manTransaction':
-		textToChannel = 'Es wurde eine Ueberweisung von ' + info['userFrom'].slackName + ' an ' + info['userTo'].slackName + ' in Hoehe von ' + str('%.2f' % info['betrag']) + ' Euro getaetigt.'
+		textToChannel = ':grey_exclamation::dollar: Es wurde eine '+chr(220)+'berweisung von ' + info['userFrom'].slackName + ' an ' + info['userTo'].slackName + ' in H'+chr(246)+'he von ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' get'+chr(228)+'tigt.'
 	elif info['type'] == 'eingezahlt':
-		textToChannel = 'Es wurden ' + str('%.2f' % info['betrag']) + ' Euro auf dein Konto eingezahlt.'
+		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' auf dein Konto eingezahlt.'
 	elif info['type'] == 'ausgezahlt':
-		textToChannel = 'Es wurden ' + str('%.2f' % info['betrag']) + ' Euro von deinem Konto ausgezahlt.'
+		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' von deinem Konto ausgezahlt.'
 
 	slack_token = getattr(settings,'SLACK_TOKEN')
 	sc = SlackClient(slack_token)
@@ -66,7 +66,8 @@ def slack_PostWelcomeMessage(user):
 		accountants.append(item.first_name + ' ' + item.last_name)
 	accountants = ', '.join(accountants)
 
-	textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n' + 'Als erstes, lade Guthaben auf dein Konto bei einem Verwalter (' + accountants + '). Dort bekommst du auch weitere Informationen zum Kiosk.\n' + 'In diesem Thread bekommst du weitere persoenliche Nachrichten zu Veraenderungen bei deinem Kontostand. Außerdem bekommst du allen wichtigen Informationen zu Neuanlieferungen, zu neuen Produkten in der Einkaufsliste und zu allen weiteren wichtigen Themen im #kiosk-Channel.\n\n' + 'Möchtest du mehr zum Kiosk beitragen? Gerne kannst du dich als Einkaeufer freischalten lassen und machst dann Besorgungen fuer das Kiosk.'
+	textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n\n' + 'Du bist jetzt Teil einer Community, die als Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des Kiosks musst du zun'+chr(228)+'chst etwas Guthaben auf dein Konto bei einem Verwalter ('+ accountants + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n' + 'Im #kiosk-Channel hier auf Slack bekommst du alle wichtigen Informationen zum FfE-Kiosk. Vor allem sende ich dort Benachrichtigungen, wenn neue Produkte angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n' + 'Apropos Einkaufsliste: Wenn du dich aktiv am Betrieb des Kiosks beteiligen m'+chr(246)+'chtest, kannst du dich als `Eink'+chr(228)+'ufer` freischalten lassen. Dann kannst du nach Belieben Produkte von der Einkaufsliste f'+chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung für das Kiosk besorgen.'
+
 	userAdress = '@' + user.slackName
 
 	slack_token = getattr(settings,'SLACK_TOKEN')
