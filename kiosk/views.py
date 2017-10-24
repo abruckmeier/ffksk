@@ -19,7 +19,7 @@ from .queries import readFromDatabase
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation, slack_TestMsgToUser
 
 from jchart import Chart
 from jchart.config import Axes, DataSet, rgba
@@ -961,3 +961,18 @@ def rueckbuchung(request):
 
 
 
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def slackComTest(request):
+
+	currentUser = request.user
+	slack_TestMsgToUser(currentUser)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/slackComTest_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})

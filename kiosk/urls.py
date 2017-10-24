@@ -20,6 +20,7 @@ urlpatterns = [
 	url(r'^menu/produktKommentieren/(?P<s>\d+)/$', views.produktKommentieren, name='produkt_kommentieren_page'),
 	url(r'^menu/anleitung$', views.anleitung, name = 'anleitung_page'),
 	url(r'^menu/rueckbuchung$', views.rueckbuchung, name = 'rueckbuchungen_page'),
+	url(r'^menu/slackComTest$', views.slackComTest, name = 'slackComTest_page'),
 
 	
 ]

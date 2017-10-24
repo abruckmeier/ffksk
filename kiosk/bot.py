@@ -9,6 +9,31 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
+# Eine Slack-Nachricht wird testweise an den persoenlichen Slackbot-Channel eines Nutzers gesendet
+def slack_TestMsgToUser(user):
+
+	# Functional Users (bank, thief) do not need messages
+	if user.visible == False:
+		return
+
+	slack_token = getattr(settings,'SLACK_TOKEN')
+
+	textToChannel = 'Hallo ' + str(user.first_name) + '!\n' + ':mailbox_with_mail: Das ist eine Testnachricht, die ich von deinem pers'+chr(246)+'nlichen Bereich im FfE-Kiosk gesendet habe. Da du das lesen kannst scheint die pers'+chr(246)+'nliche Benachrichtigung zu funktionieren!\n' + 'An dieser Stelle wirst du dann '+chr(252)+'ber deinen niedrigen (hohen) Kontostand und '+chr(252)+'ber besondere Kontobewegungen wie '+chr(220)+'berweisungen, Einzahlungen und Auszahlungen informiert.'
+
+	userAdress = '@' + user.slackName
+
+	sc = SlackClient(slack_token)
+
+	sc.api_call(
+		"chat.postMessage",
+		channel=userAdress,
+		text = textToChannel,
+	)
+
+	return
+
+
+# Der Nutzer wird persoenlich ueber nicht selbst durchgefuehrte Kontobewegungen informiert: Einzahlung / Auszahlung / Ueberweisung
 def slack_PostTransactionInformation(info):
 
 	if info['type'] == 'manTransaction':
