@@ -15,8 +15,28 @@
 		<form method="POST">{% csrf_token %}
 			
 			<table>
-				{{ form.as_table }}
-				{{confPW}}
+
+				{% for field in form %}
+    			<tr>
+    			<th style="padding:3px;">{{ field.label_tag }}</th>
+    			<td>{{field}}</td>
+    			<td style="padding:3px;max-width: 250px;"">{% if field.errors %} {{field.errors}} {% endif %}</td>
+    			<td style="padding:3px;max-width: 350px;">{% if field.help_text %}
+    				<p class="help">{{ field.help_text|safe }}</p>
+    			{% endif %}</td>
+				</tr>
+				{% endfor %}
+
+				{% for field in confPW %}
+    			<tr>
+    			<th style="padding:3px;">{{ field.label_tag }}</th>
+    			<td>{{field}}</td>
+    			<td style="padding:3px;max-width: 250px;"">{% if field.errors %} {{field.errors}} {% endif %}</td>
+    			<td style="padding:3px;max-width: 350px;">{% if field.help_text %}
+    				<p class="help">{{ field.help_text|safe }}</p>
+    			{% endif %}</td>
+				</tr>
+				{% endfor %}
 			</table>
 
 			<br>
