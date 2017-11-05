@@ -15,5 +15,6 @@ join (
 	using(produktpalette_id,erstellt)
 join kiosk_produktpalette b
 	on a.produktpalette_id = b.id
+where b.imVerkauf is 1
 
 order by produkt_name asc

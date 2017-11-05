@@ -58,6 +58,7 @@ from (
 		  using(produktpalette_id,erstellt)
 		) e
 		  on b.id = e.produktpalette_id
+		where b.imVerkauf is 1
 		group by c."gruppenID", b."produktName"
 		order by b."produktName"
 		) a

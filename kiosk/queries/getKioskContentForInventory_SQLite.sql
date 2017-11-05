@@ -30,4 +30,5 @@ join (
     group by c."produktName"
   ) d
   using("produktName")
+where c.imVerkauf is 1
 order by c."produktName" asc

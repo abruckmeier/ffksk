@@ -61,5 +61,6 @@ from
 			group by produktpalette_id
 		) d
 		  on a.id = d.produktpalette_id
+		where a.imVerkauf is 1
 	) a
 ) a

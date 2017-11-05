@@ -21,6 +21,7 @@ from django.db.models import Max
 
 class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)
+	imVerkauf = models.BooleanField()
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
 	#kommentar = models.TextField(max_length=512,blank=True)

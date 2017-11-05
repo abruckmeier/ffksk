@@ -47,5 +47,5 @@ join (
   using(produktpalette_id,erstellt)
 ) e
   on b.id = e.produktpalette_id
-where c.id = %s
+where c.id = %s and b.imVerkauf is 1
 group by b."produktName"
