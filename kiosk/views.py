@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, render_to_response
+from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect, reverse
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
@@ -9,6 +9,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 
 from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm, RueckbuchungForm
+from .forms import NeuesProdukt_Palette, NeuesProdukt_Kommentar, NeuesProdukt_Kapazitaet, NeuesProdukt_Preis
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -21,9 +22,7 @@ from django.db import transaction
 
 from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation, slack_TestMsgToUser
 
-from jchart import Chart
-from jchart.config import Axes, DataSet, rgba
-
+from .charts import *
 
 
 # Create your views here.
@@ -103,14 +102,8 @@ def kauf_page(request):
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
 
-		# Hole den Kioskinhalt
-		kioskItems = Kiosk.getKioskContent()
-		# Einkaufsliste abfragen
-		einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		return HttpResponseRedirect(reverse('gekauft_page'))
 
-		return render(request,'kiosk/gekauft_page.html',
-			{'buySuccess': buySuccess,'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
 
 	else:
 		# Hole den Kioskinhalt
@@ -132,6 +125,19 @@ def kauf_page(request):
 		return render(request, 'kiosk/kauf_page.html', 
 			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems
 			, 'einkaufsliste': einkaufsliste, 'msg': msg, 'allowed': allowed})
+
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def gekauft_page(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste})
 
 
 def kontobewegungen_page(request):
@@ -198,19 +204,10 @@ def einkauf_vormerk_page(request):
 		else:
 
 			einkaufGroupID = request.POST.get("ekID")
-			vormerkSuccess = False
-			vormerkSuccess = Einkaufsliste.einkaufGroupVormerken(einkaufGroupID,currentUser.id)
+			Einkaufsliste.einkaufGroupVormerken(einkaufGroupID,currentUser.id)
 
-			# Hole die eigene Liste, welche einzukaufen ist
-			persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			return render(request,'kiosk/vorgemerkt_page.html',
-				{'vormerkSuccess': vormerkSuccess,'currentUser': currentUser,'persEinkaufsliste':persEinkaufsliste,'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			return HttpResponseRedirect(reverse('vorgemerkt_page'))
+			
 
 	# Es kommt ein Request herein, um naehre Informationen zu Produkten zu bekommen
 	elif request.method == "GET":
@@ -245,6 +242,23 @@ def einkauf_vormerk_page(request):
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'msg': msg, 'color': color})
 
 
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def vorgemerkt_page(request):
+	
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+	# Hole die eigene Liste, welche einzukaufen ist
+	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
+
+	return render(request,'kiosk/vorgemerkt_page.html',
+		{'currentUser': currentUser,'persEinkaufsliste':persEinkaufsliste,'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
 # Der Verwalter pflegt den Einkauf ins System ein
 @login_required
 @permission_required('profil.do_verwaltung',raise_exception=True)
@@ -264,7 +278,8 @@ def einkauf_annahme_page(request):
 			except:
 				pass
 
-		return HttpResponse(returnDict['returnHttp'])
+		request.session['annahme_data'] = returnDict['returnHttp']
+		return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
 
 	else:
 
@@ -294,6 +309,27 @@ def einkauf_annahme_page(request):
 				{'currentUser': currentUser, 'allUsers': allUsers,  
 				'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def einkauf_angenommen_page(request):
+
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'annahme_data' in request.session.keys():
+		annahme_data = request.session['annahme_data']
+		del request.session['annahme_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	annahme_data['currentUser'] = currentUser
+	annahme_data['kioskItems'] = kioskItems
+	annahme_data['einkaufsliste'] = einkaufsliste
+	return render(request,'kiosk/einkauf_angenommen_page.html',annahme_data)
 
 @login_required
 @permission_required('profil.do_admin_tasks',raise_exception=True)
@@ -326,7 +362,8 @@ def transaktion_page(request):
 				except:
 					pass
 
-			return HttpResponse(returnHttp['http'])
+			request.session['transaktion_data'] = returnHttp['returnDict']
+			return HttpResponseRedirect(reverse('transaktion_done_page'))
 			
 	# Besorge alle User
 	#allUsers = KioskUser.objects.filter(visible=True).order_by('username')
@@ -341,6 +378,29 @@ def transaktion_page(request):
 		{'user': currentUser, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'errorMsg': errorMsg})
+
+
+@login_required
+@permission_required('profil.do_admin_tasks',raise_exception=True)
+def transaktion_done_page(request):
+
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'transaktion_data' in request.session.keys():
+		transaktion_data = request.session['transaktion_data']
+		del request.session['transaktion_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	transaktion_data['currentUser'] = currentUser
+	transaktion_data['kioskItems'] = kioskItems
+	transaktion_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/transaktion_done_page.html',transaktion_data)
 
 
 # Anmelden neuer Nutzer, Light-Version: Jeder darf das tun, aber nur Basics, jeder wird Standardnutzer
@@ -386,8 +446,11 @@ def neuerNutzer_page(request):
 			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
 				try:
 					slack_PostWelcomeMessage(u)
+					msg += chr(10) + 'Dir wurde eine Nachricht per Slack zugesandt.'
 				except:
 					pass
+
+			return HttpResponseRedirect(reverse('home_page'))
 
 
 	form = UserErstellenForm()
@@ -439,7 +502,8 @@ def einzahlung_page(request):
 					except:
 						pass
 					
-				return HttpResponse(returnHttp['http'])
+				request.session['einzahlung_data'] = {'type':returnHttp['type'],'betrag':returnHttp['betrag']}
+				return HttpResponseRedirect(reverse('einzahlung_done_page'))
 			
 	# Besorge alle User
 	allUsers = readFromDatabase('getUsersForEinzahlung')
@@ -453,6 +517,29 @@ def einzahlung_page(request):
 		{'user': currentUser, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'errorMsg': errorMsg})
+
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def einzahlung_done_page(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'einzahlung_data' in request.session.keys():
+		einzahlung_data = request.session['einzahlung_data']
+		del request.session['einzahlung_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	einzahlung_data['currentUser'] = currentUser
+	einzahlung_data['kioskItems'] = kioskItems
+	einzahlung_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/einzahlung_done_page.html',einzahlung_data)
+
 
 
 @login_required
@@ -482,6 +569,8 @@ def meine_einkaufe_page(request):
 
 			# Testen, ob wieder Produkte auf die allgemeine Einkaufsliste muessen
 			checkKioskContentAndFillUp()
+
+		return HttpResponseRedirect(reverse('meine_einkaufe_page'))
 
 	
 	# Ausfuehren der normalen Seitendarstellung
@@ -551,9 +640,10 @@ def inventory(request):
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-		return render(request,'kiosk/inventory_conducted_page.html',
-			{'loss': loss, 'tooMuch':tooMuch,  'report': report,'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
+		request.session['inventory_data'] = {'loss': loss, 'tooMuch':tooMuch,  
+			'report': report,'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste}
+		return HttpResponseRedirect(reverse('inventory_done'))
 
 	
 	# Hole den Kioskinhalt
@@ -567,6 +657,26 @@ def inventory(request):
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}) 
 
 
+@login_required
+@permission_required('profil.do_verwaltung', raise_exception=True)
+def inventory_done(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'inventory_data' in request.session.keys():
+		inventory_data = request.session['inventory_data']
+		del request.session['inventory_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	inventory_data['currentUser'] = currentUser
+	inventory_data['kioskItems'] = kioskItems
+	inventory_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/inventory_conducted_page.html',inventory_data)
 
 
 @login_required
@@ -646,214 +756,6 @@ def statistics(request):
 
 
 
-class Chart_Un_Bezahlt(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now),str(timezone.now),str(timezone.now)])
-		for item in data:
-			if item['what'] == 'bezahlt': bezahlt = item['preis']
-			if item['what'] == 'Dieb': dieb = item['preis']
-		data = [bezahlt, dieb]
-
-		return [DataSet(
-			data = data,
-			backgroundColor = [rgba(0,255,0,0.2), rgba(255,0,0,0.2)]
-		)]
-
-	def get_labels(self, **kwargs):
-		return( ['bezahlter Warenwert in &#8364;', 'unbezahlter Warenwert in &#8364;'] )
-
-
-class Chart_UmsatzHistorie(Chart):
-	chart_type = 'line'
-	responsive = True
-	scales = {
-		'xAxes': [Axes(type='time', position='bottom')],
-		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Anteiliger Geldwert in %'}}]
-	}
-
-	def get_datasets(self, **kwargs):
-		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
-		data = []
-		for item in umsatzHistorie:
-			data.append(round(item['dieb'] / item['allesUmsatz']*100.0,1))
-		
-		return [DataSet(
-			data = data,
-			label = 'unbezahlter Geldwert (Entwicklung)',
-			backgroundColor = [rgba(0,0,255,0.2)]
-		)]
-
-	def get_labels(self, **kwargs):
-		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
-		data = []
-		for item in umsatzHistorie:
-			data.append(item['datum'])
-
-		return( data )
-
-
-class Chart_DaylyVkValue(Chart):
-	chart_type = 'line'
-	responsive = True
-	scales = {
-		'xAxes': [Axes(type='time', position='bottom')],
-		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in Euro'}}]
-	}
-
-	def get_datasets(self, **kwargs):
-		daylyVKValue = readFromDatabase('getDaylyVKValue')
-		data = []
-		for item in daylyVKValue:
-			data.append(item['dayly_value'])
-		
-		return [DataSet(
-			data = data,
-			label = 'taeglicher Umsatz im FfE-Kiosk',
-			backgroundColor = [rgba(65,143,190,0.5)]
-		)]
-
-	def get_labels(self, **kwargs):
-		daylyVKValue = readFromDatabase('getDaylyVKValue')
-		data = []
-		for item in daylyVKValue:
-			data.append(item['datum'])
-
-		return( data )
-
-
-class Chart_Profits(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-
-		vkValueKiosk = readFromDatabase('getKioskValue')
-		vkValueKiosk = vkValueKiosk[0]['value']
-		vkValueAll = readFromDatabase('getVkValueAll')
-		vkValueAll = vkValueAll[0]['value']
-		ekValueAll = readFromDatabase('getEkValueAll')
-		ekValueAll = ekValueAll[0]['value']
-		kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
-		kioskBankValue = kioskBankValue.stand / 100.0
-		theoAlloverProfit = vkValueAll - ekValueAll
-		theoProfit = vkValueKiosk + kioskBankValue
-		buyersProvision = round(theoAlloverProfit - theoProfit,2)
-		adminsProvision = 0
-		profitHandback = 0
-		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
-		for item in unBezahlt:
-			if item['what'] == 'Dieb': stolenValue = item['preis']
-		expProfit = round(theoProfit - stolenValue - adminsProvision - profitHandback,2)
-
-		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit]
-
-		return [DataSet(
-			data = data,
-			backgroundColor = [rgba(0,0,255,0.2), rgba(0,0,255,0.4), rgba(0,0,255,0.6), rgba(0,0,255,0.8), rgba(0,255,0,0.6)]
-		)]
-
-	def get_labels(self, **kwargs):
-		return( ['Provision der Eink&#228;fer in &#8364;', 'Provision f&#252;r Admin und Verwalter', 
-			'Gewinnaussch&#252;ttung', 'gestohlener Geldwert','erwarteter Gewinn'] )
-
-
-class Chart_ProductsWin(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-		products = readFromDatabase('getProductsStatistics')
-		data = []
-		for item in products:
-			data.append(round(item['gewinn'],2))
-
-		return [DataSet(
-			data = data,
-			backgroundColor = rgba(0,255,0,0.2)
-		)]
-
-	def get_labels(self, **kwargs):
-		products = readFromDatabase('getProductsStatistics')
-		data = []
-		for item in products:
-			data.append(item['name'])
-
-		return( data )
-
-class Chart_ProductsCount(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-		products = readFromDatabase('getProductsStatistics')
-		data = []
-		for item in products:
-			data.append(round(item['anzahl']))
-
-		return [DataSet(
-			data = data,
-			backgroundColor = rgba(0,255,0,0.2)
-		)]
-
-	def get_labels(self, **kwargs):
-		products = readFromDatabase('getProductsStatistics')
-		data = []
-		for item in products:
-			data.append(item['name'])
-
-		return( data )
-
-class Chart_Stolen_ProductsWin(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-		products = readFromDatabase('getProductsStolenStatistics')
-		data = []
-		for item in products:
-			data.append(round(item['stolen_vk'],2))
-
-		return [DataSet(
-			data = data,
-			backgroundColor = rgba(0,255,0,0.2)
-		)]
-
-	def get_labels(self, **kwargs):
-		products = readFromDatabase('getProductsStolenStatistics')
-		data = []
-		for item in products:
-			data.append(item['name'])
-
-		return( data )
-
-class Chart_StolenProductsShare(Chart):
-	chart_type = 'doughnut'
-	responsive = True
-
-	def get_datasets(self, **kwargs):
-		products = readFromDatabase('getProductsStolenStatistics')
-		data = []
-		for item in products:
-			data.append(round(item['rel_stolen'],1))
-
-		return [DataSet(
-			data = data,
-			backgroundColor = rgba(0,255,0,0.2)
-		)]
-
-	def get_labels(self, **kwargs):
-		products = readFromDatabase('getProductsStolenStatistics')
-		data = []
-		for item in products:
-			data.append(item['name'])
-
-		return( data )
-
-
 @login_required
 @permission_required('profil.do_einkauf',raise_exception=True)
 def produktKommentare(request):
@@ -885,6 +787,7 @@ def produktKommentieren(request, s):
 		k = Produktkommentar(produktpalette = p, kommentar = comment)
 		k.save()
 
+		return HttpResponseRedirect(reverse('produkt_kommentieren_page', kwargs={'s':s}))
 	
 	productID = s
 
@@ -903,7 +806,6 @@ def produktKommentieren(request, s):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'allCommentsOfProduct': allCommentsOfProduct, 
 		'productName': productName, 'productID': productID, 'latestComment': latestComment, })
-
 
 
 def anleitung(request):
@@ -929,8 +831,9 @@ def rueckbuchung(request):
 		currentUser = request.user
 		form = RueckbuchungForm(request.POST)
 
-		html = Gekauft.rueckbuchen(form,currentUser)
-		return HttpResponse(html)
+		session_data = Gekauft.rueckbuchen(form,currentUser)
+		request.session['rueckbuchung_done'] = session_data
+		return HttpResponseRedirect(reverse('rueckbuchung_done'))
 
 	else:
 
@@ -958,6 +861,27 @@ def rueckbuchung(request):
 	return render(request, 'kiosk/rueckbuchungen_page.html', 
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'allActiveUsers': allActiveUsers, })
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def rueckbuchung_done(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'rueckbuchung_done' in request.session.keys():
+		rueckbuchung_done = request.session['rueckbuchung_done']
+		del request.session['rueckbuchung_done']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	rueckbuchung_done['currentUser'] = currentUser
+	rueckbuchung_done['kioskItems'] = kioskItems
+	rueckbuchung_done['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/rueckbuchungen_done_page.html',rueckbuchung_done)
 
 
 

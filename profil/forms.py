@@ -19,9 +19,10 @@ class UserErstellenForm(forms.ModelForm):
 		labels = {
 			'username': _('Slack Name'),
 			'aktivBis': _('Angestellt bis'),
-			'positionFfE': _('Anstellung'),
+			'positionFfE': _('Anstellung als'),
 		}
 		help_texts = {
-			'username': _('')
+			'username': _('<small>Ohne Leerzeichen oder Umlaute einzugeben. Falls der Name dann vom Slack-Namen abweicht, den Administrator kontaktieren.</small>'),
+			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}
 

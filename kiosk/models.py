@@ -217,17 +217,8 @@ class ZumEinkaufVorgemerkt(models.Model):
 			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			
-
-			return {'returnHttp': render_to_string('kiosk/einkauf_angenommen_page.html',
-				{'gesPreis':gesPreis/100, 'user':currentUser,'userAnlieferer':userAnlieferer,
-				'produktName':produktName,'anzahlElemente':anzahlElemente,'kioskItems': kioskItems,
-					'einkaufsliste': einkaufsliste}),
+			return {'returnHttp': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username,
+				'produktName':produktName,'anzahlElemente':anzahlElemente},
 				'angeliefert': angeliefert}
 
 
@@ -375,10 +366,8 @@ class Gekauft(models.Model):
 			einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 			product = Produktpalette.objects.get(id=productID)
-
-			return render_to_string('kiosk/rueckbuchungen_done_page.html', 
-				{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-				'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product})
+			
+			return  {'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
 
 
 
@@ -467,10 +456,7 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return {'http': 
-					render_to_string('kiosk/transaktion_done_page.html',
-					{'userFrom':userFrom, 'user':currentUser,'userTo':userTo,
-					'betrag':betrag/100}),
+		return {'returnDict':{'betrag':betrag/100,'userFrom':userFrom.username,'userTo':userTo.username},
 				'type':'manTransaction',
 				'userFrom':userFrom,
 				'userTo':userTo,
@@ -504,11 +490,7 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return {'http': 
-					render_to_string('kiosk/einzahlung_done_page.html',
-					{'ezaz':ezaz, 'user':currentUser,
-					'betrag':betrag/100}),
-				'type':ezaz,
+		return {'type':ezaz,
 				'userFrom':userFrom,
 				'userTo':userTo,
 				'betrag':betrag/100,
