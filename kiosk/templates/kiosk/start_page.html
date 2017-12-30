@@ -39,27 +39,31 @@
 
 		<br>
 		<hr>
-
-		<b>Administrator: </b>{{ admins }}
-		<br>
-		<b>Verwalter: </b>{{ accountants }}
-		<br>
-
-		<br>
-		<hr>
-		<small>
-			<b>Eink&#228;ufer des Monats: </b>{{bestBuyers}}
+		
+		{% if perms.profil.do_einkauf %}
+		<b>Administrator: </b>
+		
+			{{ admins }}
 			<br>
-			<b>Verwalter des Monats: </b>{{bestVerwalter}}
+			<b>Verwalter: </b>{{ accountants }}
 			<br>
-			Dankeschön dafür!!!
-		</small>
 
-		<br>
-		<hr>
-		<div style="min-width: 300px;max-width: 500px;">
-			{{ chart_DaylyVkValue.as_html }}
-		</div>
+			<br>
+			<hr>
+			<small>
+				<b>Eink&#228;ufer des Monats: </b>{{bestBuyers}}
+				<br>
+				<b>Verwalter des Monats: </b>{{bestVerwalter}}
+				<br>
+				Dankeschön dafür!!!
+			</small>
+
+			<br>
+			<hr>
+			<div style="min-width: 300px;max-width: 500px;">
+				{{ chart_DaylyVkValue.as_html }}
+			</div>
+		{% endif %}
 
 
 	</div>
