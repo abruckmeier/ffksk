@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views, slackCommands
+from . import views, slackCommands, slackMessages
 
 urlpatterns = [
 	url(r'^$', views.start_page, name='start_page'),
@@ -30,4 +30,6 @@ urlpatterns = [
 	url(r'^menu/slackComTest$', views.slackComTest, name = 'slackComTest_page'),
 
 	url(r'^receiveSlackCommands/$', slackCommands.receiveSlackCommands, name = 'receiveSlackCommands'),
+	url(r'^receiveSlackMessages/$', slackMessages.receiveSlackMessages, name = 'receiveSlackMessages'),
+	
 ]

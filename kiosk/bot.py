@@ -16,7 +16,7 @@ def slack_TestMsgToUser(user):
 	if user.visible == False:
 		return
 
-	slack_token = getattr(settings,'SLACK_TOKEN')
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 
 	textToChannel = 'Hallo ' + str(user.first_name) + '!\n' + ':mailbox_with_mail: Das ist eine Testnachricht, die ich von deinem pers'+chr(246)+'nlichen Bereich im FfE-Kiosk gesendet habe. Da du das lesen kannst scheint die pers'+chr(246)+'nliche Benachrichtigung zu funktionieren!\n' + 'An dieser Stelle wirst du dann '+chr(252)+'ber deinen niedrigen (hohen) Kontostand und '+chr(252)+'ber besondere Kontobewegungen wie '+chr(220)+'berweisungen, Einzahlungen und Auszahlungen informiert.'
 
@@ -29,6 +29,10 @@ def slack_TestMsgToUser(user):
 		channel=userAdress,
 		text = textToChannel,
 	)
+	#print(sc.api_call("users.list",include_locale=True))
+	#print(sc.api_call("channels.list"))
+	#print(sc.api_call("conversations.info",channel="D7E1357DE"))
+	
 
 	return
 
@@ -43,7 +47,7 @@ def slack_PostTransactionInformation(info):
 	elif info['type'] == 'ausgezahlt':
 		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' von deinem Konto ausgezahlt.'
 
-	slack_token = getattr(settings,'SLACK_TOKEN')
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	sc = SlackClient(slack_token)
 
 	for user in [info['userFrom'], info['userTo']]:
@@ -70,7 +74,7 @@ def slack_PostWelcomeMessage(user):
 
 	userAdress = '@' + user.slackName
 
-	slack_token = getattr(settings,'SLACK_TOKEN')
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	sc = SlackClient(slack_token)
 	sc.api_call(
 		"chat.postMessage",
@@ -89,7 +93,7 @@ def slack_PostNewProductsInKioskToChannel(angeliefert):
 
 	textToChannel = ':tada: Frisch angeliefert: ' + ', '.join(ang) + ':grey_exclamation:'
 
-	slack_token = getattr(settings,'SLACK_TOKEN')
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	slackSettings = getattr(settings,'SLACK_SETTINGS')
 
 	sc = SlackClient(slack_token)
@@ -108,7 +112,7 @@ def slack_PostNewItemsInShoppingListToChannel(newItems):
 	if not newItems==set():
 		textToChannel = ':mailbox_with_mail: Neue Produkte in der Einkaufsliste: ' + ', '.join(newItems) + ':grey_exclamation:'
 
-		slack_token = getattr(settings,'SLACK_TOKEN')
+		slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 		slackSettings = getattr(settings,'SLACK_SETTINGS')
 
 		sc = SlackClient(slack_token)
@@ -131,7 +135,7 @@ def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
 	if user.visible == False:
 		return
 
-	slack_token = getattr(settings,'SLACK_TOKEN')
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	slackSettings = getattr(settings,'SLACK_SETTINGS')
 
 	if bankBalance > slackSettings['MaxBankBalance']:
