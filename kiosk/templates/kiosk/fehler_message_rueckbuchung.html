@@ -2,16 +2,15 @@
 
 {% block content %}
 	
-	<h4>Die &#220;berweisung wurde get&#228;tigt.</h4> 
-	<br>
+	<h4>Fehler!</h4>
 
 	<div class="eingerueckt">
-		Der Betrag von {{betrag | floatformat:2}} &#8364; wurde {{ type }}.
 
+		{{ message }}
 
 		<br><br>
 
-		<a href="{% url 'einzahlung_page' %}">Eine weitere Einzahlung / Auszahlung t&#228;tigen</a>
+		<a href="{% url 'rueckbuchungen_page' %}">zur&#252;ck zu R&#252;ckbuchungen</a>
 		<br>
 		<br>
 		<a href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
@@ -19,6 +18,5 @@
 		<a href="#" style="font-size:80%">Ausloggen</a>
 
 	</div>
-
 
 {% endblock %}

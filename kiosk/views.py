@@ -1,14 +1,15 @@
-from django.shortcuts import redirect, render, render_to_response
+from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect, reverse
 from django.db.models import Count
 from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt
-from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt
+from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
+from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm, ConfirmPW
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 
-from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm
+from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm, RueckbuchungForm
+from .forms import NeuesProdukt_Palette, NeuesProdukt_Kommentar, NeuesProdukt_Kapazitaet, NeuesProdukt_Preis
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -19,14 +20,44 @@ from .queries import readFromDatabase
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation, slack_TestMsgToUser
 
+from .charts import *
 
 
 # Create your views here.
 
 def start_page(request):
 	
+	# Einkaeufer des Monats
+	data = readFromDatabase('getEinkaeuferDesMonats')
+	bestBuyers = []
+	for item in data:
+		bestBuyers.append(item['first_name'] + ' ' + item['last_name'])
+	bestBuyers = ', '.join(bestBuyers)
+
+	# Verwalter des Monats
+	data = readFromDatabase('getVerwalterDesMonats')
+	bestVerwalter = []
+	for item in data:
+		bestVerwalter.append(item['first_name'] + ' ' + item['last_name'])
+	bestVerwalter = ', '.join(bestVerwalter)
+
+	# Administrator
+	data = KioskUser.objects.filter(visible=True, rechte='Admin')
+	admins = []
+	for item in data:
+		admins.append(item.first_name + ' ' + item.last_name)
+	admins = ', '.join(admins)
+
+	# Verwalter
+	data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+	accountants = []
+	for item in data:
+		accountants.append(item.first_name + ' ' + item.last_name)
+	accountants = ', '.join(accountants)
+	
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
@@ -34,7 +65,10 @@ def start_page(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
  
 	return render(request, 'kiosk/start_page.html', 
-		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
+		'admins': admins, 'accountants': accountants, 
+		'chart_DaylyVkValue': Chart_DaylyVkValue(), })
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
@@ -68,14 +102,8 @@ def kauf_page(request):
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
 
-		# Hole den Kioskinhalt
-		kioskItems = Kiosk.getKioskContent()
-		# Einkaufsliste abfragen
-		einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		return HttpResponseRedirect(reverse('gekauft_page'))
 
-		return render(request,'kiosk/gekauft_page.html',
-			{'buySuccess': buySuccess,'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
 
 	else:
 		# Hole den Kioskinhalt
@@ -97,6 +125,19 @@ def kauf_page(request):
 		return render(request, 'kiosk/kauf_page.html', 
 			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems
 			, 'einkaufsliste': einkaufsliste, 'msg': msg, 'allowed': allowed})
+
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def gekauft_page(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste})
 
 
 def kontobewegungen_page(request):
@@ -163,19 +204,10 @@ def einkauf_vormerk_page(request):
 		else:
 
 			einkaufGroupID = request.POST.get("ekID")
-			vormerkSuccess = False
-			vormerkSuccess = Einkaufsliste.einkaufGroupVormerken(einkaufGroupID,currentUser.id)
+			Einkaufsliste.einkaufGroupVormerken(einkaufGroupID,currentUser.id)
 
-			# Hole die eigene Liste, welche einzukaufen ist
-			persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			return render(request,'kiosk/vorgemerkt_page.html',
-				{'vormerkSuccess': vormerkSuccess,'currentUser': currentUser,'persEinkaufsliste':persEinkaufsliste,'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			return HttpResponseRedirect(reverse('vorgemerkt_page'))
+			
 
 	# Es kommt ein Request herein, um naehre Informationen zu Produkten zu bekommen
 	elif request.method == "GET":
@@ -210,6 +242,23 @@ def einkauf_vormerk_page(request):
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'msg': msg, 'color': color})
 
 
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def vorgemerkt_page(request):
+	
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+	# Hole die eigene Liste, welche einzukaufen ist
+	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
+
+	return render(request,'kiosk/vorgemerkt_page.html',
+		{'currentUser': currentUser,'persEinkaufsliste':persEinkaufsliste,'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
 # Der Verwalter pflegt den Einkauf ins System ein
 @login_required
 @permission_required('profil.do_verwaltung',raise_exception=True)
@@ -221,8 +270,16 @@ def einkauf_annahme_page(request):
 		form = EinkaufAnnahmeForm(request.POST)
 		currentUser = request.user
 
-		returnHttp = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
-		return HttpResponse(returnHttp)
+		returnDict = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
+
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+			try:
+				slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
+			except:
+				pass
+
+		request.session['annahme_data'] = returnDict['returnHttp']
+		return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
 
 	else:
 
@@ -254,6 +311,27 @@ def einkauf_annahme_page(request):
 
 
 @login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def einkauf_angenommen_page(request):
+
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'annahme_data' in request.session.keys():
+		annahme_data = request.session['annahme_data']
+		del request.session['annahme_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	annahme_data['currentUser'] = currentUser
+	annahme_data['kioskItems'] = kioskItems
+	annahme_data['einkaufsliste'] = einkaufsliste
+	return render(request,'kiosk/einkauf_angenommen_page.html',annahme_data)
+
+@login_required
 @permission_required('profil.do_admin_tasks',raise_exception=True)
 def transaktion_page(request):
 
@@ -277,7 +355,15 @@ def transaktion_page(request):
 
 		else:
 			returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
-			return HttpResponse(returnHttp)
+
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				try:
+					slack_PostTransactionInformation(returnHttp)
+				except:
+					pass
+
+			request.session['transaktion_data'] = returnHttp['returnDict']
+			return HttpResponseRedirect(reverse('transaktion_done_page'))
 			
 	# Besorge alle User
 	#allUsers = KioskUser.objects.filter(visible=True).order_by('username')
@@ -292,6 +378,29 @@ def transaktion_page(request):
 		{'user': currentUser, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'errorMsg': errorMsg})
+
+
+@login_required
+@permission_required('profil.do_admin_tasks',raise_exception=True)
+def transaktion_done_page(request):
+
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'transaktion_data' in request.session.keys():
+		transaktion_data = request.session['transaktion_data']
+		del request.session['transaktion_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	transaktion_data['currentUser'] = currentUser
+	transaktion_data['kioskItems'] = kioskItems
+	transaktion_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/transaktion_done_page.html',transaktion_data)
 
 
 # Anmelden neuer Nutzer, Light-Version: Jeder darf das tun, aber nur Basics, jeder wird Standardnutzer
@@ -333,6 +442,15 @@ def neuerNutzer_page(request):
 
 			msg = 'Nutzer wurde angelegt.'
 			color = '#00ff00'
+
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				try:
+					slack_PostWelcomeMessage(u)
+					msg += chr(10) + 'Dir wurde eine Nachricht per Slack zugesandt.'
+				except:
+					pass
+
+			return HttpResponseRedirect(reverse('home_page'))
 
 
 	form = UserErstellenForm()
@@ -377,7 +495,15 @@ def einzahlung_page(request):
 
 			else:
 				returnHttp = GeldTransaktionen.makeEinzahlung(form,currentUser)
-				return HttpResponse(returnHttp)
+
+				if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+					try:
+						slack_PostTransactionInformation(returnHttp)
+					except:
+						pass
+					
+				request.session['einzahlung_data'] = {'type':returnHttp['type'],'betrag':returnHttp['betrag']}
+				return HttpResponseRedirect(reverse('einzahlung_done_page'))
 			
 	# Besorge alle User
 	allUsers = readFromDatabase('getUsersForEinzahlung')
@@ -391,6 +517,29 @@ def einzahlung_page(request):
 		{'user': currentUser, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'errorMsg': errorMsg})
+
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def einzahlung_done_page(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'einzahlung_data' in request.session.keys():
+		einzahlung_data = request.session['einzahlung_data']
+		del request.session['einzahlung_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	einzahlung_data['currentUser'] = currentUser
+	einzahlung_data['kioskItems'] = kioskItems
+	einzahlung_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/einzahlung_done_page.html',einzahlung_data)
+
 
 
 @login_required
@@ -420,6 +569,8 @@ def meine_einkaufe_page(request):
 
 			# Testen, ob wieder Produkte auf die allgemeine Einkaufsliste muessen
 			checkKioskContentAndFillUp()
+
+		return HttpResponseRedirect(reverse('meine_einkaufe_page'))
 
 	
 	# Ausfuehren der normalen Seitendarstellung
@@ -489,9 +640,10 @@ def inventory(request):
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-		return render(request,'kiosk/inventory_conducted_page.html',
-			{'loss': loss, 'tooMuch':tooMuch,  'report': report,'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
+		request.session['inventory_data'] = {'loss': loss, 'tooMuch':tooMuch,  
+			'report': report,'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste}
+		return HttpResponseRedirect(reverse('inventory_done'))
 
 	
 	# Hole den Kioskinhalt
@@ -503,3 +655,248 @@ def inventory(request):
 	return render(request, 'kiosk/inventory_page.html', 
 		{'currentUser': currentUser, 'inventoryList': inventoryList,
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}) 
+
+
+@login_required
+@permission_required('profil.do_verwaltung', raise_exception=True)
+def inventory_done(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'inventory_data' in request.session.keys():
+		inventory_data = request.session['inventory_data']
+		del request.session['inventory_data']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	inventory_data['currentUser'] = currentUser
+	inventory_data['kioskItems'] = kioskItems
+	inventory_data['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/inventory_conducted_page.html',inventory_data)
+
+
+@login_required
+@permission_required('profil.do_admin_tasks',raise_exception=True)
+def statistics(request):
+
+	# Geldwerte
+	vkValueKiosk = readFromDatabase('getKioskValue')
+	vkValueKiosk = vkValueKiosk[0]['value']
+	vkValueAll = readFromDatabase('getVkValueAll')
+	vkValueAll = vkValueAll[0]['value']
+
+	ekValueKiosk = readFromDatabase('getKioskEkValue')
+	ekValueKiosk = ekValueKiosk[0]['value']
+	ekValueAll = readFromDatabase('getEkValueAll')
+	ekValueAll = ekValueAll[0]['value']
+
+	priceIncrease = round((vkValueAll-ekValueAll)/ekValueAll * 100.0, 1)
+
+	kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
+	kioskBankValue = kioskBankValue.stand / 100.0
+
+	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
+	bargeld = - bargeld.stand / 100.0
+
+	usersMoneyValue = readFromDatabase('getUsersMoneyValue')
+	usersMoneyValue = usersMoneyValue[0]['value']
+
+
+	# Bezahlte und unbezahlte Ware im Kiosk (Tabelle gekauft)
+	datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+	unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
+	for item in unBezahlt:
+		if item['what'] == 'bezahlt': vkValueBezahlt = item['preis']
+		if item['what'] == 'Dieb': stolenValue = item['preis']
+		if item['what'] == 'alle': vkValueGekauft = item['preis']
+
+
+	# Gewinn & Verlust
+	theoAlloverProfit = vkValueAll - ekValueAll
+	theoProfit = vkValueKiosk + kioskBankValue
+	buyersProvision = theoAlloverProfit - theoProfit
+
+	adminsProvision = 0
+	profitHandback = 0
+
+	expProfit = theoProfit - stolenValue - adminsProvision - profitHandback
+
+	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue
+	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/statistics_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'chart_Un_Bezahlt': Chart_Un_Bezahlt(), 
+		'chart_UmsatzHistorie': Chart_UmsatzHistorie(),
+		'chart_DaylyVkValue': Chart_DaylyVkValue(),
+		'chart_Profits': Chart_Profits(),
+		'chart_ProductsWin': Chart_ProductsWin(),
+		'chart_ProductsCount': Chart_ProductsCount(),
+		'chart_Stolen_ProductsWin': Chart_Stolen_ProductsWin(),
+		'chart_StolenProductsShare': Chart_StolenProductsShare(),
+		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft, 
+		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0, 
+		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue, 
+		'vkValueAll': vkValueAll, 'ekValueAll': ekValueAll, 'ekValueKiosk': ekValueKiosk,
+		'bargeld': bargeld, 'usersMoneyValue': usersMoneyValue, 
+		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit, 
+		'theoProfit': theoProfit, 'buyersProvision': buyersProvision, 
+		'adminsProvision': adminsProvision, 'profitHandback': profitHandback, 
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit}) 
+
+
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def produktKommentare(request):
+
+	# Besorge Liste aller Produktkommentare
+	allProductComments = readFromDatabase('getAllProductComments')
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/produkt_kommentare_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allProductComments': allProductComments, })
+
+
+@login_required
+@permission_required('profil.do_einkauf',raise_exception=True)
+def produktKommentieren(request, s):
+	
+	# Processing a new comment from the site
+	if request.method == "POST":
+		productID = int(request.POST.get("productID"))
+		comment = request.POST.get("kommentar")
+
+		p = Produktpalette.objects.get(id=productID)
+		k = Produktkommentar(produktpalette = p, kommentar = comment)
+		k.save()
+
+		return HttpResponseRedirect(reverse('produkt_kommentieren_page', kwargs={'s':s}))
+	
+	productID = s
+
+	# Besorge Liste aller Produktkommentare
+	allCommentsOfProduct = readFromDatabase('getAllCommentsOfProduct',[productID])
+	productName = allCommentsOfProduct[0]["produkt_name"]
+	latestComment = allCommentsOfProduct[0]["kommentar"]
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/produkt_kommentieren_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allCommentsOfProduct': allCommentsOfProduct, 
+		'productName': productName, 'productID': productID, 'latestComment': latestComment, })
+
+
+def anleitung(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/anleitung_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def rueckbuchung(request):
+
+	currentUser = request.user
+
+	if request.method == "POST":
+
+		currentUser = request.user
+		form = RueckbuchungForm(request.POST)
+
+		session_data = Gekauft.rueckbuchen(form,currentUser)
+		request.session['rueckbuchung_done'] = session_data
+		return HttpResponseRedirect(reverse('rueckbuchung_done'))
+
+	else:
+
+		if not request.GET.get("getUserData") is None:
+			# Kaeufer wurde ausgewaehlt, jetzt wird die Liste seiner Einkaeufe ausgegeben.
+			userID = request.GET.get("userID")
+			userName = KioskUser.objects.get(id=userID)
+			seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
+
+			html = render_to_string('kiosk/rueckbuchungen_gekauft_liste.html',{'userID': userID, 'userName': userName, 'seineKaeufe': seineKaeufe})
+			return HttpResponse(html)
+
+
+	# Abfrage aller Nutzer
+	allActiveUsers = KioskUser.objects.filter(is_active=True,visible=True)
+	dieb = KioskUser.objects.filter(username='Dieb')
+	allActiveUsers = allActiveUsers.union(dieb)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/rueckbuchungen_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'allActiveUsers': allActiveUsers, })
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def rueckbuchung_done(request):
+	currentUser = request.user
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	if 'rueckbuchung_done' in request.session.keys():
+		rueckbuchung_done = request.session['rueckbuchung_done']
+		del request.session['rueckbuchung_done']
+	else:
+		return HttpResponseRedirect(reverse('home_page'))
+
+	rueckbuchung_done['currentUser'] = currentUser
+	rueckbuchung_done['kioskItems'] = kioskItems
+	rueckbuchung_done['einkaufsliste'] = einkaufsliste
+
+	return render(request,'kiosk/rueckbuchungen_done_page.html',rueckbuchung_done)
+
+
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def slackComTest(request):
+
+	currentUser = request.user
+	slack_TestMsgToUser(currentUser)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/slackComTest_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})

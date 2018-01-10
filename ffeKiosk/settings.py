@@ -24,13 +24,21 @@ except:
     raise Exception("No security_settings.py found")
 
 
-# Angabe, welche Datenbasis verwendet wird (für 'queries.py')
+# Angabe, welche Datenbasis verwendet wird (fuer 'queries.py')
 DB_IN_USE = 'SQLite' #'SQLite'
+
+ACTIVATE_SLACK_INTERACTION = True
+SLACK_SETTINGS = {
+    'channelToPost': '#kiosk',
+    'MaxBankBalance': 3000, # Cent
+    'MinBankBalance': 100, # Cent
+}
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jchart',
     'django.contrib.humanize',
     'kiosk.apps.KioskConfig',
     'profil.apps.ProfilConfig',

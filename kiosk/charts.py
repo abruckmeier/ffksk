@@ -1,0 +1,216 @@
+from kiosk.queries import readFromDatabase
+from django.utils import timezone
+from .models import Kontostand
+
+from jchart import Chart
+from jchart.config import Axes, DataSet, rgba
+
+
+
+class Chart_Un_Bezahlt(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now),str(timezone.now),str(timezone.now)])
+		for item in data:
+			if item['what'] == 'bezahlt': bezahlt = item['preis']
+			if item['what'] == 'Dieb': dieb = item['preis']
+		data = [bezahlt, dieb]
+
+		return [DataSet(
+			data = data,
+			backgroundColor = [rgba(0,255,0,0.2), rgba(255,0,0,0.2)]
+		)]
+
+	def get_labels(self, **kwargs):
+		return( ['bezahlter Warenwert in &#8364;', 'unbezahlter Warenwert in &#8364;'] )
+
+
+class Chart_UmsatzHistorie(Chart):
+	chart_type = 'line'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Anteiliger Geldwert in %'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
+		data = []
+		for item in umsatzHistorie:
+			data.append(round(item['dieb'] / item['allesUmsatz']*100.0,1))
+		
+		return [DataSet(
+			data = data,
+			label = 'unbezahlter Geldwert (Entwicklung)',
+			backgroundColor = [rgba(0,0,255,0.2)]
+		)]
+
+	def get_labels(self, **kwargs):
+		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
+		data = []
+		for item in umsatzHistorie:
+			data.append(item['datum'])
+
+		return( data )
+
+
+class Chart_DaylyVkValue(Chart):
+	chart_type = 'line'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in Euro'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		daylyVKValue = readFromDatabase('getDaylyVKValue')
+		data = []
+		for item in daylyVKValue:
+			data.append(item['dayly_value'])
+		
+		return [DataSet(
+			data = data,
+			label = 'taeglicher Umsatz im FfE-Kiosk',
+			backgroundColor = [rgba(65,143,190,0.5)]
+		)]
+
+	def get_labels(self, **kwargs):
+		daylyVKValue = readFromDatabase('getDaylyVKValue')
+		data = []
+		for item in daylyVKValue:
+			data.append(item['datum'])
+
+		return( data )
+
+
+class Chart_Profits(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+
+		vkValueKiosk = readFromDatabase('getKioskValue')
+		vkValueKiosk = vkValueKiosk[0]['value']
+		vkValueAll = readFromDatabase('getVkValueAll')
+		vkValueAll = vkValueAll[0]['value']
+		ekValueAll = readFromDatabase('getEkValueAll')
+		ekValueAll = ekValueAll[0]['value']
+		kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
+		kioskBankValue = kioskBankValue.stand / 100.0
+		theoAlloverProfit = vkValueAll - ekValueAll
+		theoProfit = vkValueKiosk + kioskBankValue
+		buyersProvision = round(theoAlloverProfit - theoProfit,2)
+		adminsProvision = 0
+		profitHandback = 0
+		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
+		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
+		for item in unBezahlt:
+			if item['what'] == 'Dieb': stolenValue = item['preis']
+		expProfit = round(theoProfit - stolenValue - adminsProvision - profitHandback,2)
+
+		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit]
+
+		return [DataSet(
+			data = data,
+			backgroundColor = [rgba(0,0,255,0.2), rgba(0,0,255,0.4), rgba(0,0,255,0.6), rgba(0,0,255,0.8), rgba(0,255,0,0.6)]
+		)]
+
+	def get_labels(self, **kwargs):
+		return( ['Provision der Eink&#228;fer in &#8364;', 'Provision f&#252;r Admin und Verwalter', 
+			'Gewinnaussch&#252;ttung', 'gestohlener Geldwert','erwarteter Gewinn'] )
+
+
+class Chart_ProductsWin(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['gewinn'],2))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_ProductsCount(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['anzahl']))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_Stolen_ProductsWin(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['stolen_vk'],2))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+
+class Chart_StolenProductsShare(Chart):
+	chart_type = 'doughnut'
+	responsive = True
+
+	def get_datasets(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(round(item['rel_stolen'],1))
+
+		return [DataSet(
+			data = data,
+			backgroundColor = rgba(0,255,0,0.2)
+		)]
+
+	def get_labels(self, **kwargs):
+		products = readFromDatabase('getProductsStolenStatistics')
+		data = []
+		for item in products:
+			data.append(item['name'])
+
+		return( data )
+

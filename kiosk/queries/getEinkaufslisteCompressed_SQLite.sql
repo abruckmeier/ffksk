@@ -12,7 +12,7 @@ from (
 		select 
 		  c."gruppenID",
 		  b."produktName",
-		  b.kommentar,
+		  e.kommentar,
 		  count(*) as anzahlElemente,
 		  d.verkaufspreis
 		from
@@ -41,6 +41,24 @@ from (
 		  using (produktpalette_id,"gueltigAb")
 		) d
 		  using (produktpalette_ID)
+		join (
+		  select
+		    produktpalette_id,
+		    erstellt,
+		    kommentar
+		  from kiosk_produktkommentar
+		  join (
+		    select
+		      produktpalette_id,
+		      max(erstellt) as erstellt
+		    from kiosk_produktkommentar
+		    where erstellt < current_timestamp
+		    group by produktpalette_id  
+		  )
+		  using(produktpalette_id,erstellt)
+		) e
+		  on b.id = e.produktpalette_id
+		where b.imVerkauf is 1
 		group by c."gruppenID", b."produktName"
 		order by b."produktName"
 		) a

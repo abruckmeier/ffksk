@@ -23,3 +23,9 @@ class EinzahlungenForm(forms.Form):
 	typ = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect())
 	betrag = forms.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(0)])
 	kommentar = forms.CharField(max_length=500,required=False)
+
+class RueckbuchungForm(forms.Form):
+	userID = forms.IntegerField()
+	productID = forms.IntegerField()
+	anzahlElemente = forms.IntegerField()
+	anzahlZurueck = forms.IntegerField()

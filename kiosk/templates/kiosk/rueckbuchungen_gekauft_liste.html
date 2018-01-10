@@ -1,0 +1,23 @@
+
+	<hr>
+	<h4>K&#228;ufe von {{userName.username}}</h4>
+
+	<div class="eingerueckt">
+
+		<p class="itemsDef">
+			Item | #
+		</p>
+
+		<div class="dropdownt">
+			<button class="dropbtnt">Gekaufte Ware</button>
+			<div class="dropdown-contentt">
+				{% for item in seineKaeufe %}
+					<a href="#" onclick="goOnWithWare('{{item.produkt_name}}', {{item.produkt_id}},{{item.anzahl_gekauft}},{{userName.id}})">
+						{{item.produkt_name}} | {{item.anzahl_gekauft}}
+					</a>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	

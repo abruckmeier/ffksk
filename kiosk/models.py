@@ -14,17 +14,29 @@ from .queries import readFromDatabase
 from django.db.models import Max
 
 
+
+
 # Create your models here.
 
 
 class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)
+	imVerkauf = models.BooleanField()
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
-	kommentar = models.TextField(max_length=512,blank=True)
+	#kommentar = models.TextField(max_length=512,blank=True)
+	farbeFuerPlot = models.TextField(max_length=7,blank=True)
 
 	def __str__(self):
 		return ('ID ' + str(self.id) + ': ' + self.produktName)
+
+class Produktkommentar(models.Model):
+	produktpalette = models.ForeignKey(Produktpalette, on_delete=models.CASCADE)
+	erstellt = models.DateTimeField(auto_now_add=timezone.now)
+	kommentar = models.TextField(max_length=512,blank=True)
+
+	def __str__(self):
+		return (self.produktpalette.produktName + ' (' + str(self.erstellt) + ' )')
 
 
 class Kioskkapazitaet(models.Model):
@@ -205,15 +217,9 @@ class ZumEinkaufVorgemerkt(models.Model):
 			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			return render_to_string('kiosk/einkauf_angenommen_page.html',
-				{'gesPreis':gesPreis/100, 'user':currentUser,'userAnlieferer':userAnlieferer,
-				'produktName':produktName,'anzahlElemente':anzahlElemente,'kioskItems': kioskItems,
-					'einkaufsliste': einkaufsliste})
+			return {'returnHttp': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username,
+				'produktName':produktName,'anzahlElemente':anzahlElemente},
+				'angeliefert': angeliefert}
 
 
 class Kiosk(models.Model):
@@ -298,6 +304,80 @@ class Gekauft(models.Model):
 			str(self.kaeufer) + " um " + str(self.gekauftUm))
 
 
+	@transaction.atomic
+	def rueckbuchen(form, currentUser):
+
+		eingabefehler = False
+
+		# Checken, ob Eingaben syntaktisch korrekt sind
+		if not form.is_valid():
+
+			errorMsg = "Fehler in Eingabe. Wurde eine korrekte Anzahl eingegeben?"
+			eingabefehler = True
+		else:
+			userID = int(form['userID'].value())
+			productID = int(form['productID'].value())
+			anzahlElemente = int(form['anzahlElemente'].value())
+			anzahlZurueck = int(form['anzahlZurueck'].value())
+
+			# Pruefen, ob nicht mehr zurueck gegeben werden soll, als gekauft wurde
+			if anzahlZurueck > anzahlElemente:
+				errorMsg = "Die Anzahl zur"+chr(252)+"ckzubuchender Elemente ist zu gro"+chr(223)+"."
+				eingabefehler = True
+
+		if eingabefehler == True:
+
+			# Hole den Kioskinhalt
+			kioskItems = Kiosk.getKioskContent()
+			# Einkaufsliste abfragen
+			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
+			return render_to_string('kiosk/fehler_message_rueckbuchung.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			
+			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
+
+		else:
+
+			productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
+
+			price = 0
+			for item in productsToMove:
+				k = Kiosk(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
+					bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
+					einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
+					verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis)
+				k.save()
+				k.geliefertUm = item.geliefertUm
+				k.save()
+				price = price + item.verkaufspreis
+
+				userBank = KioskUser.objects.get(username='Bank')
+				user = KioskUser.objects.get(id=userID)
+				GeldTransaktionen.doTransaction(userBank,user,item.verkaufspreis,timezone.now,
+					"R"+chr(252)+"ckbuchung Kauf von " + item.produktpalette.produktName)
+
+				item.delete()
+				
+
+			# Hole den Kioskinhalt
+			kioskItems = Kiosk.getKioskContent()
+			# Einkaufsliste abfragen
+			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+			product = Produktpalette.objects.get(id=productID)
+			
+			return  {'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
+
+
+
+
+from .bot import slack_MsgToUserAboutNonNormalBankBalance
+
+
+
+
+
 class GeldTransaktionen(models.Model):
 	AutoTrans_ID = models.AutoField(primary_key=True)
 	vonnutzer = models.ForeignKey(
@@ -338,7 +418,6 @@ class GeldTransaktionen(models.Model):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
 		# Besorge den Kontostand des 'vonNutzer' und addiere neuen Wert
-		print(t.betrag)
 		vonNutzerKonto = Kontostand.objects.get(nutzer_id=t.vonnutzer)
 		vonNutzerKonto.stand = vonNutzerKonto.stand - t.betrag
 		vonNutzerKonto.save()
@@ -349,6 +428,15 @@ class GeldTransaktionen(models.Model):
 		zuNutzerKonto.save()
 
 		t.save()
+
+		# Message to the users if their bank balance becomes too high / too low
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+			try:
+				slack_MsgToUserAboutNonNormalBankBalance(t.vonnutzer.id, vonNutzerKonto.stand)
+				slack_MsgToUserAboutNonNormalBankBalance(t.zunutzer.id, zuNutzerKonto.stand)
+			except:
+				pass
+
 
 
 	@transaction.atomic
@@ -368,9 +456,13 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return render_to_string('kiosk/transaktion_done_page.html',
-			{'userFrom':userFrom, 'user':currentUser,'userTo':userTo,
-			'betrag':betrag/100})
+		return {'returnDict':{'betrag':betrag/100,'userFrom':userFrom.username,'userTo':userTo.username},
+				'type':'manTransaction',
+				'userFrom':userFrom,
+				'userTo':userTo,
+				'betrag':betrag/100,
+				'user':currentUser
+				}
 
 
 	@transaction.atomic
@@ -398,9 +490,12 @@ class GeldTransaktionen(models.Model):
 		GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
 			betrag=betrag, datum=timezone.now(), kommentar=kommentar)
 
-		return render_to_string('kiosk/einzahlung_done_page.html',
-			{'ezaz':ezaz, 'user':currentUser,
-			'betrag':betrag/100})
+		return {'type':ezaz,
+				'userFrom':userFrom,
+				'userTo':userTo,
+				'betrag':betrag/100,
+				'user':currentUser
+				}
 
 
 

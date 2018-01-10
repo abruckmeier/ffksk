@@ -1,0 +1,156 @@
+{% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
+
+{% block content %}
+	
+	<h4> Statistiken </h4>
+	<br>
+	<div class="eingerueckt">
+
+		<h5> Geldwerte </h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td>
+					<small>
+						Warenverkaufswert im Kiosk (und gekauft): {{vkValueKiosk | floatformat:2}} &#8364; ({{vkValueAll | floatformat:2}} &#8364;) <br>
+						Wareneinkaufswert im Kiosk (und gekauft): {{ekValueKiosk | floatformat:2}} &#8364; ({{ekValueAll | floatformat:2}} &#8364;)<br>
+						Durchschn. Preiserh&#246;hung: {{priceIncrease | floatformat:1}} % <br>
+						Geldwert auf der Kiosk-Bank: {{kioskBankValue | floatformat:2}} &#8364; <br>
+						Bargeld: {{bargeld | floatformat:2}} &#8364; <br>
+						Geldwert auf Konten realer Nutzer: {{usersMoneyValue | floatformat:2}} &#8364; <br>
+						Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; <br>
+					</small>
+					</td>
+					<td>
+						<div style="min-width: 300px;max-width: 500px;">
+							{{ chart_DaylyVkValue.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<br><br>
+
+		<h5> Umsatz & Anteil unbezahlter Ware </h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td>
+						<small>
+						Im Kiosk gekaufter/gestohlener Warenwert: {{vkValueGekauft | floatformat:2}} &#8364; <br>
+						bezahlter Warenwert: {{vkValueBezahlt | floatformat:2}} &#8364; <b>({{relBezahlt|floatformat:1}} %)</b><br>
+						unbezahlter Warenwert: {{stolenValue | floatformat:2}} &#8364; <b>({{relDieb|floatformat:1}} %)</b><br>
+						</small>
+					</td>
+					<td>
+						<div style="min-width: 300px;max-width: 500px;">
+							{{chart_Un_Bezahlt.as_html}}
+						</div>
+					</td>
+					<td>
+						<div style="min-width: 300px;max-width: 500px;">
+							{{chart_UmsatzHistorie.as_html}}
+						</div>
+					</td>
+				</tr>
+			</table>
+
+		</div>
+
+		<br><br>
+
+		<h5> Gewinn & Verlust </h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td>
+					<small>
+						Theoretischer Gesamtprofit: {{theoAlloverProfit | floatformat:2}} &#8364; <br>
+						Provisionen f&#252;r Eink&#228;ufer: {{buyersProvision | floatformat:2}} &#8364; <br>
+						Theoretischer Gewinn des Kiosks: {{theoProfit | floatformat:2}} &#8364; <br>
+						Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; <br>
+						Provisionen f&#252;r Admin und Verwalter: {{adminsProvision | floatformat:2}} &#8364; <br>
+						Gewinnaussch&#252;ttungen f&#252;r Nutzer: {{profitHandback | floatformat:2}} &#8364; <br>
+						Erwarteter Gewinn des Kiosks: {{expProfit | floatformat:2}} &#8364; <br>
+						<br>
+						Bilanzcheck (Check der Kontost&#228;nde): {{bilanzCheck | floatformat:2}} &#8364; <br>
+						Gegencheck Erwarteter Gewinn: {{checkExpProfit | floatformat:2}} &#8364; <br>
+					</small>
+					</td>
+					<td>
+						<div style="min-width: 300px;max-width: 500px;">
+							{{ chart_Profits.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<br><br>
+
+		<h5> Prduktstatistik (bezahlte Produkte)</h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td style="width:50%;">
+						Gesamtgewinn der Produkte in &#8364;:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_ProductsWin.as_html }}
+						</div>
+					</td>
+					<td style="width:50%;">
+						Anzahl gekaufter Produkte:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_ProductsCount.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<br><br>
+
+		<h5> Prduktstatistik (unbezahlte Produkte)</h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td style="width:50%;">
+						Unbezahlter Wert der Produkte in &#8364;:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_Stolen_ProductsWin.as_html }}
+						</div>
+					</td>
+					<td style="width:50%;">
+						Anteil unbezahlter Produkte in %:<br>
+						<div style="min-width: 300px;max-width: 800px;">
+							{{ chart_StolenProductsShare.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+	</div>
+
+	
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+
+	
+
+
+{% endblock %}

@@ -15,4 +15,4 @@ join (
   using (produktpalette_id,"gueltigAb")
 join kiosk_produktpalette c
     on a.produktpalette_id = c.id
-where c."produktName" = %s
+where c."produktName" = %s and c.imVerkauf is 1

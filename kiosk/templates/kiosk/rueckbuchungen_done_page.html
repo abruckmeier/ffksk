@@ -1,0 +1,25 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h4>Die R&#252;ckbuchung wurde durchgef&#252;hrt</h4> 
+	<br>
+
+	<div class="eingerueckt">
+		{{anzahlZurueck}} {{product}} wurden ins Kiosk zur&#252;ck verbucht.<br>
+		Der Betrag von {{price | floatformat:2}} &#8364; wurde gutgeschrieben.
+
+
+		<br><br>
+
+		<a href="{% url 'rueckbuchungen_page' %}">Eine weitere  R&#252;ckbuchung durchf&#252;hren</a>
+		<br>
+		<br>
+		<a href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
+		<br><br>
+		<a href="#" style="font-size:80%">Ausloggen</a>
+
+	</div>
+
+
+{% endblock %}

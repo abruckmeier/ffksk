@@ -18,6 +18,7 @@ from (
 			    on a.produktpalette_ID = b.ID
 			  join kiosk_einkaufslistegroups c
 			    on a."kiosk_ID" = c."einkaufslistenItem_id"
+			  where b.imVerkauf is 1
 			  group by c."gruppenID", b."produktName"
 		)
 	)
