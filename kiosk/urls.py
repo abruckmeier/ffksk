@@ -27,6 +27,7 @@ urlpatterns = [
 	url(r'^menu/anleitung$', views.anleitung, name = 'anleitung_page'),
 	url(r'^menu/rueckbuchung$', views.rueckbuchung, name = 'rueckbuchungen_page'),
 	url(r'^menu/rueckbuchungdone$', views.rueckbuchung_done, name = 'rueckbuchung_done'),
+	url(r'^menu/neuesProdukt$', views.neuesProdukt, name = 'neuesProdukt_page'),
 	url(r'^menu/slackComTest$', views.slackComTest, name = 'slackComTest_page'),
 
 	url(r'^receiveSlackCommands/$', slackCommands.receiveSlackCommands, name = 'receiveSlackCommands'),

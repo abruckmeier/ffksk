@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import MinValueValidator
+from  .models import Produktpalette, Produktkommentar, Kioskkapazitaet, ProduktVerkaufspreise
 
 
 class EinkaufAnnahmeForm(forms.Form):
@@ -29,3 +30,24 @@ class RueckbuchungForm(forms.Form):
 	productID = forms.IntegerField()
 	anzahlElemente = forms.IntegerField()
 	anzahlZurueck = forms.IntegerField()
+
+
+class NeuesProdukt_Palette(forms.ModelForm):
+	class Meta:
+		model = Produktpalette
+		fields = ('produktName',)
+
+class NeuesProdukt_Kommentar(forms.ModelForm):
+	class Meta:
+		model = Produktkommentar
+		fields = ('kommentar',)
+
+class NeuesProdukt_Kapazitaet(forms.ModelForm):
+	class Meta:
+		model = Kioskkapazitaet
+		fields = ('maxKapazitaet','schwelleMeldung','paketgroesseInListe')
+
+class NeuesProdukt_Preis(forms.ModelForm):
+	class Meta:
+		model = ProduktVerkaufspreise
+		fields = ('verkaufspreis',)

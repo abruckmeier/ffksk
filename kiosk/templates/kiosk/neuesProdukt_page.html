@@ -1,0 +1,34 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<h3> Neues Produkt anlegen </h3>
+
+	<div class="eingerueckt">
+
+		<div style="color: {{ color }};">
+			<br>
+			{{msg}}
+			<br><br>
+		</div>
+		
+		<form method="POST">{% csrf_token %}
+			
+			<table>
+				{{ formPalette.as_table }}
+				{{ formKommentar.as_table }}
+				{{ formKapazitaet.as_table }}
+				{{ formPreis.as_table }}
+			</table>
+
+			<br>
+			<button type="submit" class="save btn btn-default">Produkt anlegen</button>
+
+		</form>
+	
+	</div>
+
+	<hr>
+	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+{% endblock %}

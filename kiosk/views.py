@@ -884,6 +884,33 @@ def rueckbuchung_done(request):
 	return render(request,'kiosk/rueckbuchungen_done_page.html',rueckbuchung_done)
 
 
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def neuesProdukt(request):
+
+	currentUser = request.user
+
+	if request.method == "POST":
+		pass
+
+	
+	formPalette = NeuesProdukt_Palette()
+	formKommentar =  NeuesProdukt_Kommentar()
+	formKapazitaet = NeuesProdukt_Kapazitaet()
+	formPreis = NeuesProdukt_Preis()
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/neuesProdukt_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		 'formPalette':formPalette, 'formKommentar':formKommentar, 
+		 'formKapazitaet':formKapazitaet, 'formPreis':formPreis,
+		 'msg': '', 'color':'black', })
+
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
