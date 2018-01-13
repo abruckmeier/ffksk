@@ -6,6 +6,9 @@ from slackclient import SlackClient
 from threading import Thread
 
 from .models import Produktpalette
+from profil.models import KioskUser
+
+from .queries import readFromDatabase
 
 import requests
 
@@ -41,10 +44,28 @@ def receiveSlackCommands(request):
 # Process the command '/kiosk'
 def process_kiosk(message):
 
-	commandText = message.get('text')
-	commandText = commandText.split(' ')
+	# Check if the user has an account in the kiosk
+	if not KioskUser.objects.filter(slackName=message.get('user_name'), visible=True):
+		attach = {
+			'attachments': [
+				{
+					'text': '',
+					'callback_id': 'kiosk_buy_no_Connection',
+					'attachment_type': 'default',
+					'actions': [
+						{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
+					]
+				}
+			]
+		}
+		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem  FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', attach)
+
+		# Weiter gehts bei slackMessages.receiveSlackCommands, wo die Antwort weiterverarbeitet wird.
+		return
 
 	# Find the command 'buy'
+	commandText = message.get('text')
+	commandText = commandText.split(' ')
 	command = [x for x in commandText if x in ['Kaufen','Kauf','kauf','kaufen','Buy','buy','Buying','buying']]
 	if not command==[]:
 		process_kiosk_buy(message, commandText, command[0])
@@ -78,53 +99,74 @@ def process_kiosk_buy(message, commandText, command):
 
 	# Search for the item with a 100 percent accordance
 	itemAccordance = None
-	itemToBuy = Produktpalette.objects.filter(produktName=rawItemToBuy)
+	itemToBuy = Produktpalette.objects.filter(produktName=rawItemToBuy, imVerkauf=True)
 	if len(itemToBuy)==1: itemAccordance = 1
 
 	# Search for the item with a likeness-query
 	if itemAccordance is None:
-		itemToBuy = Produktpalette.objects.filter(produktName__contains=rawItemToBuy)
+		itemToBuy = Produktpalette.objects.filter(produktName__icontains=rawItemToBuy, imVerkauf=True)
 		if len(itemToBuy)>=1: itemAccordance = 0.5
 
 	# Search for the item with only parts of the string
 	if itemAccordance is None:
 		for i in range(len(rawItemToBuy)-1,2,-1):
-			itemToBuy = Produktpalette.objects.filter(produktName__contains=rawItemToBuy[0:i])
+			itemToBuy = Produktpalette.objects.filter(produktName__icontains=rawItemToBuy[0:i], imVerkauf=True)
 			if len(itemToBuy)>=1: 
 				itemAccordance = 0.25
 				break
 
+	# If no match was made, give back the complete list
+	if itemAccordance is None:
+		itemToBuy = Produktpalette.objects.filter(imVerkauf=True).order_by('produktName')
+
+	# Create list of products plus price for selection
+	txts = []
+	for v in itemToBuy:
+		prices = readFromDatabase('getProductNameAndPriceById',[v.id])
+		txt = str(v.produktName) + ' | ' + '%.2f' % (prices[0]['verkaufspreis']/100.0) + ' ' + chr(8364)
+		txts.append({'text': txt, 'value': v.id})
+
+	# Prepare the selection and the button
+	actionSelection = {'name': 'product_list','text': 'Auswahl ...', 'type': 'select', 'options': txts}
+	actionButton = {'name': 'ConfirmOneItem', 'text': txts[0]['text'],'type': 'button','value': txts[0]['value']}
+
 	# Send messages to respond
 	if itemAccordance is None:
 		# There is no accordance -> Give the complete products to select
-		pass
+		text = 'Was m'+chr(246)+'chtest Du kaufen? Ich konnte dich nicht verstehen und gebe dir die komplette Produktpalette zur Auswahl.'
+		action = actionSelection
+
 	elif itemAccordance==1 or len(itemToBuy)==1:
 		# One item has been found. Just ask to confirm
-		pass
+		text = 'Du m'+chr(246)+'chtest folgendes kaufen?'
+		action = actionButton
+
 	elif itemAccordance<1:
 		# There is a selection of possible products. Ask to select from them
-		pass
+		text = 'Was genau m'+chr(246)+'chtest Du kaufen? Deine Eingabe hat folgende Ergebnisse geliefert:'
+		action = actionSelection
+
 	else:
 		# Fehler darf nicht passieren -> Error-Message
-		pass
+		text = 'Uuups. Da ist etwas schief gelaufen. Wende dich bitte an den Administrator.'
+		action = None
+
 
 	# Send the message
-	adde = {
+	attach = {
 		'attachments': [
 			{
-				'text': 'Was moechtest du kaufen?',
+				'text': text,
 				'callback_id': 'kiosk_buy',
 				'attachment_type': 'default',
 				'actions': [
-					{'name': 'product_list','text': 'Auswahl ...', 'type': 'select',
-						'options':[{'text':'Pizza | 2.80','value':1},{'text':'Eis | 1.40','value':2},]
-					},
+					action,
 					{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
 				]
 			}
 		]
 	}
-	slack_sendMessageToResponseUrl(message.get('response_url'),'*Einkaufen im Kiosk*',adde)
+	slack_sendMessageToResponseUrl(message.get('response_url'),'*Einkaufen im Kiosk*',attach)
 
 	# Weiter gehts bei slackMessages.receiveSlackCommands, wo die Antwort weiterverarbeitet wird.
 	return
