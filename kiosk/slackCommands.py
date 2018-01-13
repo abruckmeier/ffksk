@@ -74,7 +74,7 @@ def process_kiosk(message):
 def process_kiosk_buy(message, commandText, command):
 	# Remove command item from commandText
 	commandText.remove(command)
-	print(commandText)
+
 	# Check, how many command items are left
 	if len(commandText)==0:
 		msg = 'Dein `/kiosk buy`-Befehl besitzt keine ein oder zwei zus'+chr(228)+'tzliche W'+chr(246)+'rter, welche mir mitteilen, *welches Produkt* du kaufen m'+chr(246)+'chtest und *wie viele* davon.'
@@ -188,10 +188,25 @@ def getCancelAttachementForResponse():
 		'attachments': [
 			{
 				'text': '',
-				'callback_id': 'kiosk_buy_no_Connection',
+				'callback_id': 'cancel_action',
 				'attachment_type': 'default',
 				'actions': [
 					{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
+				]
+			}
+		]
+	}
+	return attach
+
+def getOkAttachementForResponse():
+	attach = {
+		'attachments': [
+			{
+				'text': '',
+				'callback_id': 'OK_action',
+				'attachment_type': 'default',
+				'actions': [
+					{'name': 'OK', 'text': 'OK','type': 'button','value':'OK','style':'good'},
 				]
 			}
 		]
