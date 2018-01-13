@@ -254,7 +254,11 @@ class Kiosk(models.Model):
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
 		# Suchen eines Produkts in Tabelle 'Kiosk' zwischenspeichern
-		item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
+		try:
+			item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
+		except:
+			print('Not in Kiosk anymore.')
+			return False
 
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
 		actPrices = ProduktVerkaufspreise.getActPrices(wannaBuyItem)
