@@ -253,13 +253,23 @@ class Kiosk(models.Model):
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
-		# Suchen eines Produkts in Tabelle 'Kiosk' zwischenspeichern und loeschen
+		# Suchen eines Produkts in Tabelle 'Kiosk' zwischenspeichern
 		item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
-		Kiosk.objects.get(kiosk_ID=item.pk).delete()
 
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
 		actPrices = ProduktVerkaufspreise.getActPrices(wannaBuyItem)
 		actPrices = actPrices.get('verkaufspreis')
+
+		# Check if user is allowed to buy something and has enough money
+		allowedConusmers = readFromDatabase('getUsersToConsume')
+		if user.id not in [x['id'] for x in allowedConusmers]:
+			print('User not allowed to consume')
+			return False
+
+		konto = Kontostand.objects.get(nutzer = user)
+		if konto.stand - actPrices < 0:
+			print('Konto too low.')
+			return False
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
@@ -267,6 +277,9 @@ class Kiosk(models.Model):
 			einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
 			verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis,
 			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices)
+
+		# Produkt in Tabell 'Kiosk' loeschen
+		Kiosk.objects.get(kiosk_ID=item.pk).delete()
 
 		# Automatische Geldtransaktion vom User zur Bank
 		userBank = KioskUser.objects.get(username='Bank')
