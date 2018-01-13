@@ -46,26 +46,18 @@ def process_kiosk(message):
 
 	# Check if the user has an account in the kiosk
 	if not KioskUser.objects.filter(slackName=message.get('user_name'), visible=True):
-		attach = {
-			'attachments': [
-				{
-					'text': '',
-					'callback_id': 'kiosk_buy_no_Connection',
-					'attachment_type': 'default',
-					'actions': [
-						{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
-					]
-				}
-			]
-		}
+		attach = getCancelAttachementForResponse()
 		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem  FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', attach)
 
 		# Weiter gehts bei slackMessages.receiveSlackCommands, wo die Antwort weiterverarbeitet wird.
 		return
 
-	# Find the command 'buy'
+	# Filter the the command from spaces
 	commandText = message.get('text')
 	commandText = commandText.split(' ')
+	commandText = list(filter(lambda a: a not in ['',' '], commandText))
+
+	# Find the command 'buy'
 	command = [x for x in commandText if x in ['Kaufen','Kauf','kauf','kaufen','Buy','buy','Buying','buying']]
 	if not command==[]:
 		process_kiosk_buy(message, commandText, command[0])
@@ -73,7 +65,7 @@ def process_kiosk(message):
 	# No known kiosk-command found. Tell the user
 	else:
 		msg = 'Ich konnte Deinen `/kiosk`-Befehl leider nicht verstehen.'+chr(10)+'Ich ben'+chr(246)+'tige ein Stichwort wie beispielsweise `Kaufen`. '
-		slack_sendMessageToResponseUrl(message.get('response_url'), msg)	
+		slack_sendMessageToResponseUrl(message.get('response_url'), msg, getCancelAttachementForResponse())	
 
 	return
 
@@ -82,20 +74,40 @@ def process_kiosk(message):
 def process_kiosk_buy(message, commandText, command):
 	# Remove command item from commandText
 	commandText.remove(command)
-
+	print(commandText)
 	# Check, how many command items are left
 	if len(commandText)==0:
 		msg = 'Dein `/kiosk buy`-Befehl besitzt keine ein oder zwei zus'+chr(228)+'tzliche W'+chr(246)+'rter, welche mir mitteilen, *welches Produkt* du kaufen m'+chr(246)+'chtest und *wie viele* davon.'
-		slack_sendMessageToResponseUrl(message.get('response_url'), msg)
+		slack_sendMessageToResponseUrl(message.get('response_url'), msg, getCancelAttachementForResponse())
+		return
+
 	elif len(commandText)> 2:
 		msg = 'Dein `/kiosk buy`-Befehl besitzt zu viele Argumente. Ich ben'+chr(246)+'tige ein oder zwei zus'+chr(228)+'tzliche W'+chr(246)+'rter, welche mir mitteilen, *welches Produkt* du kaufen m'+chr(246)+'chtest und *wie viele* davon.'
-		slack_sendMessageToResponseUrl(message.get('response_url'), msg)
+		slack_sendMessageToResponseUrl(message.get('response_url'), msg, getCancelAttachementForResponse())
+		return
 
 	# In case of one more command item, it is seen as the kiosk item
 	if len(commandText)==1:
 		rawItemToBuy = commandText[0]
+		numBuy = 1
 	else:
-		print('to Do + Anzahl')
+		# In case of two more command items, check for the one that is a number. The other is the kios item
+		numBuy = None
+		
+		try: numBuy = int(commandText[0])
+		except: pass
+		if not numBuy is None:
+			rawItemToBuy = commandText[1]
+
+		else:
+			try: numBuy = int(commandText[1])
+			except: pass
+			if not numBuy is None:
+				rawItemToBuy = commandText[0]
+			else:
+				msg = 'Dein `/kiosk buy`-Befehl ben'+chr(246)+'tigt als Argument entweder ein Produkt, das du kaufen m'+chr(246)+'chtest oder zwei Argumente, wobei eines das Produkt ist, das du kaufen m'+chr(246)+'chtest und das zweite Argument die Anzahl dieser Produkte als numerisches Zeichen.'
+				slack_sendMessageToResponseUrl(message.get('response_url'), msg)
+				return	
 
 	# Search for the item with a 100 percent accordance
 	itemAccordance = None
@@ -123,8 +135,8 @@ def process_kiosk_buy(message, commandText, command):
 	txts = []
 	for v in itemToBuy:
 		prices = readFromDatabase('getProductNameAndPriceById',[v.id])
-		txt = str(v.produktName) + ' | ' + '%.2f' % (prices[0]['verkaufspreis']/100.0) + ' ' + chr(8364)
-		txts.append({'text': txt, 'value': v.id})
+		txt = str(numBuy) + 'x ' + str(v.produktName) + ' | ' + '%.2f' % (prices[0]['verkaufspreis']/100.0*numBuy) + ' ' + chr(8364)
+		txts.append({'text': txt, 'value': str(v.id)+'#'+str(numBuy)})
 
 	# Prepare the selection and the button
 	actionSelection = {'name': 'product_list','text': 'Auswahl ...', 'type': 'select', 'options': txts}
@@ -171,6 +183,20 @@ def process_kiosk_buy(message, commandText, command):
 	# Weiter gehts bei slackMessages.receiveSlackCommands, wo die Antwort weiterverarbeitet wird.
 	return
 
+def getCancelAttachementForResponse():
+	attach = {
+		'attachments': [
+			{
+				'text': '',
+				'callback_id': 'kiosk_buy_no_Connection',
+				'attachment_type': 'default',
+				'actions': [
+					{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
+				]
+			}
+		]
+	}
+	return attach
 
 # Send back a ephemeral message to the response url
 def slack_sendMessageToResponseUrl(url, text, furtherDict={}):
@@ -183,7 +209,7 @@ def slack_sendMessageToResponseUrl(url, text, furtherDict={}):
 # Send back a message to the sender and tell, that the command does not exist.
 def slack_NotKnownCommandMsg(response_url, command):
 	msg = "Ich konnte leider mit folgendem Befehl nichts anfangen: '" + command + "'."
-	slack_sendMessageToResponseUrl(response_url, msg)
+	slack_sendMessageToResponseUrl(response_url, msg, getCancelAttachementForResponse())
 	return
 
 def old_slack_NotKnownCommandMsg(channelToRespond, userToRespond, command):
