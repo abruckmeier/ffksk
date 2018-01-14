@@ -107,12 +107,12 @@ def process_kiosk_buy(message):
 
 # x
 def process_cancel_action(message):
-	print('process_cancel_action')
+	slack_sendMessageToResponseUrl(message.get('response_url'), 'Cancelled.')
 	return
 
 # x
 def process_ok_action(message):
-	print('process_ok_action')
+	slack_sendMessageToResponseUrl(message.get('response_url'), 'OK.')
 	return
 
 
