@@ -9,7 +9,6 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 
 from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm, RueckbuchungForm
-from .forms import NeuesProdukt_Palette, NeuesProdukt_Kommentar, NeuesProdukt_Kapazitaet, NeuesProdukt_Preis
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -99,10 +98,13 @@ def kauf_page(request):
 		buySuccess = False
 		buySuccess = Kiosk.buyItem(wannaBuyItem,request.user)
 
-		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
-		checkKioskContentAndFillUp()
+		if buySuccess:
+			# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
+			checkKioskContentAndFillUp()
 
-		return HttpResponseRedirect(reverse('gekauft_page'))
+			return HttpResponseRedirect(reverse('gekauft_page'))
+
+		return(HttpResponseRedirect(reverse('kauf_abgelehnt_page')))
 
 
 	else:
@@ -138,6 +140,20 @@ def gekauft_page(request):
 
 	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
 			, 'einkaufsliste': einkaufsliste})
+
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def kauf_abgelehnt_page(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request,'kiosk/kauf_abgelehnt_page.html',{'kioskItems': kioskItems
+			, 'einkaufsliste': einkaufsliste})
+
 
 
 def kontobewegungen_page(request):

@@ -1,15 +1,16 @@
 from django.conf.urls import url
-from . import views, slackCommands
+from . import views, slackCommands, slackMessages
 
 urlpatterns = [
 	url(r'^$', views.start_page, name='start_page'),
 	url(r'^menu/$', views.home_page, name='home_page'),
-	url(r'^menu/kauf', views.kauf_page, name='kauf_page'),
-	url(r'^menu/gekauft', views.gekauft_page, name='gekauft_page'),
+	url(r'^menu/kauf$', views.kauf_page, name='kauf_page'),
+	url(r'^menu/gekauft$', views.gekauft_page, name='gekauft_page'),
+	url(r'^menu/kaufabgelehnt$', views.kauf_abgelehnt_page, name='kauf_abgelehnt_page'),
 	url(r'^menu/kontobewegungen$', views.kontobewegungen_page, name='kontobewegungen_page'),
 	url(r'^menu/kontobewegungen/(?P<s>\d+)/$', views.kontobewegungen_page_next, name='kontobewegungen_page_next'),
-	url(r'^menu/einkaufsvormerkungen', views.einkauf_vormerk_page, name = 'einkauf_vormerk_page'),
-	url(r'^menu/einkaufvorgemerkt', views.vorgemerkt_page, name = 'vorgemerkt_page'),
+	url(r'^menu/einkaufsvormerkungen$', views.einkauf_vormerk_page, name = 'einkauf_vormerk_page'),
+	url(r'^menu/einkaufvorgemerkt$', views.vorgemerkt_page, name = 'vorgemerkt_page'),
 	url(r'^menu/einkaufsannahme$', views.einkauf_annahme_page, name = 'einkauf_annahme_page'),
 	url(r'^menu/einkaufangenommen$', views.einkauf_angenommen_page, name = 'einkauf_angenommen_page'),
 	url(r'^menu/transaktion$', views.transaktion_page, name = 'transaktion_page'),
@@ -30,4 +31,6 @@ urlpatterns = [
 	url(r'^menu/slackComTest$', views.slackComTest, name = 'slackComTest_page'),
 
 	url(r'^receiveSlackCommands/$', slackCommands.receiveSlackCommands, name = 'receiveSlackCommands'),
+	url(r'^receiveSlackMessages/$', slackMessages.receiveSlackMessages, name = 'receiveSlackMessages'),
+	
 ]
