@@ -3,7 +3,6 @@ from django.http import HttpResponse
 from django.conf import settings
 
 from slackclient import SlackClient
-from threading import Thread
 
 from .models import Produktpalette
 from profil.models import KioskUser
@@ -29,7 +28,8 @@ def receiveSlackCommands(request):
 	# Route the command to the correct function
 	if message.get('command') == '/kiosk':
 		# Start a function with threading
-		Thread(target=process_kiosk, args=[message]).start()
+		#Thread(target=process_kiosk, args=[message]).start()
+		process_kiosk(message)
 
 	# No mapping for this command has been established, yet.
 	else:
