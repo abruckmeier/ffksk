@@ -2,8 +2,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
 
-from threading import Thread
-
 from profil.models import KioskUser
 from .slackCommands import slack_sendMessageToResponseUrl, getCancelAttachementForResponse, getOkAttachementForResponse
 from .models import Produktpalette, Kiosk, Kontostand
@@ -32,15 +30,16 @@ def receiveSlackMessages(request):
 		# This is a response from the kiosk buy interaction
 		if message['callback_id']=='kiosk_buy':
 			# Start a function with threading
-			Thread(target = process_kiosk_buy, args=[message]).start()
+			process_kiosk_buy(message)
 
 		# This is a general Cancel request
 		elif message['callback_id']=='cancel_action':
-			Thread(target = process_cancel_action, args=[message]).start()
+			process_cancel_action(message)
 
 		# This is a general OK request
 		elif message['callback_id']=='OK_action':
-			Thread(target = process_ok_action, args=[message]).start()
+			process_ok_action(message)
+			#Thread(target = process_ok_action, args=[message]).start()
 
 		# The format is correct, but the response can not be handeled
 		else:
@@ -114,18 +113,3 @@ def process_cancel_action(message):
 def process_ok_action(message):
 	slack_sendMessageToResponseUrl(message.get('response_url'), 'OK.')
 	return
-
-
-'''
-	# Check if the user has an account in the kiosk
-	if not KioskUser.objects.filter(slackName=message.get('user_name'), visible=True):
-		attach = getCancelAttachementForResponse()
-		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem  FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', attach)
-	
-	print(message['user'])
-
-	print(message)
-
-	# Second, check if the user is in the kiosk-system
-		if 'user' in message.keys() and 
-'''
