@@ -113,18 +113,3 @@ def process_cancel_action(message):
 def process_ok_action(message):
 	slack_sendMessageToResponseUrl(message.get('response_url'), 'OK.')
 	return
-
-
-'''
-	# Check if the user has an account in the kiosk
-	if not KioskUser.objects.filter(slackName=message.get('user_name'), visible=True):
-		attach = getCancelAttachementForResponse()
-		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem  FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', attach)
-	
-	print(message['user'])
-
-	print(message)
-
-	# Second, check if the user is in the kiosk-system
-		if 'user' in message.keys() and 
-'''
