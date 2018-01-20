@@ -266,14 +266,15 @@ class Kiosk(models.Model):
 
 		# Check if user is allowed to buy something and has enough money
 		allowedConusmers = readFromDatabase('getUsersToConsume')
-		if user.id not in [x['id'] for x in allowedConusmers]:
+		if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
 			print('User not allowed to consume')
 			return False
 
-		konto = Kontostand.objects.get(nutzer = user)
-		if konto.stand - actPrices < 0:
-			print('Konto too low.')
-			return False
+		if not user.username=='Dieb':
+			konto = Kontostand.objects.get(nutzer = user)
+			if konto.stand - actPrices < 0:
+				print('Konto too low.')
+				return False
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,

@@ -90,7 +90,7 @@ def process_kiosk_buy(message, commandText, command):
 	commandText.remove(command)
 
 	# Check, if help is needed
-	if len(commandText)!=1 or not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == []:
+	if not len(commandText) in [1,2] or not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == []:
 		kiosk_buy_help(message)
 		return
 
