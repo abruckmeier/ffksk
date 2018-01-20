@@ -17,7 +17,10 @@
 			<br>
 			<a href="#">Kauf von Produkten</a>
 			<br>
-			
+			<a href="#">Überweisung von Geld an andere Mitglieder</a>
+			<br>
+			<a href="#">Besorgungen für das Kiosk durchführen</a>
+			<br>			
 		</div>
 		<hr>		
 		<br>
@@ -57,20 +60,37 @@
 			Jeder registrierte Nutzer mit Guthaben auf dem Konto (<a href='#'>Konto einrichten und Guthaben aufladen</a>) kann Einkäufe im Kiosk tätigen. Die Ware kann per Selbstbedienung aus den Regalen im Raum hinter der Küche entnommen werden und muss dann SOFORT <a href="#">hier auf der Webseite verbucht werden. Sollte ein Produkt nicht mehr abbuchbar sein, obwohl dieses noch im Kiosk vorrätig war, bitte sofort den <a href="#">Administrator</a> kontaktieren, er kümmert sich um den Abgleich des tatsächlichen Warenvorrats mit den Angaben des Systems.
 			<br>
 			Mit einer funktionierenden Verbindung des persönlichen Kontos zu Slack (Verbindungstest unter <a href="#">diesem Link</a>) kann der Kauf von Produkten über eine Befehlseingabe (egal in welchem Channel oder Chat) durchgeführt werden:
-			<p style="text-align: center;">
+			<p style="text-align: center;" class="commandTexts">
 				/kiosk Kauf "Produkt" "evtl. Anzahl"
 			</p>
-			Der Kiosk-Bot wird mit diesem Befehl eine Interaktion zum Kauf 
+			Der Kiosk-Bot wird mit diesem Befehl eine Interaktion zum Kauf starten und bei uneindeutiger Eingabe Auswahlmöglichkeiten bieten. Außerdem ist stets eine Hilfestellung bei Fehleingabe oder folgenden Befehlen verfügbar:
+			<p style="text-align: center;" class="commandTexts">
+				/kiosk Hilfe<br>
+				/kiosk Kauf Hilfe
+			</p>
+			Beispiele für Kommandoeingaben:
+			<p style="text-align: center;" class="commandTexts">
+				/kiosk Kauf Pizza
+				/kiosk Kauf 2 Pesto
+				/kiosk "saure Zunge" 3
+				/kiosk 3 saure
+			</p>
 		</p>
-+slackeinkauf
 		<br>
 
 		<h4>Überweisung von Geld an andere Mitglieder</h4>
-+slackeinkauf
+		<p style="text-align: justify;">
+			Diese Funktionalität ist momentan noch nicht verfügbar. Es wird momentan aber daran gearbeitet.
+		</p>
 		<br>
 
-		<h4>Einkaufen für das Kiosk</h4>
-
+		<h4>Besorgungen für das Kiosk durchführen</h4>
+		<p style="text-align: justify;">
+			Jeder Nutzer ist herzlich eingeladen, "Einkäufer" zu werden und gegen Provision Besorgungen für das Kiosk durchzuführen. Dazu ist eine kurze Benachrichtigung des <a href="#">Administrators</a> nötig, welcher dann den Zugang zu Einkäufer-Funktionen freischaltet. Nach der Freischaltung ist die Mitarbeit bei den Besorgungen für das Kiosk möglich.<br>
+			Das Kiosk-System überprüft automatisch, welche Produkte demnächst zu Neige gehen und generiert Einkaufspakete, welche, wenn eingeloggt, rechts unten auf der <a href="#">Kiosk-Webseite</a> angezeigt werden. Außerdem werden vom Kiosk-Bot Benachrichtigungen in den #kiosk-Channel auf Slack gepostet. Möchte man eines oder mehrer dieser Einkaufspakete besorgen, muss dies unter <a href="#">Besorgungen ankündigen</a> angekündigt werden. Das Einkaufspaket erscheint dann in der <a href="#">persönlichen Einkaufsliste</a> im <a href="#">persönlichen Bereich</a> und verbleibt längstens drei Tage dort. So lange bleibt Zeit, um die Besorgungen durchzuführen. Danach wird das Einkaufspaket wieder für alle Einkäufer zum Einkauf freigegeben. In der a href="#">persönlichen Einkaufsliste</a> können die zu kaufenden Produkte verwaltet werden und wahlweise Produkte herausgelöscht werden.<br>
+			Beim Einkauf ist darauf zu achten, nicht mehr Produkte zu kaufen, als in der Einkaufsliste stehen. Außerdem muss darauf geachtet werden, <b>nicht teurer als in der Einkaufsliste genannten Budget einzukaufen</b>. Nur bis zu diesem Maximalbetrag werden die Kosten des Einkaufs erstattet. <b>Der Kaufbeleg wird für die spätere Verrechnung benötigt</b>, also beim Einkauf daran denken! Die eingekaufte Ware ist im Kiosk einzuordnen und der Kaufbeleg bei einem <a href="#">Verwalter</a> abzugeben. Dieser verbucht die Ware als besorgt und erstattet die Einkaufskosten plus die Provision für den Einkauf.<br>
+			Die Höhe der Provision ist die Hälfte des Betrags, welcher nach dem Einkauf vom verfügbaren Budgets der Einkaufsliste bleibt.
+		</p>
 		<br>
 
 		<h4>Tätigkeiten des Verwalters im Kiosk</h4>
@@ -81,7 +101,7 @@
 
 		<br>
 
-		<h4>Regelungen zu den Finanzen im Kiosk</h4>
+		<h4>Regelungen zu Finanzen im Kiosk</h4>
 
 		<br>
 
