@@ -447,7 +447,7 @@ def neuerNutzer_page(request):
 			res.visible = True
 
 			u = KioskUser.objects.create_user(**res.cleaned_data)
-			u.slackName = res['username'].value()
+			u.slackName = str(res['username'].value()).lower()
 			u.save()
 			g = Group.objects.get(name='Nutzer')
 			g.user_set.add(u)
