@@ -67,7 +67,7 @@ def start_page(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
 		'admins': admins, 'accountants': accountants, 
-		'chart_DaylyVkValue': Chart_DaylyVkValue(), })
+		'chart_DaylyVkValue': Chart_UmsatzHistorie(), })
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
