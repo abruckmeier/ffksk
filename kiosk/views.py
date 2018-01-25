@@ -67,7 +67,7 @@ def start_page(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
 		'admins': admins, 'accountants': accountants, 
-		'chart_DaylyVkValue': Chart_DaylyVkValue(), })
+		'chart_DaylyVkValue': Chart_UmsatzHistorie(), })
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
@@ -447,7 +447,7 @@ def neuerNutzer_page(request):
 			res.visible = True
 
 			u = KioskUser.objects.create_user(**res.cleaned_data)
-			u.slackName = res['username'].value()
+			u.slackName = str(res['username'].value()).lower()
 			u.save()
 			g = Group.objects.get(name='Nutzer')
 			g.user_set.add(u)

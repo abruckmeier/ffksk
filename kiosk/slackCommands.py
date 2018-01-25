@@ -90,7 +90,7 @@ def process_kiosk_buy(message, commandText, command):
 	commandText.remove(command)
 
 	# Check, if help is needed
-	if len(commandText)!=1 or not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == []:
+	if not len(commandText) in [1,2] or not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == []:
 		kiosk_buy_help(message)
 		return
 
@@ -198,7 +198,7 @@ def kiosk_help(message, msg=''):
 	return
 
 def kiosk_buy_help(message, msg=''):
-	msg = msg+chr(10)+'*Kiosk Kaufen Hilfe*'+chr(10)+'Nach dem `/kiosk Kaufen`-Befehl musst du ein Stichwort schreiben, was du kaufen m'+chr()+'chtest. Optional kannst du als Zahl noch die Menge zu kaufender Produkte anf'+chr(252)+'gen. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen 2 Pizza```'+chr(10)+'```/kiosk Kaufen Pesto```'+chr(10)+'```/kiosk Kaufen saure```'+chr(10)+'```/kiosk Kaufen "Saure Zunge" 5```'+chr(10)+'Falls ich mir nicht sicher bin, was genau du kaufen m'+chr(246)+'chtest oder es '+chr(228)+'hnliche Produkte gibt, gebe ich dir eine Auswahl zum Anklicken und Best'+chr(228)+'tigen.'
+	msg = msg+chr(10)+'*Kiosk Kaufen Hilfe*'+chr(10)+'Nach dem `/kiosk Kaufen`-Befehl musst du ein Stichwort schreiben, was du kaufen m'+chr(246)+'chtest. Optional kannst du als Zahl noch die Menge zu kaufender Produkte anf'+chr(252)+'gen. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen 2 Pizza```'+chr(10)+'```/kiosk Kaufen Pesto```'+chr(10)+'```/kiosk Kaufen saure```'+chr(10)+'```/kiosk Kaufen "Saure Zunge" 5```'+chr(10)+'Falls ich mir nicht sicher bin, was genau du kaufen m'+chr(246)+'chtest oder es '+chr(228)+'hnliche Produkte gibt, gebe ich dir eine Auswahl zum Anklicken und Best'+chr(228)+'tigen.'
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 	return
 
