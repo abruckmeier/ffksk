@@ -56,6 +56,64 @@ class Chart_UmsatzHistorie(Chart):
 		return( data )
 
 
+class Chart_WeeklyVkValue(Chart):
+	chart_type = 'bar'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in Euro'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		weeklyVKValue = readFromDatabase('getWeeklyVKValue')
+		data = []
+		for item in weeklyVKValue:
+			data.append(item['weekly_value'])
+		
+		return [DataSet(
+			data = data,
+			label = 'woechentlicher Umsatz im FfE-Kiosk',
+			#backgroundColor = [rgba(65,143,190,0.5)]
+		)]
+
+	def get_labels(self, **kwargs):
+		weeklyVKValue = readFromDatabase('getWeeklyVKValue')
+		data = []
+		for item in weeklyVKValue:
+			data.append(item['week_start'])
+
+		return( data )
+
+
+class Chart_MonthlyVkValue(Chart):
+	chart_type = 'bar'
+	responsive = True
+	scales = {
+		'xAxes': [Axes(type='time', position='bottom')],
+		'yAxes': [{'ticks':{'beginAtZero': True}, 'scaleLabel':{'display': True, 'labelString': 'Geldwert in Euro'}}]
+	}
+
+	def get_datasets(self, **kwargs):
+		monthlyVKValue = readFromDatabase('getMonthlyVKValue')
+		data = []
+		for item in monthlyVKValue:
+			data.append(item['monthly_value'])
+		
+		return [DataSet(
+			data = data,
+			label = 'monatlicher Umsatz im FfE-Kiosk',
+			#backgroundColor = [rgba(65,143,190,0.5)]
+		)]
+
+	def get_labels(self, **kwargs):
+		monthlyVKValue = readFromDatabase('getMonthlyVKValue')
+		data = []
+		for item in monthlyVKValue:
+			data.append(item['month_start'])
+
+		return( data )
+
+
 class Chart_DaylyVkValue(Chart):
 	chart_type = 'line'
 	responsive = True
