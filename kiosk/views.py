@@ -699,6 +699,20 @@ def inventory_done(request):
 @permission_required('profil.do_admin_tasks',raise_exception=True)
 def statistics(request):
 
+	# Verkaufsstatistik
+	try: vkToday = readFromDatabase('getVKThisDay')[0]['dayly_value']
+	except: vkToday = 0
+	try: vkYesterday = readFromDatabase('getVKLastDay')[0]['dayly_value']
+	except: vkYesterday = 0
+	try: vkThisWeek = readFromDatabase('getVKThisWeek')[0]['weekly_value']
+	except: vkThisWeek = 0
+	try: vkLastWeek = readFromDatabase('getVKLastWeek')[0]['weekly_value']
+	except: vkLastWeek = 0
+	try: vkThisMonth = readFromDatabase('getVKThisMonth')[0]['monthly_value']
+	except: vkThisMonth = 0
+	try: vkLastMonth = readFromDatabase('getVKLastMonth')[0]['monthly_value']
+	except: vkLastMonth = 0
+
 	# Geldwerte
 	vkValueKiosk = readFromDatabase('getKioskValue')
 	vkValueKiosk = vkValueKiosk[0]['value']
@@ -755,11 +769,15 @@ def statistics(request):
 		'chart_Un_Bezahlt': Chart_Un_Bezahlt(), 
 		'chart_UmsatzHistorie': Chart_UmsatzHistorie(),
 		'chart_DaylyVkValue': Chart_DaylyVkValue(),
+		'chart_WeeklyVkValue': Chart_WeeklyVkValue(),
+		'chart_MonthlyVkValue': Chart_MonthlyVkValue(),
 		'chart_Profits': Chart_Profits(),
 		'chart_ProductsWin': Chart_ProductsWin(),
 		'chart_ProductsCount': Chart_ProductsCount(),
 		'chart_Stolen_ProductsWin': Chart_Stolen_ProductsWin(),
 		'chart_StolenProductsShare': Chart_StolenProductsShare(),
+		'vkToday':vkToday, 'vkYesterday':vkYesterday, 'vkThisWeek':vkThisWeek, 'vkLastWeek':vkLastWeek,
+		'vkThisMonth':vkThisMonth, 'vkLastMonth':vkLastMonth,
 		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft, 
 		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0, 
 		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue, 

@@ -78,10 +78,15 @@ hr.small {
 
 
 /* Text Style */
+h5 {
+    font-weight: bold;
+}
+
 .items { 
     margin:0; 
     word-spacing:0.5em; 
 }
+
 .itemsDef { 
     margin:0; 
     word-spacing:0.5em; 

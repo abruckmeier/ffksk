@@ -7,6 +7,35 @@
 	<br>
 	<div class="eingerueckt">
 
+		<h5>Verkaufsstatistik </h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<td>
+					<small>
+						Verkaufswert heute (gestern): {{vkToday | floatformat:2}} &#8364; ({{vkYesterday | floatformat:2}} &#8364;) <br>
+						Verkaufswert diese (letzte) Woche: {{vkThisWeek | floatformat:2}} &#8364; ({{vkLastWeek | floatformat:2}} &#8364;) <br>
+						Verkaufswert diesen (letzten) Monat: {{vkThisMonth | floatformat:2}} &#8364; ({{vkLastMonth | floatformat:2}} &#8364;) <br><br>
+					</small>
+					</td>
+				<tr>
+					<td style="width:50%;">
+						<div style="min-width: 300px;max-width: 500px;">
+							{{ chart_WeeklyVkValue.as_html }}
+						</div>
+					</td>
+					<td>
+						<div style="min-width: 300px;max-width: 500px;">
+							{{ chart_MonthlyVkValue.as_html }}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<br><br>
+
 		<h5> Geldwerte </h5>
 		<br>
 
