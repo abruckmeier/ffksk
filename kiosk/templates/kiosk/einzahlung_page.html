@@ -25,11 +25,34 @@
 		</div>
 
 		<script>
+			var tmp_user;
 			function goOnWithUser(userID,username) {
 				//$("div#divEingabeform").hide();
 				$("div#divEingabeform").show(200);
 				$("input#idUser").val(userID);
 				$("div#user").html(username);
+				$('button[name="KontostandAnzeige"]').html('Kontostand einblenden');
+				tmp_user = userID;
+			}
+		</script>
+
+		<script type="text/javascript">
+			function showKontostand() {
+				$(document).ready(
+					$.ajax({
+						type: "GET",
+						url: "{% url 'einzahlung_page' %}",
+						data: {'userID': tmp_user, 'getUserKontostand': true},
+						success: function(data){
+									$('button[name="KontostandAnzeige"]').html('Kontostand: '+ data);
+									setTimeout(
+										function(){
+											$('button[name="KontostandAnzeige"]').html('Kontostand einblenden');
+										}
+									,1000);
+								}
+					})
+				);
 			}
 		</script>	
 
@@ -37,12 +60,13 @@
 
 		<div id="divEingabeform" style="padding-left: 8vw;">
 			<br>
+
+			<div class="formDiv" id="user"></div>
+			&nbsp;&nbsp;<button name="KontostandAnzeige" onclick="showKontostand()" class="btn btn-sm btn-outline-info">Kontostand einblenden</button>
+				<br><br>
+
 			<form method="POST" class="">{% csrf_token %}
 				<input type="text" name="idUser" id="idUser" style="display: none" readonly>
-				
-				<div class="formDiv" id="user"></div>
-				
-				<br><br>
 
 				<fieldset>
 					<input type="radio" name="typ" value="Einzahlung" id="Einzahlung">
