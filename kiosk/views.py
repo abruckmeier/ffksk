@@ -520,7 +520,14 @@ def einzahlung_page(request):
 					
 				request.session['einzahlung_data'] = {'type':returnHttp['type'],'betrag':returnHttp['betrag']}
 				return HttpResponseRedirect(reverse('einzahlung_done_page'))
-			
+	
+	# Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
+	if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
+		if request.GET.get('getUserKontostand')=='true' and 'userID' in request.GET.keys():
+			id = int(request.GET.get('userID')[0])
+			kto = Kontostand.objects.get(nutzer__id=id)
+			return HttpResponse(str('%.2f' % (kto.stand/100)) + ' ' + chr(8364))
+
 	# Besorge alle User
 	allUsers = readFromDatabase('getUsersForEinzahlung')
 
