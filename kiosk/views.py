@@ -524,7 +524,7 @@ def einzahlung_page(request):
 	# Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
 	if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
 		if request.GET.get('getUserKontostand')=='true' and 'userID' in request.GET.keys():
-			id = int(request.GET.get('userID')[0])
+			id = int(request.GET.get('userID'))
 			kto = Kontostand.objects.get(nutzer__id=id)
 			return HttpResponse(str('%.2f' % (kto.stand/100)) + ' ' + chr(8364))
 
