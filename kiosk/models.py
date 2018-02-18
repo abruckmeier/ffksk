@@ -323,6 +323,11 @@ class Gekauft(models.Model):
 
 
 	@transaction.atomic
+	def rueckbuchenOhneForm(userID,productID,anzahlZurueck):
+		price = doRueckbuchung(userID,productID,anzahlZurueck)
+		return
+
+	@transaction.atomic
 	def rueckbuchen(form, currentUser):
 
 		eingabefehler = False
@@ -356,27 +361,7 @@ class Gekauft(models.Model):
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
-
-			productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
-
-			price = 0
-			for item in productsToMove:
-				k = Kiosk(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
-					bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
-					einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
-					verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis)
-				k.save()
-				k.geliefertUm = item.geliefertUm
-				k.save()
-				price = price + item.verkaufspreis
-
-				userBank = KioskUser.objects.get(username='Bank')
-				user = KioskUser.objects.get(id=userID)
-				GeldTransaktionen.doTransaction(userBank,user,item.verkaufspreis,timezone.now,
-					"R"+chr(252)+"ckbuchung Kauf von " + item.produktpalette.produktName)
-
-				item.delete()
-				
+			price = doRueckbuchung(userID,productID,anzahlZurueck)				
 
 			# Hole den Kioskinhalt
 			kioskItems = Kiosk.getKioskContent()
@@ -388,6 +373,28 @@ class Gekauft(models.Model):
 			return  {'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
 
 
+def doRueckbuchung(userID,productID,anzahlZurueck):
+	productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
+
+	price = 0
+	for item in productsToMove:
+		k = Kiosk(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
+			bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
+			einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
+			verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis)
+		k.save()
+		k.geliefertUm = item.geliefertUm
+		k.save()
+		price = price + item.verkaufspreis
+
+		userBank = KioskUser.objects.get(username='Bank')
+		user = KioskUser.objects.get(id=userID)
+		GeldTransaktionen.doTransaction(userBank,user,item.verkaufspreis,timezone.now,
+			"R"+chr(252)+"ckbuchung Kauf von " + item.produktpalette.produktName)
+
+		item.delete()
+
+	return price
 
 
 from .bot import slack_MsgToUserAboutNonNormalBankBalance
@@ -564,10 +571,24 @@ class ZuVielBezahlt(models.Model):
 						'anzahl': diff,
 						'message': 'OK.'})
 
-				if shouldVal < isVal:
-					# Too much has been bought. Now, a new item will be created in the list and be pushed to the kiosk. Notice in table of to much bought items will be given.
+				elif shouldVal < isVal:
 					diff = isVal - shouldVal
+					# Too much has been bought. 
+					# First try to book back items, the "Dieb" has "bought"
+					userDieb = KioskUser.objects.get(username='Dieb')
+					diebBoughtItems = readFromDatabase('getBoughtItemsOfUser', [userDieb.id])
+					diebBought = [x for x in diebBoughtItems if x['produkt_id']==item['id']]
+					
+					if not diebBought==[]:
+						noToBuyBack = diebBought[0]['anzahl_gekauft']
+						noToBuyBack = min(noToBuyBack,diff)
+						Gekauft.rueckbuchenOhneForm(userDieb.id,item['id'],noToBuyBack)
+					else:
+						noToBuyBack = 0
 
+					diff = diff - noToBuyBack
+
+					# If not possible, boooking back, a new item will be created in the open shopping list and be pushed to the kiosk. Notice in table of to much bought items will be given.
 					datum = timezone.now()
 					p = Produktpalette.objects.get(id=item["id"])
 					maxGroup = EinkaufslisteGroups.objects.all().aggregate(Max('gruppenID'))
@@ -600,10 +621,10 @@ class ZuVielBezahlt(models.Model):
 						'produkt_name': item["produkt_name"], 
 						'verkaufspreis_ct': item["verkaufspreis_ct"],
 						'verlust': False,
-						'anzahl': diff,
-						'message': str(diff) + ' zu viel gekauft.'})
+						'anzahl': diff+noToBuyBack,
+						'message': str(diff+noToBuyBack) + ' zu viel gekauft.'})
 				
-				if shouldVal > isVal:
+				elif shouldVal > isVal:
 					# Items have not been payed. Now, the "thieve" "buys" them.
 					diff = shouldVal-isVal
 					user = KioskUser.objects.get(username='Dieb')
