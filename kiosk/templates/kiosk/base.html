@@ -77,7 +77,7 @@
 		</div>
 
 		<div class="allgInfoDiv">
-			{% if perms.profil.do_einkauf %}
+			{% if perms.profil.perm_kauf %}
 			<div>
 				<h4> Im Kiosk: </h4>
 				<div class="eingeruecktklein">
@@ -94,7 +94,8 @@
 					{% endfor %}
 				</div>
 			</div>
-
+			{% endif %}
+			{% if perms.profil.do_einkauf %}
 			<hr>
 
 			<div>
