@@ -4,7 +4,7 @@ from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
 from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
-from profil.forms import UserErstellenForm, ConfirmPW
+from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 
@@ -16,6 +16,7 @@ from django.utils import timezone
 import datetime
 from django.contrib.auth.models import Group
 from .queries import readFromDatabase
+from django.contrib.auth import login, authenticate
 
 from django.db import transaction
 
@@ -429,16 +430,11 @@ def neuerNutzer_page(request):
 	if request.method == "POST":
 
 		res = UserErstellenForm(request.POST)
-		pw = ConfirmPW(request.POST)
 
 		if not res.is_valid():
 			msg = 'Eingabefehler.'
 
-		elif not pw['passwordcon'].value() == res['password'].value():
-			msg = 'Passwort stimmt nicht ueberein.'
-
 		else:			
-
 			res.is_superuser = False
 			res.is_staff = False
 			res.is_active = True
@@ -446,15 +442,18 @@ def neuerNutzer_page(request):
 			res.rechte = 'User'
 			res.visible = True
 
-			u = KioskUser.objects.create_user(**res.cleaned_data)
-			u.slackName = str(res['username'].value()).lower()
+			u = res.save()
+			u.refresh_from_db()
+
+			#u = KioskUser.objects.create_user(**res.cleaned_data)
+			u.slackName = u.username.lower()
 			u.save()
+
 			g = Group.objects.get(name='Nutzer')
 			g.user_set.add(u)
 
 			k = Kontostand(nutzer_id = u.id, stand=0)
 			k.save()
-
 
 			msg = 'Nutzer wurde angelegt.'
 			color = '#00ff00'
@@ -466,11 +465,13 @@ def neuerNutzer_page(request):
 				except:
 					pass
 
+			raw_password = res.cleaned_data.get('password1')
+			user = authenticate(username=u.username, password=raw_password)
+			login(request, user)
 			return HttpResponseRedirect(reverse('home_page'))
 
 
 	form = UserErstellenForm()
-	confPW = ConfirmPW()
 	currentUser = request.user
 
 	# Hole den Kioskinhalt
@@ -481,7 +482,7 @@ def neuerNutzer_page(request):
 
 	return render(request, 'kiosk/neuerNutzer_page.html', 
 		{'user': currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-		'form':form, 'confPW': confPW, 'msg':msg, 'color': color})	
+		'form':form, 'msg':msg, 'color': color})	
 
 
 @login_required
