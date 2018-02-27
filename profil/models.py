@@ -21,6 +21,6 @@ class KioskUser(AbstractUser):
 		permissions = (
 			("do_admin_tasks","Einpflegen von Usern, Geldtransaktionen, ..."),
 			("do_verwaltung","Einarbeiten von Waren ins Kiosk"),
-			("do_einkauf","Einkaeufe vormerken und einkaufen"),
+			("do_einkauf","Eink"+chr(228)+"ufe vormerken und einkaufen"),
 			("perm_kauf","Kaufen im Kiosk")
 		)
