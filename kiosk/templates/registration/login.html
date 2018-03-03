@@ -27,6 +27,9 @@
             <input type="submit" class="btn" value="Login" />
             <input type="hidden" name="next" value="{{ next }}" />
         </form>
+
+        <p>Ich habe mein Passwort vergessen. <a href="{% url 'password_reset' %}">Zurücksetzen.</a></p>
+
     </div>
 
     <hr>

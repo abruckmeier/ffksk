@@ -141,3 +141,7 @@ FINANZ = {
 VIEWS = {
     'itemsInKontobewegungen': 10,
 }
+
+
+# E-Mails
+EMAIL_USE_TLS = True
