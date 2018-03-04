@@ -8,7 +8,7 @@
     <div class="eingerueckt">
 	
     	{% if form.errors %}
-            <p>Your username and password didn't match. Please try again.</p>
+            <p class="errorColums">Dein Benutzername und Passwort stimmen nicht überein. Versuche es noch einmal.</p>
         {% endif %}
 
         <form method="post" action="{% url 'login' %}">
@@ -27,6 +27,10 @@
             <input type="submit" class="btn" value="Login" />
             <input type="hidden" name="next" value="{{ next }}" />
         </form>
+
+        <!--<p>Ich habe mein Passwort vergessen. <a href="{% url 'password_reset' %}">Zurücksetzen.</a></p>-->
+        <p>Ich besitze noch kein Konto. <a href="{% url 'neuerNutzer_page' %}">Registrieren.</a></p>
+
     </div>
 
     <hr>

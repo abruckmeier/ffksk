@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
 from  .models import KioskUser
@@ -18,6 +19,16 @@ class UserErstellenForm(UserCreationForm):
 		if valid and ffeEmailDomain: return True
 		else: return False
 
+	def clean_email(self):
+		email = self.cleaned_data['email']
+		if KioskUser.objects.filter(email=email).exists():
+			raise ValidationError(_('E-Mail Adresse existiert bereits'), code='invalid')
+
+		if (self['email'].value().find('@ffe.de') == -1):
+			raise ValidationError(_('E-Mail Adresse muss die Domain "@ffe.de" besitzen'), code='invalid')
+
+		return email
+
 	class Meta:
 		model = KioskUser
 		fields = ('username','first_name','last_name','email','aktivBis','positionFfE','password1','password2')
@@ -34,3 +45,15 @@ class UserErstellenForm(UserCreationForm):
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}
 
+
+class AktivBisChangeForm(forms.ModelForm):
+	
+	class Meta:
+		model = KioskUser
+		fields = ('aktivBis',)
+		widgets = {
+			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
+		}
+		help_texts = {
+			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
+		}

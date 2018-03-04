@@ -431,10 +431,7 @@ def neuerNutzer_page(request):
 
 		res = UserErstellenForm(request.POST)
 
-		if not res.is_valid():
-			msg = 'Eingabefehler.'
-
-		else:			
+		if res.is_valid():		
 			res.is_superuser = False
 			res.is_staff = False
 			res.is_active = True
@@ -455,13 +452,13 @@ def neuerNutzer_page(request):
 			k = Kontostand(nutzer_id = u.id, stand=0)
 			k.save()
 
-			msg = 'Nutzer wurde angelegt.'
-			color = '#00ff00'
+			#msg = 'Nutzer wurde angelegt.'
+			#color = '#00ff00'
 
 			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
 				try:
 					slack_PostWelcomeMessage(u)
-					msg += chr(10) + 'Dir wurde eine Nachricht per Slack zugesandt.'
+					#msg += chr(10) + 'Dir wurde eine Nachricht per Slack zugesandt.'
 				except:
 					pass
 
@@ -470,8 +467,12 @@ def neuerNutzer_page(request):
 			login(request, user)
 			return HttpResponseRedirect(reverse('home_page'))
 
+		else:
+			form = UserErstellenForm(request.POST)
 
-	form = UserErstellenForm()
+	else:
+		form = UserErstellenForm()
+	
 	currentUser = request.user
 
 	# Hole den Kioskinhalt
