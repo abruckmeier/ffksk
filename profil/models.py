@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import AbstractUser
 from datetime import date
 
@@ -6,6 +7,7 @@ from datetime import date
 
 class KioskUser(AbstractUser):
 
+	email = models.EmailField(_('E-Mail-Adresse'), unique=True)
 
 	positionsFfE = (('WiHi','Student'),
 		('MA','Festangestellter'))
