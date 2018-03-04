@@ -5,13 +5,15 @@ from datetime import date
 # Create your models here.
 
 class KioskUser(AbstractUser):
+
+
 	positionsFfE = (('WiHi','Student'),
 		('MA','Festangestellter'))
 	permissions = (('User','Standardnutzer'),
 		('Buyer','Eink'+chr(228)+'ufer'),('Accountant','Verwalter'),('Admin','Admin'))
 	
 	slackName = models.CharField(max_length=40)
-	aktivBis = models.DateField(default=date.today)
+	aktivBis = models.DateField() #default=date.today
 	positionFfE = models.CharField(max_length=15,choices=positionsFfE,blank=True)
 	instruierterKaeufer = models.BooleanField(default=False)
 	rechte = models.CharField(max_length=15,default='User',choices=permissions)

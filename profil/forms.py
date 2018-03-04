@@ -45,3 +45,15 @@ class UserErstellenForm(UserCreationForm):
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}
 
+
+class AktivBisChangeForm(forms.ModelForm):
+	
+	class Meta:
+		model = KioskUser
+		fields = ('aktivBis',)
+		widgets = {
+			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
+		}
+		help_texts = {
+			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
+		}

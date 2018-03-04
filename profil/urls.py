@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from django.contrib.auth import views
-#from . import views as profilViews
+from . import views as profilViews
 
 urlpatterns = [
     
@@ -15,6 +15,7 @@ urlpatterns = [
     url(r'^accounts/password/reset/done/$', views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
     url(r'^accounts/password/reset/complete/$', views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 
-
+    url(r'^accounts/angestellt_bis_change/$', profilViews.angestellt_bis_change, name='angestellt_bis_change'),
+    url(r'^accounts/angestellt_bis_changed/$', profilViews.angestellt_bis_changed, name='angestellt_bis_changed'),
 
 ]

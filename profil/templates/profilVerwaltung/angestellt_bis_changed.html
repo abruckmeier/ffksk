@@ -1,0 +1,15 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+    <h4>&#196;nderung durchgef&#252;hrt</h4>
+    <br>
+
+    <div class="eingerueckt">
+    	Das Datum der Deaktivierung deines Kontos wurde erfolgreich auf {{ newDate }} eingestellt.
+    </div>
+
+    <hr>
+    <a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+{% endblock %}
