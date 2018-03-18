@@ -193,6 +193,9 @@ class ZumEinkaufVorgemerkt(models.Model):
 			angeliefert = ZumEinkaufVorgemerkt.objects.filter(einkaeufer__id=userID,
 				produktpalette__produktName=produktName).order_by('kiosk_ID')[:anzahlAngeliefert]
 
+			if len(angeliefert) != anzahlAngeliefert:
+				raise ValueError
+
 			# Eintragen der Werte und Schreiben ins Kiosk
 			for an in angeliefert:
 
