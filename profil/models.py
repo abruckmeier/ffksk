@@ -1,13 +1,24 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from datetime import date
 
-# Create your models here.
+
+
+# Change the user manager for a case-insensitive login
+class KioskUserManager(UserManager):
+	def get_by_natural_key(self, username):
+		case_insensitive_username_field = '{}__iexact'.format(self.model.USERNAME_FIELD)
+		return self.get(**{case_insensitive_username_field: username})
+
+
 
 class KioskUser(AbstractUser):
 
+	objects = KioskUserManager()
+
 	email = models.EmailField(_('E-Mail-Adresse'), unique=True)
+	is_verified = models.BooleanField(default=False)
 
 	positionsFfE = (('WiHi','Student'),
 		('MA','Festangestellter'))

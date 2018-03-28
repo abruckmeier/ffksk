@@ -40,7 +40,7 @@ class UserErstellenForm(UserCreationForm):
 			'positionFfE': _('Anstellung als'),
 		}
 		help_texts = {
-			'username': _('<small>F'+chr(252)+'r eine Kommunikation mit Slack muss der Nutzername dem Slack-Namen entsprechen.</small>'),
+			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
 			'email': _('<small>Die E-Mail-Adresse muss die @ffe.de-Domain besitzen.</small>'),
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}

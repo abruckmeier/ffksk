@@ -17,7 +17,7 @@
 		<div>
 			<b>Bereits registriert? Hier geht es zum pers&#246;nlichen Bereich:</b><br>
 			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
-				<b><a href="{% url 'home_page' %}">zum pers&#246;nlichen Bereich</a></b>
+				<b><a href="{% url 'registrationStatus' %}">zum pers&#246;nlichen Bereich</a></b>
 			</p>
 		</div><br>
 
@@ -49,7 +49,7 @@
 		<br>
 		<hr>
 		
-		{% if perms.profil.do_einkauf %}
+		{% if perms.profil.perm_kauf %}
 		<b>Administrator: </b>
 		
 			{{ admins }}

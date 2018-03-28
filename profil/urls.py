@@ -18,4 +18,6 @@ urlpatterns = [
     url(r'^accounts/angestellt_bis_change/$', profilViews.angestellt_bis_change, name='angestellt_bis_change'),
     url(r'^accounts/angestellt_bis_changed/$', profilViews.angestellt_bis_changed, name='angestellt_bis_changed'),
 
+    url(r'^accounts/registrationStatus/$', profilViews.registrationStatus.as_view(), name='registrationStatus'),
+    url(r'^accounts/activate/(?P<uidb64>[0-9A-Za-z_]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', profilViews.AccountActivate.as_view(), name='account_activate'),
 ]
