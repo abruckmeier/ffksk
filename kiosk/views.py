@@ -14,15 +14,19 @@ import math
 from django.conf import settings
 from django.utils import timezone
 import datetime
-from django.contrib.auth.models import Group
 from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
 
 from django.db import transaction
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostWelcomeMessage, slack_PostTransactionInformation, slack_TestMsgToUser
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_SendMsg
 
 from .charts import *
+
+from profil.tokens import account_activation_token
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_text
 
 
 # Create your views here.
@@ -446,26 +450,28 @@ def neuerNutzer_page(request):
 			u.slackName = u.username.lower()
 			u.save()
 
-			g = Group.objects.get(name='Nutzer')
-			g.user_set.add(u)
+			# Generate Confirmation Email
+			user = u.username
+			current_site = get_current_site(request)
+			if request.is_secure: protocol = 'https'
+			else: protocol = 'http'
+			domain = current_site.domain
+			uid = force_text(urlsafe_base64_encode(force_bytes(u.pk)))
+			token = account_activation_token.make_token(u)
+			url = reverse('account_activate', kwargs={'uidb64': uid, 'token': token})
+			#url = reverse('account_activate')+uid+'/'+token+'/' 
 
-			k = Kontostand(nutzer_id = u.id, stand=0)
-			k.save()
+			msg = '*Verifiziere deinen FfE-Kiosk Account!*\n\n\r' +	'Hallo '+ user + ',\n\r'+ 'Du erh'+chr(228)+'lst diese Slack-Nachricht weil du dich auf der Webseite ' + str(current_site) + ' registriert hast.\n\r' + 'Bitte klicke auf den folgenden Link, um deine Registrierung zu best'+chr(228)+'tigen:\n\r'+ '\t'+ protocol + '://'+domain+url+ '\n\n\r'+ 'Hast du dich nicht auf dieser Webseite registriert? Dann ignoriere einfach diese Email.\n\n\r'+ 'Dein FfE-Kiosk Team.'
 
-			#msg = 'Nutzer wurde angelegt.'
-			#color = '#00ff00'
-
-			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
-				try:
-					slack_PostWelcomeMessage(u)
-					#msg += chr(10) + 'Dir wurde eine Nachricht per Slack zugesandt.'
-				except:
-					pass
+			try:
+				slack_SendMsg(msg,u)
+			except:
+				pass
 
 			raw_password = res.cleaned_data.get('password1')
 			user = authenticate(username=u.username, password=raw_password)
 			login(request, user)
-			return HttpResponseRedirect(reverse('home_page'))
+			return HttpResponseRedirect(reverse('registrationStatus'))
 
 		else:
 			form = UserErstellenForm(request.POST)

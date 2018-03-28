@@ -62,7 +62,7 @@
 			{% if user.is_authenticated %}
 				Eingeloggt als <b>{{ user.username }}</b> <br>
 				<a href="{% url 'logout' %}">Logout</a><br>
-				<a href="{% url 'home_page' %}">Zu meinem pers&#246;nlichen Bereich</a>
+				<a href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a>
 			{% else %}
 				<a href="{% url 'login' %}">Login</a>
 			{% endif %}	

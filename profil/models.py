@@ -18,6 +18,7 @@ class KioskUser(AbstractUser):
 	objects = KioskUserManager()
 
 	email = models.EmailField(_('E-Mail-Adresse'), unique=True)
+	is_verified = models.BooleanField(default=False)
 
 	positionsFfE = (('WiHi','Student'),
 		('MA','Festangestellter'))

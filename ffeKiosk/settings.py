@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'kiosk.apps.KioskConfig',
     'profil.apps.ProfilConfig',
+    'ffeKiosk',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,7 +102,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'profil.KioskUser'
 
-LOGIN_REDIRECT_URL = '/menu/'
+LOGIN_REDIRECT_URL = '/accounts/registrationStatus/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/

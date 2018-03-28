@@ -9,6 +9,20 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
+def slack_SendMsg(msg,user):
+	# Functional Users (bank, thief) do not need messages
+	if user.visible == False:
+		return
+	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+	userAdress = '@' + user.slackName
+	sc = SlackClient(slack_token)
+	sc.api_call(
+		"chat.postMessage",
+		channel=userAdress,
+		text = msg,
+	)	
+	return
+
 # Eine Slack-Nachricht wird testweise an den persoenlichen Slackbot-Channel eines Nutzers gesendet
 def slack_TestMsgToUser(user):
 

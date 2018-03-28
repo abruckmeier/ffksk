@@ -1,0 +1,15 @@
+{% extends 'kiosk/base.html' %}	
+{% block content %}
+
+    <h4>Failed Slack Verification</h4>
+    <br>
+    
+	    <div class="eingerueckt">
+			<p> The verification link was invalid, possibly because it has already been used. Please try to log in. <br>
+			If you face any troubles, please contact us ({{admins}}).</p>
+	    </div>
+	    
+    <hr>
+    <a href="{% url 'start_page' %}">zur&#252;ck</a><br>
+
+{% endblock %}
