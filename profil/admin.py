@@ -14,6 +14,15 @@ class MyUserChangeForm(UserChangeForm):
 # Modified UserAdmin with additional fieldsets to adjust in the admin area
 # Also modify the view for non-Superuser staff -> restricted rights
 class KioskUserAdmin(UserAdmin):
+	
+	# New User Form in Admin area
+	add_fieldsets = (
+		(None, {
+			'classes': ('wide',),
+			'fields': ('username','password1','password2','aktivBis','slackName')
+		}),
+	)
+
 	form = MyUserChangeForm
 
 	# Add Verification and Approvement variables for view and modification
@@ -44,6 +53,10 @@ class KioskUserAdmin(UserAdmin):
 
 	# When a user is modified by an admin or staff member, look, if the user is now accepted by the flex platform. Then send a confirmation mail.
 	def save_model(self, request, obj, form, change):
+
+		# ToDo: If no Kontostand exists (z.B. from creating a user in admin area), a Kontostand has to be created
+		#k = Kontostand(nutzer_id = user.id, stand=0)
+		#k.save()
 
 		super().save_model(request, obj, form, change)
 

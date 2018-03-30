@@ -179,7 +179,10 @@ class ZumEinkaufVorgemerkt(models.Model):
 			einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			return {
+				'error': True,
+				'retHtml': render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}),
+			}
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
@@ -220,9 +223,11 @@ class ZumEinkaufVorgemerkt(models.Model):
 			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			return {'returnHttp': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username,
-				'produktName':produktName,'anzahlElemente':anzahlElemente},
-				'angeliefert': angeliefert}
+			return {
+				'error': False,
+				'retDict': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName':produktName,'anzahlElemente':anzahlElemente},
+				'angeliefert': angeliefert,
+			}
 
 
 class Kiosk(models.Model):
@@ -445,14 +450,20 @@ class GeldTransaktionen(models.Model):
 	def doTransaction(vonnutzer,zunutzer,betrag,datum, kommentar):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
+		# Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
+		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
+			sign = -1
+		else:
+			sign = +1
+
 		# Besorge den Kontostand des 'vonNutzer' und addiere neuen Wert
 		vonNutzerKonto = Kontostand.objects.get(nutzer_id=t.vonnutzer)
-		vonNutzerKonto.stand = vonNutzerKonto.stand - t.betrag
+		vonNutzerKonto.stand = vonNutzerKonto.stand - sign * t.betrag
 		vonNutzerKonto.save()
 
 		# Besorge den Kontostand des 'zuNutzer' und addiere neuen Wert
 		zuNutzerKonto = Kontostand.objects.get(nutzer_id=t.zunutzer)
-		zuNutzerKonto.stand = zuNutzerKonto.stand + t.betrag
+		zuNutzerKonto.stand = zuNutzerKonto.stand +  sign * t.betrag
 		zuNutzerKonto.save()
 
 		t.save()
