@@ -179,7 +179,10 @@ class ZumEinkaufVorgemerkt(models.Model):
 			einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+			return {
+				'error': True,
+				'retHtml': render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}),
+			}
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
@@ -220,9 +223,11 @@ class ZumEinkaufVorgemerkt(models.Model):
 			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			return {'returnHttp': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username,
-				'produktName':produktName,'anzahlElemente':anzahlElemente},
-				'angeliefert': angeliefert}
+			return {
+				'error': False,
+				'retDict': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName':produktName,'anzahlElemente':anzahlElemente},
+				'angeliefert': angeliefert,
+			}
 
 
 class Kiosk(models.Model):

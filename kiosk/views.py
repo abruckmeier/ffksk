@@ -293,14 +293,18 @@ def einkauf_annahme_page(request):
 
 		returnDict = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
 
-		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
-			try:
-				slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
-			except:
-				pass
+		if returnDict['error'] is True:
+			return HttpResponse(returnDict['retHtml'])
 
-		request.session['annahme_data'] = returnDict['returnHttp']
-		return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
+		else:
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				try:
+					slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
+				except:
+					pass
+
+			request.session['annahme_data'] = returnDict['retDict']
+			return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
 
 	else:
 
