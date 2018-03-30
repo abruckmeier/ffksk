@@ -450,14 +450,20 @@ class GeldTransaktionen(models.Model):
 	def doTransaction(vonnutzer,zunutzer,betrag,datum, kommentar):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
+		# Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
+		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
+			sign = -1
+		else:
+			sign = +1
+
 		# Besorge den Kontostand des 'vonNutzer' und addiere neuen Wert
 		vonNutzerKonto = Kontostand.objects.get(nutzer_id=t.vonnutzer)
-		vonNutzerKonto.stand = vonNutzerKonto.stand - t.betrag
+		vonNutzerKonto.stand = vonNutzerKonto.stand - sign * t.betrag
 		vonNutzerKonto.save()
 
 		# Besorge den Kontostand des 'zuNutzer' und addiere neuen Wert
 		zuNutzerKonto = Kontostand.objects.get(nutzer_id=t.zunutzer)
-		zuNutzerKonto.stand = zuNutzerKonto.stand + t.betrag
+		zuNutzerKonto.stand = zuNutzerKonto.stand +  sign * t.betrag
 		zuNutzerKonto.save()
 
 		t.save()

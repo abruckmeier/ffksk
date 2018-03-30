@@ -375,7 +375,7 @@ def transaktion_page(request):
 		elif form['idTo'].value() == form['idFrom'].value():
 			errorMsg = chr(220)+'berweiser und Empf'+chr(228)+'nger sind identisch.'
 
-		elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username!='Bank':
+		elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username not in ('Bank','Dieb','Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
 			errorMsg = 'Kontostand des Schuldners ist nicht gedeckt.'
 
 		else:
