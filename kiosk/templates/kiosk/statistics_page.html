@@ -125,6 +125,36 @@
 
 		<br><br>
 
+		<h5> Einzelproduktstatistik</h5>
+		<br>
+
+		<div class="eingerueckt">
+			<table style="width:100%;">
+				<tr>
+					<th>Produkt</th>
+					<th># gekauft</th>
+					<th># unbezahlt</th>
+					<th>% unbezahlt</th>
+					<th>€ Gewinn</th>
+					<th>€/# Gewinn</th>
+					<th>€/# entgangener Gewinn</th>
+				</tr>
+				{% for item in singleProductStatistics %}
+					<tr>
+						<td>{{item.name}}</td>
+						<td>{{item.anzahl}}</td>
+						<td>{{item.stolen_anzahl}}</td>
+						<td>{{item.spec_stolen_anzahl| floatformat:1}} %</td>
+						<td>{{item.gewinn| floatformat:2}} &#8364;</td>
+						<td>{{item.spec_gewinn| floatformat:2}} &#8364;/#</td>
+						<td>{{item.spec_entg_gewinn| floatformat:2}} &#8364;/#</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+
+		<!--<br><br>
+
 		<h5> Prduktstatistik (bezahlte Produkte)</h5>
 		<br>
 
@@ -169,7 +199,7 @@
 					</td>
 				</tr>
 			</table>
-		</div>
+		</div>-->
 
 	</div>
 

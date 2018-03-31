@@ -783,6 +783,9 @@ def statistics(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
+	# Single Product Statistics
+	singleProductStatistics = readFromDatabase('getProductPerItemStatistics')
+
 	return render(request, 'kiosk/statistics_page.html', 
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'chart_Un_Bezahlt': Chart_Un_Bezahlt(), 
@@ -791,10 +794,11 @@ def statistics(request):
 		'chart_WeeklyVkValue': Chart_WeeklyVkValue(),
 		'chart_MonthlyVkValue': Chart_MonthlyVkValue(),
 		'chart_Profits': Chart_Profits(),
-		'chart_ProductsWin': Chart_ProductsWin(),
-		'chart_ProductsCount': Chart_ProductsCount(),
-		'chart_Stolen_ProductsWin': Chart_Stolen_ProductsWin(),
-		'chart_StolenProductsShare': Chart_StolenProductsShare(),
+		'singleProductStatistics': singleProductStatistics,
+		#'chart_ProductsWin': Chart_ProductsWin(),
+		#'chart_ProductsCount': Chart_ProductsCount(),
+		#'chart_Stolen_ProductsWin': Chart_Stolen_ProductsWin(),
+		#'chart_StolenProductsShare': Chart_StolenProductsShare(),
 		'vkToday':vkToday, 'vkYesterday':vkYesterday, 'vkThisWeek':vkThisWeek, 'vkLastWeek':vkLastWeek,
 		'vkThisMonth':vkThisMonth, 'vkLastMonth':vkLastMonth,
 		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft, 
