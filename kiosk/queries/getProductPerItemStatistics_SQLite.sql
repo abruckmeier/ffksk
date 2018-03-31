@@ -1,4 +1,16 @@
-with bought as (
+select
+	b.produktpalette_id,
+	b.name,
+	b.anzahl,
+	s.anzahl as stolen_anzahl,
+	s.anzahl*1.0 / (s.anzahl + b.anzahl) * 100 as spec_stolen_anzahl,
+	b.ek + s.ek as ek,
+	b.vk as vk,
+	b.vk - (b.ek + s.ek) as gewinn,
+	(b.vk - (b.ek + s.ek))/b.anzahl as spec_gewinn,
+	s.vk - s.ek as entg_gewinn,
+	(s.vk - s.ek)/b.anzahl as spec_entg_gewinn
+from (
 	select
 		a.produktpalette_id,
 		b.produktName as name,
@@ -13,9 +25,8 @@ with bought as (
 	  on a.kaeufer_id = c.id
 	where c.username <> "Dieb"
 	group by produktpalette_id
-)
-
-, stolen as (
+) b
+join (
 	select
 		a.produktpalette_id,
 		b.produktName as name,
@@ -30,21 +41,6 @@ with bought as (
 	  on a.kaeufer_id = c.id
 	where c.username = "Dieb"
 	group by produktpalette_id
-)
-
-select
-	b.produktpalette_id,
-	b.name,
-	b.anzahl,
-	s.anzahl as stolen_anzahl,
-	s.anzahl*1.0 / (s.anzahl + b.anzahl) * 100 as spec_stolen_anzahl,
-	b.ek + s.ek as ek,
-	b.vk as vk,
-	b.vk - (b.ek + s.ek) as gewinn,
-	(b.vk - (b.ek + s.ek))/b.anzahl as spec_gewinn,
-	s.vk - s.ek as entg_gewinn,
-	(s.vk - s.ek)/b.anzahl as spec_entg_gewinn
-from bought b
-join stolen s
+) s
 	using (produktpalette_id)
 order by b.name
