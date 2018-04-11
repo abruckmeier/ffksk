@@ -129,87 +129,43 @@
 		<br>
 
 		<div class="eingerueckt">
-			<table style="width:100%;">
+			<table style="width:100%;" id="einzelproduktstatistik" class="sortable">
 				<tr>
 					<th>Produkt</th>
 					<th># gekauft</th>
 					<th># unbezahlt</th>
 					<th>% unbezahlt</th>
-					<th>€ Gewinn</th>
-					<th>€/# Gewinn</th>
-					<th>€/# entgangener Gewinn</th>
+					<th>&#8364; Gewinn</th>
+					<th>&#8364;/# Gewinn</th>
+					<th>&#8364;/# entgangener Gewinn</th>
 				</tr>
 				{% for item in singleProductStatistics %}
 					<tr>
 						<td>{{item.name}}</td>
 						<td>{{item.anzahl}}</td>
 						<td>{{item.stolen_anzahl}}</td>
-						<td>{{item.spec_stolen_anzahl| floatformat:1}} %</td>
-						<td>{{item.gewinn| floatformat:2}} &#8364;</td>
-						<td>{{item.spec_gewinn| floatformat:2}} &#8364;/#</td>
-						<td>{{item.spec_entg_gewinn| floatformat:2}} &#8364;/#</td>
+						<td>{{item.spec_stolen_anzahl| floatformat:1}}</td>
+						<td>{{item.gewinn| floatformat:2}}</td>
+						<td>{{item.spec_gewinn| floatformat:2}}</td>
+						<td>{{item.spec_entg_gewinn| floatformat:2}}</td>
 					</tr>
 				{% endfor %}
 			</table>
 		</div>
 
-		<!--<br><br>
-
-		<h5> Prduktstatistik (bezahlte Produkte)</h5>
-		<br>
-
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td style="width:50%;">
-						Gesamtgewinn der Produkte in &#8364;:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_ProductsWin.as_html }}
-						</div>
-					</td>
-					<td style="width:50%;">
-						Anzahl gekaufter Produkte:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_ProductsCount.as_html }}
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<br><br>
-
-		<h5> Prduktstatistik (unbezahlte Produkte)</h5>
-		<br>
-
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td style="width:50%;">
-						Unbezahlter Wert der Produkte in &#8364;:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_Stolen_ProductsWin.as_html }}
-						</div>
-					</td>
-					<td style="width:50%;">
-						Anteil unbezahlter Produkte in %:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_StolenProductsShare.as_html }}
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>-->
-
+		
 	</div>
 
-	
 
 	<hr>
 	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
 
+{% endblock %}
 
-	
 
+
+{% block javascript %}
+
+	<script src="{% static 'js/sorttable.js' %}"></script>
 
 {% endblock %}
