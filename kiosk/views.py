@@ -298,10 +298,19 @@ def einkauf_annahme_page(request):
 
 		else:
 			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				# Send new products info to kiosk channel
 				try:
 					slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
-				except:
-					pass
+				except:	pass
+
+				# Send Thank You message to user who bought the products
+				try:
+					userID = int(form['userID'].value())
+					user = KioskUser.objects.get(id = userID)
+
+					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % returnDict['retDict']['gesPreis'])+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
+					slack_SendMsg(txt,user)
+				except:	pass
 
 			request.session['annahme_data'] = returnDict['retDict']
 			return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
@@ -889,6 +898,16 @@ def rueckbuchung(request):
 		form = RueckbuchungForm(request.POST)
 
 		session_data = Gekauft.rueckbuchen(form,currentUser)
+
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+			# Send notice to user
+			try:
+				user = KioskUser.objects.get(id = session_data['userID'])
+
+				txt = 'Dir wurde das Produkt "'+str(session_data['anzahlZurueck'])+'x '+str(session_data['product'])+'" rückgebucht und der Betrag von '+str('%.2f' % session_data['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'
+				slack_SendMsg(txt,user)
+			except:	pass
+
 		request.session['rueckbuchung_done'] = session_data
 		return HttpResponseRedirect(reverse('rueckbuchung_done'))
 
