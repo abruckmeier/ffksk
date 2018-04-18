@@ -378,7 +378,7 @@ class Gekauft(models.Model):
 
 			product = Produktpalette.objects.get(id=productID)
 			
-			return  {'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
+			return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
 
 
 def doRueckbuchung(userID,productID,anzahlZurueck):
