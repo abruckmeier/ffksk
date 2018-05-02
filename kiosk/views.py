@@ -116,7 +116,6 @@ def kauf_page(request):
 		# Hole den Kioskinhalt
 		msg = ''
 		allowed = True
-		kioskItems = Kiosk.getKioskContent()
 		currentUser = request.user
 		kontostand = Kontostand.objects.get(nutzer__username=request.user).stand / 100.0
 
@@ -125,6 +124,11 @@ def kauf_page(request):
 		if kontostand <=0 and not currentUser.username=='Dieb':
 			msg = 'Dein Kontostand ist zu niedrig. Bitte wieder beim Admin einzahlen.'
 			allowed = False
+
+		# Kiosk Content for Buying
+		kioskItems = readFromDatabase('getKioskContentToBuy')
+		# Delete values that are zero
+		kioskItems = [x for x in kioskItems if x['ges_available']>0]
 		
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()

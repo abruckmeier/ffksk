@@ -261,6 +261,10 @@ class Kiosk(models.Model):
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
+		# First, look in Kiosk.
+
+		# If not available in Kiosk, do Rueckbuchung from Dieb
+		
 		# Suchen eines Produkts in Tabelle 'Kiosk' zwischenspeichern
 		try:
 			item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
