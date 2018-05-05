@@ -262,16 +262,26 @@ class Kiosk(models.Model):
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
 		# First, look in Kiosk.
-
-		# If not available in Kiosk, do Rueckbuchung from Dieb
-		
-		# Suchen eines Produkts in Tabelle 'Kiosk' zwischenspeichern
 		try:
 			item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
+			foundInKiosk = True
 		except:
-			print('Not in Kiosk anymore.')
-			return False
+			print('Not in Kiosk anymore. But now, look in Dieb-Bought items...')
+			foundInKiosk = False
 
+		# If not available in Kiosk, do Rueckbuchung from Dieb
+		if not foundInKiosk:
+			try:
+				itemBoughtByDieb = Gekauft.objects.filter(kaeufer__username='Dieb',produktpalette__produktName=wannaBuyItem)[:1].get()
+			except:
+				print('Not found in Gekauft, too. Stop it.')
+				return False
+			
+			# Book back the item from Dieb
+			dieb = KioskUser.objects.get(username='Dieb')
+			item = Gekauft.rueckbuchenOhneForm(dieb.id, itemBoughtByDieb.produktpalette.id, 1)
+			foundInKiosk = True
+		
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
 		actPrices = ProduktVerkaufspreise.getActPrices(wannaBuyItem)
 		actPrices = actPrices.get('verkaufspreis')
@@ -336,8 +346,8 @@ class Gekauft(models.Model):
 
 	@transaction.atomic
 	def rueckbuchenOhneForm(userID,productID,anzahlZurueck):
-		price = doRueckbuchung(userID,productID,anzahlZurueck)
-		return
+		dR = doRueckbuchung(userID,productID,anzahlZurueck)
+		return dR['item']
 
 	@transaction.atomic
 	def rueckbuchen(form, currentUser):
@@ -373,7 +383,8 @@ class Gekauft(models.Model):
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
-			price = doRueckbuchung(userID,productID,anzahlZurueck)				
+			dR = doRueckbuchung(userID,productID,anzahlZurueck)
+			price = dR['price']
 
 			# Hole den Kioskinhalt
 			kioskItems = Kiosk.getKioskContent()
@@ -387,8 +398,9 @@ class Gekauft(models.Model):
 
 def doRueckbuchung(userID,productID,anzahlZurueck):
 	productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
-
+	
 	price = 0
+	newKioskItem = None
 	for item in productsToMove:
 		k = Kiosk(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
 			bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
@@ -397,8 +409,11 @@ def doRueckbuchung(userID,productID,anzahlZurueck):
 		k.save()
 		k.geliefertUm = item.geliefertUm
 		k.save()
+		
+		# Only the last item is taken!!
 		price = price + item.verkaufspreis
-
+		newKioskItem = k
+		
 		userBank = KioskUser.objects.get(username='Bank')
 		user = KioskUser.objects.get(id=userID)
 		GeldTransaktionen.doTransaction(userBank,user,item.verkaufspreis,timezone.now,
@@ -406,7 +421,7 @@ def doRueckbuchung(userID,productID,anzahlZurueck):
 
 		item.delete()
 
-	return price
+	return {'price':price, 'item':newKioskItem}
 
 
 from .bot import slack_MsgToUserAboutNonNormalBankBalance
