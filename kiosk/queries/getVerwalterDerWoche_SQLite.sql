@@ -1,7 +1,7 @@
 select
 	first_name,
 	last_name,
-	username,
+	slackName,
 	sum(anzahl) as items,
 	count(*) as anlieferungen,
 	sum(summeEingekauft) as eingekauft
@@ -9,7 +9,7 @@ from (
 	select
 	  first_name,
 	  last_name,
-	  username,
+	  slackName,
 	  rounded_geliefert,
 	  produktpalette_id,
 	  sum(einkaufspreis)/100.0 as summeEingekauft,
@@ -36,9 +36,9 @@ from (
 	) a
 	left join profil_kioskuser b
 	 on (a.verwalterEinpflegen_id = b.id)
-	where geliefertUm >= datetime(current_timestamp, '-1 month')
+	where geliefertUm >= datetime(current_timestamp, '-7 days')
 	group by verwalterEinpflegen_id, rounded_geliefert, produktpalette_id
 )
-group by first_name, last_name, username
+group by first_name, last_name, slackName
 order by anlieferungen desc
 limit 3

@@ -1,7 +1,7 @@
 select
 	first_name,
 	last_name,
-	username,
+	slackName,
 	summeEingekauft,
 	summe_umsatz,
 	anzahl,
@@ -10,7 +10,7 @@ from (
 	select
 	  first_name,
 	  last_name,
-	  username,
+	  slackName,
 	  sum(einkaufspreis)/100.0 as summeEingekauft,
 	  sum(verkaufspreis-einkaufspreis)/100.0 as summe_umsatz,
 	  count(einkaufspreis) as anzahl
@@ -53,7 +53,7 @@ from (
 	) a
 	left join profil_kioskuser b
 	 on (a.einkaeufer_id = b.id)
-	where geliefertUm >= datetime(current_timestamp, '-1 month')
+	where geliefertUm >= datetime(current_timestamp, '-7 days')
 	group by einkaeufer_id
 )
 where anzahl > 0
