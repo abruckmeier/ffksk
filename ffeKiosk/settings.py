@@ -34,6 +34,11 @@ SLACK_SETTINGS = {
     'MinBankBalance': 100, # Cent
 }
 
+BACKUP = {
+    'active': True,
+    'backupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)),'backup'),
+}
+
 
 # Application definition
 

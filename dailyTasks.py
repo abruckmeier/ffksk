@@ -12,9 +12,11 @@ django.setup()
 # Import the Modules
 from django.conf import settings
 from datetime import datetime
+from shutil import copyfile
 
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg
+from profil.models import KioskUser
 
 
 # Elect best buyers and administrators
@@ -67,9 +69,38 @@ def electBestContributors():
 
     return
 
+# Conduct the daily rotating Save of the Database
+def dailyDatabaseSave(nowDate):
+
+    # Get information and stop if not activated
+    backupSettings = getattr(settings,'BACKUP')
+    if not backupSettings['active']:
+        print('Backup not activated in settings. Stop.')
+        return 'Backup not activated in settings.'
+
+    # Get the origin of the to copy file
+    baseDir = getattr(settings,'BASE_DIR')
+    databaseName = getattr(settings,'DATABASE_NAME')
+    
+    # Get the backup folder and create the day-specific file name of the backup file
+    backupFolder = backupSettings['backupFolder']
+    if not os.path.exists(backupFolder):
+        print('Backup Folder does not exist. Create it...')
+        os.makedirs(backupFolder)
+
+    destinationDbName = 'save_'+str(nowDate.weekday())+'_'+databaseName
+
+    # Copy the file to the destination
+    copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,destinationDbName))
+
+    return str(os.path.join(backupFolder,destinationDbName))
+
+
+
 
 # Run the Script
 if __name__ == '__main__':
+    
     nowDate = datetime.utcnow()
 
     # Elect best buyers and administrators on Friday
@@ -77,7 +108,30 @@ if __name__ == '__main__':
         print('It''s Friday. Elect best buyers and administrators.')
         try:
             electBestContributors()
+            print('Done electing best buyers and administrators.')
         except:
             print('Error on posting the best buyers and administrators.')
 
     
+    # Conduct the daily rotating Save of the Database
+    print('Do the daily backup of the database.')
+    try:
+        dest = dailyDatabaseSave(nowDate)
+        msg = 'Daily Backup of the Database File successfully stored under `'+dest+'`.'
+
+        # Send message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        for u in data:
+            slack_SendMsg(msg, user=u)
+
+        print('Finished the daily backup.')
+
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('The daily backup of the Database failed!', user=u)
+            print('Daily Backup failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of database backup.')
