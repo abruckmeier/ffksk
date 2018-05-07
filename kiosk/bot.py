@@ -9,11 +9,13 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
-def slack_SendMsg(msg, user=None, channel=False):
+def slack_SendMsg(msg, user=None, channel=False, userName=None):
 	
 	if channel==True:
 		slackSettings = getattr(settings,'SLACK_SETTINGS')
 		userAdress = '#'+slackSettings['channelToPost']
+	elif not userName is None:
+		userAdress = '@' + userName
 	else:
 		userAdress = '@' + user.slackName	
 		# Functional Users (bank, thief) do not need messages
@@ -25,7 +27,7 @@ def slack_SendMsg(msg, user=None, channel=False):
 	sc = SlackClient(slack_token)
 	sc.api_call(
 		"chat.postMessage",
-		link_names=1,
+		link_names=True,
 		channel=userAdress,
 		text = msg,
 	)	

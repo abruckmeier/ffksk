@@ -13,6 +13,7 @@ django.setup()
 from django.conf import settings
 from datetime import datetime
 from shutil import copyfile
+from slackclient import SlackClient
 
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg
@@ -33,7 +34,7 @@ def electBestContributors():
         secBestBuyers = 'und '.join(secBestBuyers)
 
         bestBuyers = data[0]['first_name'] + ' ' + data[0]['last_name']
-        if not secBestBuyers==[]:
+        if not secBestBuyers=='':
             bestBuyers += ' (gefolgt von '+secBestBuyers+')'
     else:
         bestBuyers = None
@@ -48,7 +49,7 @@ def electBestContributors():
         secBestAdmins = 'und '.join(secBestAdmins)
 
         bestAdmins = data[0]['first_name'] + ' ' + data[0]['last_name']
-        if not secBestAdmins==[]:
+        if not secBestAdmins=='':
             bestAdmins += ' (gefolgt von '+secBestAdmins+')'
     else:
         bestAdmins = None
@@ -69,8 +70,9 @@ def electBestContributors():
 
     return
 
+
 # Conduct the daily rotating Save of the Database
-def dailyDatabaseSave(nowDate):
+def dailyBackup(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
@@ -96,6 +98,52 @@ def dailyDatabaseSave(nowDate):
     return str(os.path.join(backupFolder,destinationDbName))
 
 
+def weeklyBackup(nowDate):
+
+    # Get information and stop if not activated
+    backupSettings = getattr(settings,'BACKUP')
+    if not backupSettings['active']:
+        print('Backup not activated in settings. Stop.')
+        return 'Backup not activated in settings.'
+
+    # Get the origin of the to attach file
+    baseDir = getattr(settings,'BASE_DIR')
+    databaseName = getattr(settings,'DATABASE_NAME')
+    
+    # Get the backup folder
+    backupFolder = backupSettings['backupFolder']
+    if not os.path.exists(backupFolder):
+        print('Backup Folder does not exist. Create it...')
+        os.makedirs(backupFolder)
+
+    # Create the day-specific file name of the backup file
+    attDatabaseName = 'save_'+datetime.strftime(nowDate,'%Y-%m-%dT%H-%M-%S-%fZ')+'_'+databaseName
+
+    # Copy the file to the destination
+    copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,attDatabaseName))
+
+    # Send the database attached as Slack-message
+    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+    sc = SlackClient(slack_token)
+
+    for usr in backupSettings['sendWeeklyBackupToUsers']:
+        sc.api_call(
+            'files.upload', 
+            channels='@'+usr, 
+            as_user=True,
+            text='test',
+            filename=attDatabaseName, 
+            file=open(os.path.join(baseDir,databaseName), 'rb'),
+        )
+
+        # Send additional message to the receivers of the attached database
+        slack_SendMsg('You received the database attached as backup in an other message. Please save the file to a secure place and delete the Slack message!', userName=usr)
+
+    return {
+        'weeklyStoredAtServer':str(os.path.join(backupFolder,attDatabaseName)), 
+        'weeklySentToUsers': ['@'+x for x in backupSettings['sendWeeklyBackupToUsers']],
+    }
+
 
 
 # Run the Script
@@ -116,7 +164,7 @@ if __name__ == '__main__':
     # Conduct the daily rotating Save of the Database
     print('Do the daily backup of the database.')
     try:
-        dest = dailyDatabaseSave(nowDate)
+        dest = dailyBackup(nowDate)
         msg = 'Daily Backup of the Database File successfully stored under `'+dest+'`.'
 
         # Send message to all admins
@@ -134,4 +182,29 @@ if __name__ == '__main__':
                 slack_SendMsg('The daily backup of the Database failed!', user=u)
             print('Daily Backup failed. Slack Message sent.')
         except:
-            print('Failing to send Slack Message with Fail Notice of database backup.')
+            print('Failing to send Slack Message with Fail Notice of database daily backup.')
+
+
+    # Conduct a weekly Backup of the database: Send via Slack to the Admins
+    if nowDate.weekday()==3:
+        print('It''s Thursday. Do the weekly backup.')
+        try:
+            ret = weeklyBackup(nowDate)
+            msg = 'Weekly Backup of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
+
+            # Send message to all admins
+            data = KioskUser.objects.filter(visible=True, rechte='Admin')
+            for u in data:
+                slack_SendMsg(msg, user=u)
+
+            print('Finished the weekly backup.')
+
+        except:
+            # Send failure message to all admins
+            data = KioskUser.objects.filter(visible=True, rechte='Admin')
+            try:
+                for u in data:
+                    slack_SendMsg('The weekly backup of the Database failed!', user=u)
+                print('Weekly Backup failed. Slack Message sent.')
+            except:
+                print('Failing to send Slack Message with Fail Notice of database weekly backup.')
