@@ -25,3 +25,8 @@ DATABASES = {
 SLACK_O_AUTH_TOKEN = ''
 SLACK_VERIFICATION_TOKEN = ''
 
+BACKUP = {
+    'active': True,
+    'backupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)),'backupFolderName'),
+    'sendWeeklyBackupToUsers': ['slackUserName',],
+}
