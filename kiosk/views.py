@@ -908,7 +908,7 @@ def rueckbuchung(request):
 			try:
 				user = KioskUser.objects.get(id = session_data['userID'])
 
-				txt = 'Dir wurde das Produkt "'+str(session_data['anzahlZurueck'])+'x '+str(session_data['product'])+'" rückgebucht und der Betrag von '+str('%.2f' % session_data['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'
+				txt = 'Dir wurde das Produkt "'+str(session_data['anzahlZurueck'])+'x '+str(session_data['product'])+'" r'+chr(252)+'ckgebucht und der Betrag von '+str('%.2f' % session_data['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'
 				slack_SendMsg(txt,user)
 			except:	pass
 
