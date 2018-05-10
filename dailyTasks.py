@@ -11,13 +11,14 @@ django.setup()
 
 # Import the Modules
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 from shutil import copyfile
 from slackclient import SlackClient
 
 from kiosk.queries import readFromDatabase
-from kiosk.bot import slack_SendMsg
+from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
 from profil.models import KioskUser
+from kiosk.models import ZumEinkaufVorgemerkt
 
 
 # Elect best buyers and administrators
@@ -58,7 +59,7 @@ def electBestContributors():
     if bestBuyers or bestAdmins:
         addressaten = ', '.join(['@'+x for x in list(set(addressaten))])
         msg = addressaten + chr(10)
-        msg += '*Zeit für ein Lob:*'+chr(10)+chr(10)
+        msg += '*Zeit f'+chr(252)+'r ein Lob:*'+chr(10)+chr(10)
         if bestBuyers:
             msg += ':trophy:\tGek'+chr(252)+'rt zum besten Eink'+chr(228)+'ufer dieser Woche wird '+bestBuyers+'!'+chr(10)
         if bestAdmins:
@@ -146,11 +147,58 @@ def weeklyBackup(nowDate):
 
 
 
+def deleteTooOldProductsInShoppingList(nowDate):
+
+    # Get items older than seven days
+    t = nowDate - timedelta(days=7)
+    oldItems = ZumEinkaufVorgemerkt.objects.filter(einkaufsvermerkUm__lt=t)
+    
+    # Notification of deletion to users
+    userIDs = [o.einkaeufer_id for o in oldItems]
+    userIDs = list(set(userIDs))
+    for userID in userIDs:
+        u = KioskUser.objects.get(id=userID)
+        msg = 'Produkte, die l'+chr(228)+'nger als sieben Tage in deiner pers'+chr(246)+'nlichen Einkaufsliste waren, wurden nun wieder in die offene Einkaufsliste zur'+chr(252)+'ckgeschrieben. Du hast nun nicht mehr das Vorrecht, diese Produkte zu kaufen. \nUnter https://ffekiosk.pythonanywhere.com/menu/meineeinkaufe/ kannst du deine ver'+chr(228)+'nderte pers'+chr(246)+'nliche Einkaufsliste einsehen. Unter https://ffekiosk.pythonanywhere.com/menu/einkaufsvormerkungen/ kannst du neue Produkte in deine pers'+chr(246)+'nliche Einkaufsliste aufnehmen.'
+        slack_SendMsg(msg,u)
+
+    # Delete the items and refill the Kiosk
+    oldItems.delete()
+    checkKioskContentAndFillUp()
+
+    return
+
+
+# Give a warning message to buyers with products in personal shopping list older than 4 days
+def warningTooOldProductsInShoppingList():
+
+    # Get old Products and the users
+    items = readFromDatabase('getZumEinkaufVorgemerktOlderThan4Days')
+
+    # Get the relevant users for sending messages
+    userSlackNames = [x['slackName'] for x in items]
+    userSlackNames = list(set(userSlackNames))
+
+    # For each user
+    for u in userSlackNames:
+        # Get his items older than 4 days
+        uItems = [x for x in items if x['slackName']==u]
+
+        #
+        msg = '*Vorsicht!*\nDu hast vor vier (oder mehr) Tagen folgende Produkte in deine pers'+chr(246)+'nliche Einkaufsliste aufgenommen und noch nicht eingekauft:\n\n'
+        for i in uItems:
+            msg += '\t' + str(i['anzahl']) + 'x ' + i['produktName'] + '\n'
+        msg += '\n Du hast insgesamt sieben Tage Zeit, deine Besorgungen f'+chr(252)+'r den Kiosk zu machen. Wurde nach dieser Zeit kein Einkauf bei einem Verwalter abgegeben, werden die entsprechenden Produkte aus deiner pers'+chr(246)+'nlichen Einkaufsliste gel'+chr(246)+'scht und wandern wieder in die offene Einkaufsliste.'+'\nUnter https://ffekiosk.pythonanywhere.com/menu/meineeinkaufe/ kannst du deine pers'+chr(246)+'nliche Einkaufsliste einsehen und modifizieren.'
+
+        slack_SendMsg(msg, userName=u)
+
+    return
+
+
 # Run the Script
 if __name__ == '__main__':
     
     nowDate = datetime.utcnow()
-
+    
     # Elect best buyers and administrators on Friday
     if nowDate.weekday()==4:
         print('It''s Friday. Elect best buyers and administrators.')
@@ -208,3 +256,38 @@ if __name__ == '__main__':
                 print('Weekly Backup failed. Slack Message sent.')
             except:
                 print('Failing to send Slack Message with Fail Notice of database weekly backup.')
+
+
+    # Delete Products in the shopping list older than 7 days
+    print('Delete products in personal shopping list older than 7 days.')
+    try:
+        deleteTooOldProductsInShoppingList()
+        print('Finished deletion of products in the shopping list, older than 7 days.')
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('The deletion of products in the shopping list, older than 7 days, did not complete!', user=u)
+            print('Daily deletion of products in the shopping list, older than 7 days failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of Daily deletion of products in the shopping list, older than 7 days.')
+
+    
+
+
+    # Give a warning message to buyers with products in personal shopping list older than 4 days
+    print('Do the daily warning of products in the shopping list, older than 4 days.')
+    try:
+        warningTooOldProductsInShoppingList()
+        print('Finished warning of products in the shopping list, older than 4 days.')
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('The notification of products in the shopping list, older than 4 days, did not complete!', user=u)
+            print('Daily warning of products in the shopping list, older than 4 days failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of Daily warning of products in the shopping list, older than 4 days.')
+
