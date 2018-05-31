@@ -308,7 +308,7 @@ if __name__ == '__main__':
     # Delete Products in the shopping list older than 7 days
     print('Delete products in personal shopping list older than 7 days.')
     try:
-        deleteTooOldProductsInShoppingList()
+        deleteTooOldProductsInShoppingList(nowDate)
         print('Finished deletion of products in the shopping list, older than 7 days.')
     except:
         # Send failure message to all admins
