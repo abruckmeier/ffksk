@@ -29,6 +29,10 @@ def angestellt_bis_change(request):
 		if aktivBisChangeForm.is_valid():
 			date = aktivBisChangeForm.cleaned_data.get('aktivBis')
 			usr.aktivBis = date
+			
+			# Remove the flag that (maybe) user has been warned about the end of active account
+			usr.activity_end_msg = 0
+			
 			usr.save()
 
 			request.session['angestellt_bis_change'] = datetime.strftime(date,'%d.%m.%Y')

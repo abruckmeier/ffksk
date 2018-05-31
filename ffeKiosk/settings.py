@@ -126,6 +126,11 @@ THOUSAND_SEPARATOR = ' '
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    #os.path.join(BASE_DIR, "static"),
+    #'/var/www/static/',
+] # python manage.py collectstatic
+
 
 # Finanzielle Konstanten -> spaeter in den KioskBot geben
 FINANZ = {
