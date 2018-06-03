@@ -3,6 +3,7 @@ from . import views, slackCommands, slackMessages
 
 urlpatterns = [
 	url(r'^$', views.start_page, name='start_page'),
+	url(r'^imkiosk/$', views.imkiosk_page, name='imkiosk_page'),
 	url(r'^menu/$', views.home_page, name='home_page'),
 	url(r'^menu/kauf$', views.kauf_page, name='kauf_page'),
 	url(r'^menu/gekauft$', views.gekauft_page, name='gekauft_page'),

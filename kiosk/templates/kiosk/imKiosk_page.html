@@ -1,0 +1,23 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+	<div class="page-header noMarginTop">
+		<h4>Aktuell im Kiosk</h4>
+	</div>
+
+	<div class="eingeruecktklein">
+		<p class="itemsDef">
+			Item | # | &#8364; 
+		</p>
+		
+		{% for item in kioskItems %}
+			<p class="items">
+				{{item.produktName}}  | 
+				{{item.anzahl}} | 
+				{{item.verkaufspreis | floatformat:2}} 
+			</p>
+		{% endfor %}
+	</div>
+
+{% endblock %}

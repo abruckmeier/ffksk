@@ -74,6 +74,17 @@ def start_page(request):
 		'admins': admins, 'accountants': accountants, 
 		'chart_DaylyVkValue': Chart_UmsatzHistorie(), })
 
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
+def imkiosk_page(request):
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	return render(request, 'kiosk/imkiosk_page.html', 
+		{'kioskItems': kioskItems, })
+
+
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
 def home_page(request):
