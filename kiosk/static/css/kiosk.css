@@ -1,3 +1,107 @@
+/* overwrite Bootstrap */
+
+.panel-heading {
+    cursor: pointer;
+}
+
+.container-fluid {
+    padding: 0;
+    margin: 0;
+}
+
+/* Divs and fundamental style */
+
+.divTopHeading {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    max-width: 100%;
+    height: 70px;
+    text-align: center;
+    vertical-align: top;
+    padding-bottom: 7px;
+    background-color: #428bca;
+    color: #eeeeee;
+    margin: 0;
+
+}
+
+.aTopHeading {
+    color: #eeeeee;
+    text-decoration: none;
+}
+.aTopHeading:hover {
+    color: #dddddd;
+    text-decoration: none;
+}
+
+.divTopMenu {
+    display: inline-block;
+    position: sticky;
+    top: 22px;
+    left:80vw;
+    margin: 0;
+    z-index: 99;
+}
+
+.ulTopMenuWidth {
+    min-width: 50vw;
+}
+
+.divMain {
+    display: inline-block;
+    position: relative;
+    top:70px;
+    padding-left:3vw;
+    padding-right: 3vw;
+}
+
+.divRightSide {
+    display: none;
+}
+
+
+
+/* Styles */
+
+.bold{
+    font-weight: bold;
+}
+
+.noMarginTop {
+    margin-top: 0;
+}
+
+.smallText {
+    font-size: 85%;
+}
+
+.justified {
+    text-align: justify;
+}
+
+.bigLink {
+    font-weight: bold;
+    font-size: 115%;
+}
+
+.code {
+    padding: 5px;
+    padding-left: 5vw;
+    font-family: "Courier New";
+    color: green;
+}
+
+
+
+
+
+
+@media screen and (min-width: 600px) {
+
+
 /* Allgemein */
 #bodystyle{
 
@@ -14,7 +118,6 @@ hr.small {
     display: inline-block;
     padding-left: 10vw;
     padding-top: 10px;
-    min-width: 100px;
     width: 70vw;
     text-align: center;
     vertical-align: top;
@@ -35,10 +138,16 @@ hr.small {
     display: inline-block;
     padding-left:3vw;
     padding-right: 3vw;
-    width: 68vw;
+    width: 100vw;
     min-width: 100px;
     vertical-align: top;
 }
+
+
+    .mainDiv {
+        width: 68vw;
+    }
+
 
 .allgInfoDiv {
     display: inline-block;
@@ -169,3 +278,5 @@ tr.konto:nth-child(even) {
     background-color: #1D4E7A;
 }
 */
+
+}

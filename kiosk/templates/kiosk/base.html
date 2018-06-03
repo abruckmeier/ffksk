@@ -2,24 +2,39 @@
 <html>
 	<head>
 		<title>FfE-Kiosk</title>
-		<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
-		<script type="text/javascript" 
-			src="{% static 'js/jquery-3.2.1.min.js' %}">
-		</script>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+
+  		<!-- JQuery -->
+		<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
+		<!--<script type="text/javascript" src="{% static 'js/jquery-ui-1.12.1.min.js' %}"></script>
+		<link rel="stylesheet" href="{% static 'css/jquery-ui-1.12-base.min.css' %}">-->
+
+		<!-- Bootstrap -->
+		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap3.3.7/css/bootstrap.min.css' %}">
+		<script type="text/javascript" src="{% static 'bootstrap3.3.7/js/bootstrap.min.js' %}"></script>
+
+		<!-- Chart JS -->
 		<script type="text/javascript" 
 			src="{% static 'js/Chart.bundle.min.js' %}">
 		</script>
+
+		<!-- Momentjs -->
+		<!--<script type="text/javascript" src="{% static 'js/moment.2.18.1.min.js' %}"></script>-->
+
+		<!-- Date Range Picker -->
+		<!--<script type="text/javascript" src="{% static 'js/bootstrap.dateranepicker.2.js' %}"></script>
 		<link rel="stylesheet" type="text/css" 
-			href="{% static 'css/bootstrap.min.css' %}">
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+			href="{% static 'css/bootstrap.daterangepicker.2.css' %}">-->
 
-		<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-  		<!--<link rel="stylesheet" href="/resources/demos/style.css">-->
-  		<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-  		<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+		<!-- own Stylesheet and Script-->
+		<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
+		<!--<script type="text/javascript" src="{% static 'js/ajax_csrf_prepare.js' %}"></script>-->
 
-  		{% block javascript %}
-		{% endblock %}
+		{% block css %}{% endblock %}
+
+  		{% block javascript %}{% endblock %}
 
   		<script type="text/javascript">
   			var isClicked = false;
@@ -53,31 +68,92 @@
 	</head>
 	<body>
 
-		<div class="headDivHeading">
-			<h2 class="headHeading">FfE-Kiosk</h2>
+		<div class="container-fluid divTopHeading">
+			<a class="aTopHeading" href="{% url 'start_page' %}">
+				<h2 class="bold">FfE-Kiosk</h2>
+			</a>
 		</div>
 
-		<div class="headDivLinks">
-			<a href="{% url 'start_page' %}">Startseite</a>
-			<hr class="small">
-			{% if user.is_authenticated %}
-				Eingeloggt als <b>{{ user.username }}</b> <br>
-				<a href="{% url 'logout' %}">Logout</a><br>
-				<a href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a>
-			{% else %}
-				<a href="{% url 'login' %}">Login</a>
-			{% endif %}	
-		</div>
 
-		<hr>
+
+
+
+		<div class="container-fluid divTopMenu">
 		
-		<div class="mainDiv">
+			<div class="dropdown">
+
+				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<span class="glyphicon glyphicon-list"></span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-right ulTopMenuWidth" aria-labelledby="dropdownHead">
+					<li class="dropdown-header">Navigation</li>
+					<li><a href="{% url 'start_page' %}">Startseite</a></li>
+					{% if user.is_authenticated and perms.profil.perm_kauf %}
+						<li><a href="{% url 'imkiosk_page' %}">Im Kiosk</a></li>
+						<li>Offene Einkaufsliste</li>
+					{% endif %}
+					<li role="separator" class="divider"></li>
+
+
+					{% if user.is_authenticated %}
+						<li class="dropdown-header">Quick Links</li>
+						{% if perms.profil.perm_kauf %}
+							<li>Einkaufen</li>
+						{% endif %}
+						{% if perms.profil.do_einkauf %}
+							<li>Besorungen ankündigen</li>
+						{% endif %}
+						<li role="separator" class="divider"></li>
+					{% endif %}
+
+
+					<li class="dropdown-header">
+						Benutzeraccount
+						{% if user.is_authenticated %}
+							<br>
+							Eingeloggt als <b>{{ user.username }}</b>
+						{% endif %}
+					</li>
+					{% if not user.is_authenticated %}
+						<li><a href="{% url 'login' %}">Login</a></li>
+					{% else %}
+						<li><a href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a></li>
+						<li><a href="{% url 'logout' %}">Logout</a></li>
+					{% endif %}			
+
+
+					<li role="separator" class="divider"></li>
+					<li class="dropdown-header">Info</li>
+					<li><a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a></li>
+					<li>Kontakt & Impressum</li>
+				</div>
+
+			</div>
+
+		</div>
+
+
+		
+		<div class="container-fluid divMain">
 			{% block content %}
 			{% endblock %}
+
+			<br>
 			<hr>
+
+			<div class="smallText">
+				<a href="{% url 'anleitung_page' %}">Impressum & Kontakt</a>
+				<br />
+				This project is open-source (License?). View the source code on GitHub: <a href="https://github.com/AndiBr/ffksk">https://github.com/AndiBr/ffksk</a>
+			</div>
+
+			<br>
 		</div>
 
-		<div class="allgInfoDiv">
+
+
+
+		<div class="container-fluid divRightSide">
 			{% if perms.profil.perm_kauf %}
 			<div>
 				<h4> Im Kiosk: </h4>
@@ -115,7 +191,6 @@
 					{% endfor %}
 				</div>
 			</div>
-			<hr>
 			{% endif %}
 		</div>
 
