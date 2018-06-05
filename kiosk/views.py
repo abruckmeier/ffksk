@@ -111,8 +111,11 @@ def kauf_page(request):
 	if request.method == "POST":
 
 		wannaBuyItem = request.POST.get("produktName")
-		buySuccess = False
-		buySuccess = Kiosk.buyItem(wannaBuyItem,request.user)
+		retVal = Kiosk.buyItem(wannaBuyItem,request.user)
+		buySuccess = retVal['success']
+
+		retVal['msg'] = retVal['msg'][-1]
+		request.session['buy_data'] = retVal
 
 		if buySuccess:
 			# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
@@ -158,8 +161,20 @@ def gekauft_page(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
+	# Get the session data with details
+	if 'buy_data' in request.session.keys():
+		buy_data = request.session['buy_data']
+		del request.session['buy_data']
+	else:
+		return HttpResponseRedirect(reverse('kauf_page'))
+
+	# Get the current account
+	currentUser = request.user
+	account = Kontostand.objects.get(nutzer__username=request.user).stand / 100.0
+
 	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
+			, 'einkaufsliste': einkaufsliste, 'product': buy_data['product'], 
+			'price': buy_data['price'], 'account': account, })
 
 
 @login_required
@@ -171,8 +186,20 @@ def kauf_abgelehnt_page(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
+	# Get the session data with details
+	if 'buy_data' in request.session.keys():
+		buy_data = request.session['buy_data']
+		del request.session['buy_data']
+	else:
+		return HttpResponseRedirect(reverse('kauf_page'))
+
+	# Get the current account
+	currentUser = request.user
+	account = Kontostand.objects.get(nutzer__username=request.user).stand / 100.0
+
 	return render(request,'kiosk/kauf_abgelehnt_page.html',{'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste})
+			, 'einkaufsliste': einkaufsliste, 'product': buy_data['product'], 
+			'msg': buy_data['msg'], 'account': account, })
 
 
 

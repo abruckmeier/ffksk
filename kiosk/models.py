@@ -261,12 +261,16 @@ class Kiosk(models.Model):
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
+		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0}
+
 		# First, look in Kiosk.
 		try:
 			item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
 			foundInKiosk = True
 		except:
-			print('Not in Kiosk anymore. But now, look in Dieb-Bought items...')
+			msg = 'Selected item is not in Kiosk anymore. But let\'s look into the bought items of "Dieb" ...'
+			print(msg)
+			retVals['msg'].append(msg)
 			foundInKiosk = False
 
 		# If not available in Kiosk, do Rueckbuchung from Dieb
@@ -274,8 +278,10 @@ class Kiosk(models.Model):
 			try:
 				itemBoughtByDieb = Gekauft.objects.filter(kaeufer__username='Dieb',produktpalette__produktName=wannaBuyItem)[:1].get()
 			except:
-				print('Not found in Gekauft, too. Stop it.')
-				return False
+				msg = 'No selecetd item has been found in the whole Kiosk to be bought.'
+				print(msg)
+				retVals['msg'].append(msg)
+				return retVals
 			
 			# Book back the item from Dieb
 			dieb = KioskUser.objects.get(username='Dieb')
@@ -289,14 +295,18 @@ class Kiosk(models.Model):
 		# Check if user is allowed to buy something and has enough money
 		allowedConusmers = readFromDatabase('getUsersToConsume')
 		if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
-			print('User not allowed to consume')
-			return False
+			msg = 'You are not allowed to buy a product.'
+			print(msg)
+			retVals['msg'].append(msg)
+			return retVals
 
 		if not user.username=='Dieb':
 			konto = Kontostand.objects.get(nutzer = user)
 			if konto.stand - actPrices < 0:
-				print('Konto too low.')
-				return False
+				msg = 'Your account is too low.'
+				print(msg)
+				retVals['msg'].append(msg)
+				return retVals
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
@@ -315,7 +325,10 @@ class Kiosk(models.Model):
 
 		g.save()
 		
-		return True
+		retVals['success'] = True
+		retVals['msg'].append('OK')
+		retVals['price'] = actPrices/100.0
+		return retVals
 
 
 class Gekauft(models.Model):
@@ -664,7 +677,7 @@ class ZuVielBezahlt(models.Model):
 					buyItem = item["produkt_name"]
 
 					for x in range(0,diff):
-						buySuccess = Kiosk.buyItem(buyItem,user)
+						retVal = Kiosk.buyItem(buyItem,user)
 
 					report.append({'id': item["id"], 
 						'produkt_name': item["produkt_name"], 

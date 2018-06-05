@@ -2,23 +2,32 @@
 
 {% block content %}
 	
-
-
-	<h4>Vielen Dank f&#252;r den Einkauf im FfE-Kiosk!</h4>
-	<br>
-	<br>
-
-	<div class="eingerueckt">
-
-
-		<a href="{% url 'kauf_page' %}">Ein weiteres Produkt kaufen</a>
-		<br>
-		<br>
-		<a href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
-		<br><br>
-		<a href="{% url 'logout' %}" style="font-size:80%">Ausloggen</a>
-		
-
+	<div class="page-header noMarginTop">
+		<h4>Ein Produkt kaufen <small>Vielen Dank f&#252;r deinen Einkauf!</small></h4>
 	</div>
 
+	<div class="panel panel-default">
+		Es wurde 1x "{{product}}" für {{price | floatformat:2}} &#8364; verbucht.
+		<br><br>
+		Dein Kontostand ist nun {{account | floatformat:2}} &#8364;.
+	</div>
+
+	<br><hr>
+
+	<div class="panel panel-default">
+		<a class="bigLink" href="{% url 'kauf_page' %}">Ein weiteres Produkt kaufen</a>
+	</div>
+
+	<div class="panel panel-default">
+		<a href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
+	</div>
+
+	<div class="panel panel-default">
+		<a style="font-size: 90%" href="{% url 'start_page' %}">zur&#252;ck</a>
+	</div>
+		
+
 {% endblock %}
+
+ 'product': buy_data['product'], 
+			'price': buy_data['price'], 'account': account, 
