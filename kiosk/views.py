@@ -87,6 +87,22 @@ def imkiosk_page(request):
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
+def offeneEkListe_page(request):
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/offeneEkListe_page.html', 
+		{'einkaufsliste': einkaufsliste, })
+
+
+def impressum_page(request):
+
+	return render(request, 'kisok/impressum_page', {})
+
+
+
+@login_required
+@permission_required('profil.perm_kauf',raise_exception=True)
 def home_page(request):
 	currentUser = request.user
 	kontostand = Kontostand.objects.get(nutzer__username=request.user).stand / 100.0

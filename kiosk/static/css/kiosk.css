@@ -1,6 +1,6 @@
 /* overwrite Bootstrap */
 
-.panel-heading {
+a {
     cursor: pointer;
 }
 
@@ -22,18 +22,18 @@
     text-align: center;
     vertical-align: top;
     padding-bottom: 7px;
-    background-color: #428bca;
-    color: #eeeeee;
+    /*background-color: #428bca;*/
+    color: #428bca;
     margin: 0;
 
 }
 
 .aTopHeading {
-    color: #eeeeee;
+    color: #428bca;
     text-decoration: none;
 }
 .aTopHeading:hover {
-    color: #dddddd;
+    color: #428bca;
     text-decoration: none;
 }
 
@@ -94,7 +94,13 @@
     color: green;
 }
 
+.indented {
+    padding-left: 5vw;
+}
 
+.inline {
+    display: inline;
+}
 
 
 

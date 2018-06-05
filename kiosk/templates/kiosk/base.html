@@ -36,34 +36,7 @@
 
   		{% block javascript %}{% endblock %}
 
-  		<script type="text/javascript">
-  			var isClicked = false;
-  			var isClickedt = false;
 
-  			$(document).ready(function(){
-  				$("div.dropdown-content").hide(500);
-  				$("button.dropbtn").click(function(){
-  					if (!isClicked) {
-  						$("div.dropdown-content").show(500);
-  						isClicked = true;
-  						setTimeout(
-							function(){
-		  						$("div.dropdown-contentt").hide(200);
-		  						isClickedt = false;
-		  					},300);
-  					} else {
-  						$("div.dropdown-content").hide(500);
-  						isClicked = false;
-  					}
-  				});
-  				$("div.dropdown-content").click(function(e){
-  					e.preventDefault();
-  					$("div.dropdown-content").hide(500);
-  					isClicked = false;
-  				});
-
-  			});
-  		</script>
 
 	</head>
 	<body>
@@ -90,7 +63,7 @@
 					<li><a href="{% url 'start_page' %}">Startseite</a></li>
 					{% if user.is_authenticated and perms.profil.perm_kauf %}
 						<li><a href="{% url 'imkiosk_page' %}">Im Kiosk</a></li>
-						<li>Offene Einkaufsliste</li>
+						<li><a href="{% url 'offeneEkListe_page' %}">Offene Einkaufslisten</a></li>
 					{% endif %}
 					<li role="separator" class="divider"></li>
 
@@ -98,10 +71,10 @@
 					{% if user.is_authenticated %}
 						<li class="dropdown-header">Quick Links</li>
 						{% if perms.profil.perm_kauf %}
-							<li>Einkaufen</li>
+							<li><a href="{% url 'kauf_page' %}">Einkaufen</a></li>
 						{% endif %}
 						{% if perms.profil.do_einkauf %}
-							<li>Besorungen ankündigen</li>
+							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorungen ankündigen</a></li>
 						{% endif %}
 						<li role="separator" class="divider"></li>
 					{% endif %}
@@ -125,7 +98,7 @@
 					<li role="separator" class="divider"></li>
 					<li class="dropdown-header">Info</li>
 					<li><a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a></li>
-					<li>Kontakt & Impressum</li>
+					<li><a href="{% url 'impressum_page' %}">Kontakt & Impressum</a></li>
 				</div>
 
 			</div>
@@ -142,7 +115,7 @@
 			<hr>
 
 			<div class="smallText">
-				<a href="{% url 'anleitung_page' %}">Impressum & Kontakt</a>
+				<a href="{% url 'impressum_page' %}">Impressum & Kontakt</a>
 				<br />
 				This project is open-source (License?). View the source code on GitHub: <a href="https://github.com/AndiBr/ffksk">https://github.com/AndiBr/ffksk</a>
 			</div>

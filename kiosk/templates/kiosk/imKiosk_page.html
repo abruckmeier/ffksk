@@ -6,18 +6,24 @@
 		<h4>Aktuell im Kiosk</h4>
 	</div>
 
-	<div class="eingeruecktklein">
-		<p class="itemsDef">
-			Item | # | &#8364; 
-		</p>
-		
-		{% for item in kioskItems %}
-			<p class="items">
-				{{item.produktName}}  | 
-				{{item.anzahl}} | 
-				{{item.verkaufspreis | floatformat:2}} 
-			</p>
-		{% endfor %}
+	<div>
+
+		<table class="table table-striped smallText">
+			<tr>
+				<th>Produkt</th>
+				<th>Anzahl verfügbar</th>
+				<th>Verkaufspreis</th>
+			</tr>
+
+			{% for item in kioskItems %}
+				<tr>
+					<td>{{item.produktName}}</td>
+					<td>{{item.anzahl}}</td>
+					<td>{{item.verkaufspreis | floatformat:2}} &#8364;</td>
+				</tr>
+			{% endfor %}
+		</table>
+
 	</div>
 
 {% endblock %}

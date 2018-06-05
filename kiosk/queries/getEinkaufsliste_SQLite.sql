@@ -1,11 +1,13 @@
 select
   "gruppenID",
-  cast('<p class="items">' || 
-    group_concat(item,'</p><p class="items">') || 
-    '</p>' as text) as paket
+  "produktName",
+  "anzahlElemente",
+  cast('<p class="items">' || item || '</p>' as text) as paket
 from (
 		select
 		  "gruppenID",
+		  "produktName",
+		  "anzahlElemente",
 		  cast("produktName" || ' | ' || anzahlElemente as text) as item
 		from (
 			  select 
@@ -22,5 +24,5 @@ from (
 			  group by c."gruppenID", b."produktName"
 		)
 	)
-group by "gruppenID"
+--group by "gruppenID"
 order by "gruppenID" asc
