@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
 from django.utils import timezone
+import pytz
 import datetime
 from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
@@ -874,6 +875,11 @@ def produktKommentare(request):
 	# Besorge Liste aller Produktkommentare
 	allProductComments = readFromDatabase('getAllProductComments')
 
+	# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
+	for k,v in enumerate(allProductComments):
+		allProductComments[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
+
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
@@ -906,6 +912,10 @@ def produktKommentieren(request, s):
 	allCommentsOfProduct = readFromDatabase('getAllCommentsOfProduct',[productID])
 	productName = allCommentsOfProduct[0]["produkt_name"]
 	latestComment = allCommentsOfProduct[0]["kommentar"]
+
+	# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
+	for k,v in enumerate(allCommentsOfProduct):
+		allCommentsOfProduct[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()

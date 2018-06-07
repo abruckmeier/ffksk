@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
-import datetime
 from dateutil import tz
+import pytz
 from datetime import date
 from django.core.validators import MinValueValidator
 from django.db import transaction
@@ -78,10 +78,6 @@ class Einkaufsliste(models.Model):
 		return("[#" + str(self.kiosk_ID) + "] " +
 			self.produktpalette.produktName + ", Bedarf angemeldet um " +
 			str(self.bedarfErstelltUm))
-
-	def getEinkaufslisteCompressed():
-		einkaufsliste = readFromDatabase('getEinkaufslisteCompressed')
-		return(einkaufsliste)
 
 	def getEinkaufsliste():
 		einkaufsliste = readFromDatabase('getEinkaufsliste')
@@ -474,6 +470,10 @@ class GeldTransaktionen(models.Model):
 
 		allTransactions = readFromDatabase('getTransactions',
 			[user.id, user.id, int(page)*int(limPP), limPPn])
+
+		# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
+		for k,v in enumerate(allTransactions):
+			allTransactions[k]['datum'] = pytz.timezone('UTC').localize(v['datum'])
 
 		return(allTransactions)
 
