@@ -3,13 +3,24 @@
 
 {% block content %}
 	
-	<h4> {{ productName }} - Kommentieren: </h4>
-	<br>
+	<div class="page-header noMarginTop">
+		<h4>
+			<a style="color: black;" href="{% url 'produkt_kommentare_page' %}">Produktkommentare</a> 
+			<small>{{ productName }}</small>
+		</h4>
+	</div>
 
-	<div class="eingerueckt">
 
-		<h4>Editieren:</h4>
+	<div id="commentActivator">
+		<button type="button" class="btn btn-default" onclick="activateCommentForm()">
+			<small>Kommentar erstellen</small>
+		</button>
+		&nbsp;&nbsp;
+		<a onclick="javascript:history.go(-1);">zur&#252;ck</a>
+	</div>
 
+
+	<div id="commentForm" style="display: none;">
 		<form method="POST" class="">{% csrf_token %}
 			<input type="text" name="productID" id="productID" style="display: none" readonly value="{{productID}}">
 
@@ -18,34 +29,53 @@
 				style="">{{latestComment}}</textarea>
 
 			<br>
-			<button type="submit" class="btn">Kommentar abgeben </button>
-			<a href="{% url 'produkt_kommentare_page' %}"> Abbrechen & zur&#252;ck</a>
+			<button type="submit" class="btn btn-primary">Kommentar abgeben </button>
+			<button type="button" class="btn btn-default" onclick="deactivateCommentForm()">
+				<small>Kommentar verwerfen</small>
+			</button>
+			<a class="smallText" onclick="javascript:history.go(-1);">Abbrechen & zur&#252;ck</a>
 		</form>
-
-		<br>
-
-		<h4>Historie:</h4>
-		<div class="eingerueckt">
-			<table class="konto">
-				<tr class="konto">
-					<th class="konto" style="width:100px;text-align: center;">Date</th>
-					<th class="konto">Comment</th>
-				</tr>
-				{% for item in allCommentsOfProduct %}
-				<tr class="konto">
-					<td class="konto" style="text-align: center;">{{item.erstellt}}</td>
-					<td class="konto">{{item.kommentar}}</td>
-				</tr>
-				{% endfor %}
-			</table>
-		</div>
 	</div>
 
+
+	<br>
+
+
+	<div>
+		<table class="table table-striped smallText autoSize">
+			<tr>
+				<th>Datum</th>
+				<th>Kommentar</th>
+			</tr>
+			{% for item in allCommentsOfProduct %}
+			<tr>
+				<td>{{item.erstellt | date:"d.m.Y H:i"}}</td>
+				<td>{{item.kommentar}}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	</div>
+
+
 	<hr>
-	<a href="{% url 'produkt_kommentare_page' %}">zur&#252;ck</a><br>
-
-
+	<a onclick="javascript:history.go(-1);">zur&#252;ck</a>
 	
 
+
+{% endblock %}
+
+{% block javascript %}
+
+	<script type="text/javascript">
+		function activateCommentForm() {
+			$("div#commentForm").show(400);
+			$("div#commentActivator").hide(400);
+		}
+
+		function deactivateCommentForm() {
+			$("div#commentForm").hide(400);
+			$("div#commentActivator").show(400);
+		}
+	</script>
 
 {% endblock %}

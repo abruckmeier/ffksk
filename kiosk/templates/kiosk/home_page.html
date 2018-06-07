@@ -19,9 +19,12 @@
 				</div>
 				<div id="collapse_1" class="panel-collapse collapse in">
 					<div class="panel-body smallText justified">
-						<b>{{kontostand | floatformat:2}} &#8364;</b>
-						<br>	
-						<a href="{% url 'kontobewegungen_page' %}" style="font-size: 75%;">Kontobewegungen anzeigen</a>
+						<div class="bigLink">{{kontostand | floatformat:2}} &#8364;</div>
+						<div class="panel-body smallText">
+							<div class="panel panel-default">
+								<a class="bigLink" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -38,24 +41,39 @@
 				</div>
 				<div id="collapse_2" class="panel-collapse collapse">
 					<div class="panel-body smallText justified">
-						<p class="itemsDef">
-							Item | # | &#8364; 
-						</p>
-						
-						{% for item in persEinkaufsliste %}
-							<p class="items">
-								{{item.produktname}}  | 
-								{{item.anzahlElemente}}  |
-								<{{item.einkaufspreis | floatformat:2}} &#8364;
-							</p>
-						{% endfor %}
 
-						<br>	
-						<a href="{% url 'meine_einkaufe_page' %}" style="font-size: 75%;">
-							Verwalten meiner Einkaufsliste
-						</a>
-						<br><br>
-						<a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+						{% if not persEinkaufsliste %}
+							<table class="table table-striped smallText">
+								<tr><th>keine zu erledigenden Einkäufe</th></tr>
+							</table>
+						{% else %}
+							<table class="table table-striped smallText autoSize">
+								<tr>
+									<th>Produkt</th>
+									<th>Anzahl zu kaufen</th>
+									<th>Maximaler Einkaufspreis</th>
+								</tr>
+
+								{% for item in persEinkaufsliste %}
+									<tr>
+										<td>{{item.produktname}}</td>
+										<td>{{item.anzahlElemente}}</td>
+										<td>{{item.einkaufspreis | floatformat:2}} &#8364;</td>
+									</tr>
+								{% endfor %}
+							</table>
+						{% endif %}
+
+						<div class="panel-body smallText">
+							<div class="panel panel-default">
+								<a class="bigLink" href="{% url 'meine_einkaufe_page' %}">Verwalten meiner Einkaufsliste</a>
+							</div>
+
+							<div class="panel panel-default">
+								<a class="bigLink" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+							</div>
+						</div>
+
 					</div>
 				</div>
 			</div>
@@ -74,22 +92,22 @@
 					
 					{% if perms.profil.perm_kauf %}
 						<div class="panel panel-default">
-							<a class="bigLink" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a>
+							<a class="bold" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a>
 						</div>
 					{% endif %}
 
 					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
 						<div class="panel panel-default">
-							<a class="bigLink" style="color: #888888;" href="#">Eink&#228;ufer werden</a>
+							<a class="bold" style="color: #888888;" href="#">Eink&#228;ufer werden</a>
 						</div>
 					{% endif %}
 						
 					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
+						<a class="bold" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
 					</div>
 
 					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>
+						<a class="bold" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>
 					</div>
 
 				</div>
@@ -106,23 +124,25 @@
 					</h5>
 				</div>
 				<div id="collapse_4" class="panel-collapse collapse">
+					<div class="panel-body smallText justified">
 
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
+						</div>
+
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a>
+						</div>
+
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
+						</div>
+
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
+						</div>
+
 					</div>
-
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a>
-					</div>
-
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
-					</div>
-
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
-					</div>
-
 				</div>
 			</div>
 		{% endif %}
@@ -137,23 +157,21 @@
 					</h5>
 				</div>
 				<div id="collapse_5" class="panel-collapse collapse">
+					<div class="panel-body smallText justified">
 
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a>
-					</div>
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a>
+						</div>
 
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'neuerNutzer_page' %}">Nutzer anlegen</a>
-					</div>
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a>
+						</div>
 
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a>
-					</div>
-
-					<div class="panel panel-default">
-						<a class="bigLink" href="{% url 'statistics' %}">Statistiken anzeigen</a>
-					</div>
+						<div class="panel panel-default">
+							<a class="bold" href="{% url 'statistics' %}">Statistiken anzeigen</a>
+						</div>
 					
+					</div>
 				</div>
 			</div>
 		{% endif %}

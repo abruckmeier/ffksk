@@ -4,6 +4,19 @@ a {
     cursor: pointer;
 }
 
+table {
+    table-layout: fixed;
+}
+
+.table td.fit,
+.table th.fit {
+    width: 50px;
+}
+
+table.autoSize {
+    table-layout: auto;
+}
+
 .container-fluid {
     padding: 0;
     margin: 0;
@@ -101,6 +114,29 @@ a {
 .inline {
     display: inline;
 }
+
+.bigCaret {
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid;
+}
+
+.bigCaretUp {
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 12px solid;
+}
+
+.cutTextOff {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.padding {
+    padding: 2vw;
+}
+
 
 
 

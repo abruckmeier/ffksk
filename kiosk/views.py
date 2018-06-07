@@ -264,7 +264,7 @@ def einkauf_vormerk_page(request):
 	currentUser = request.user
 	user = KioskUser.objects.get(id=currentUser.id)
 	msg = ''
-	color = '#ff0000'
+	color = 'danger'
 
 	if request.method == "POST":
 
@@ -273,42 +273,29 @@ def einkauf_vormerk_page(request):
 			user.instruierterKaeufer = True
 			user.save()
 			msg = 'Nun kannst du Eink'+chr(228)+'ufe vormerken.'
-			color = '#00ff00'
+			color = 'success'
 			
-		elif not "ekID" in request.POST.keys():
+		elif not "gruppenID" in request.POST.keys():
 			# Keine Bestaetigung wurde gemacht
 			msg = 'Du hast die Instruktionen noch nicht best'+chr(228)+'tigt.'
 
 
 		else:
 
-			einkaufGroupID = request.POST.get("ekID")
+			einkaufGroupID = request.POST.get("gruppenID")
 			Einkaufsliste.einkaufGroupVormerken(einkaufGroupID,currentUser.id)
 
-			return HttpResponseRedirect(reverse('vorgemerkt_page'))
-			
+			msg = 'Die Liste #' +str(einkaufGroupID)+' wurde zu deiner pers'+chr(246)+'nlichen Einkaufsliste hinzugef'+chr(252)+'gt.'
+			color = 'success'
 
-	# Es kommt ein Request herein, um naehre Informationen zu Produkten zu bekommen
-	elif request.method == "GET":
-		if not request.GET.get("getCommentsOnProduct") is None:
-			# Besorgen der angewaehlten Gruppen-ID
-			gruppen_id = request.GET.get("gruppen_id")
+			#return HttpResponseRedirect(reverse('vorgemerkt_page'))
 
-			# Infomationen / Kommentare zu den Produkten besorgen
-			information = Einkaufsliste.getCommentsOnProducts(gruppen_id)
-			
-			html = render_to_string('kiosk/einkauf_vormerk_page_comments.html',
-				{'information': information})
-			return HttpResponse(html)
 
 	# Checken, ob User ein instruierter Kaeufer ist.
 	isInstr = user.instruierterKaeufer
 
 	# Hole die eigene Liste, welche einzukaufen ist
-	#persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
-	
-	# Einkaufsliste abfragen
-	einkaufslisteComp = Einkaufsliste.getEinkaufslisteCompressed()	
+	#persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)	
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -316,7 +303,7 @@ def einkauf_vormerk_page(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/einkauf_vormerk_page.html', 
-		{'currentUser': currentUser, 'einkaufslisteComp': einkaufslisteComp, 'isInstr': isInstr,
+		{'currentUser': currentUser, 'isInstr': isInstr,
 		#'persEinkaufsliste':persEinkaufsliste, 
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'msg': msg, 'color': color})
 
@@ -983,6 +970,7 @@ def rueckbuchung(request):
 
 	# Abfrage aller Nutzer
 	allActiveUsers = KioskUser.objects.filter(is_active=True,visible=True)
+	# Hier Ordnen: .order_by('username')
 	dieb = KioskUser.objects.filter(username='Dieb')
 	allActiveUsers = allActiveUsers.union(dieb)
 

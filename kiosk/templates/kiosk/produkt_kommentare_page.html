@@ -3,36 +3,50 @@
 
 {% block content %}
 	
-	<h4> Neueste Produktkommentare: </h4>
-	<br>
-	<div class="eingerueckt">
+	<div class="page-header noMarginTop">
+		<h4>Produktkommentare <small>bearbeiten</small></h4>
+	</div>
 
-		<table class="konto">
-			<tr class="konto">
-				<th class="konto" style="min-width:50px;text-align: center;">Item</th>
-				<th class="konto" style="width:100px;text-align: center;">Date</th>
-				<th class="konto">Comment</th>
-				<th class="konto" style="width:50px;text-align: center;">Change</th>
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Hier werden dir die neuesten Kommentare und Tipps zu Produkten angezeigt, die dir bei Besorgungen helfen sollen: Wo gibt es was zu kaufen? Wann gibt es Produkte im Sonderangebot? ...
+			<br>
+			Wenn du einen weiteren Tipp hast, klicke einfach rechts beim jeweiligen Produkt auf das Bearbeiten-Symbol und erstelle deinen eigenen Kommentar.
+		</div>	
+	</div>
+
+	<div>
+		<table class="table table-striped smallText">
+			<tr>
+				<th>Produkt</th>
+				<th>Datum</th>
+				<th>Kommentar</th>
+				<th class="fit">Edit</th>
 			</tr>
+
 			{% for item in allProductComments %}
-			<tr class="konto">
-				<td class="konto" style="text-align: center;">{{item.produkt_name}}</td>
-				<td class="konto" style="text-align: center;">{{item.erstellt}}</td>
-				<td class="konto">{{item.kommentar}}</td>
-				<td class="konto" style="text-align: center;">
-					<a href="{% url 'produkt_kommentieren_page' s=item.produktpalette_id %}"><span class="glyphicon glyphicon-edit"></span></a>
-				</td>
-			</tr>
+				<tr>
+					<td>{{item.produkt_name}}</td>
+					<td>{{item.erstellt | date:"d.m.Y H:i"}}</td>
+					<td>
+						<div class="cutTextOff">
+							<a href="{% url 'produkt_kommentieren_page' s=item.produktpalette_id %}">
+								{{item.kommentar}}
+							</a>
+						</div>
+					</td>
+					<td class="fit">
+						<a href="{% url 'produkt_kommentieren_page' s=item.produktpalette_id %}"><span class="glyphicon glyphicon-pencil"></span></a>
+					</td>
+				</tr>
 			{% endfor %}
 		</table>
-
 	</div>
 
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
-
-
-	
-
+	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
 
 {% endblock %}

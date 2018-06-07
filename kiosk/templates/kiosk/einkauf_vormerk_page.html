@@ -3,120 +3,127 @@
 {% block content %}
 	
 
-	<h3>Offene Einkaufslisten</h3>
-
-	<div class="eingerueckt">
-
-		<div style="color: {{color}};">
-			<br>
-			{{msg}}
-			<br><br>
-		</div>
-
-		{% if isInstr == False %}
-			<div style="color: red;">
-				<br>
-				Bevor du das erste Mal einen Einkauf unternimmst, lese dir kurz folgende Instruktionen durch und best&#228;tige, dass du diese zur Kenntnis genommen hast und diese befolgen wirst.
-				<br><br>
-			</div>
-			<div>
-				<ul>
-				<li>F&#252;hre nach Ank&#252;ndigung eines Einkaufes diesen auch z&#252;gig durch (1-2 Tage), das Kiosk soll nicht leer werden.</li>
-				<li>Kaufe genau die auf deiner Liste stehende Menge ein, mehr kann nicht angenommen werden. Ein Einkauf kann aber auf mehrere Teileink&#228;ufe verteilt werden.</li>
-				<li>Beachte, dass du Ware nur unterhalb des Budgets des Einkaufspakets im Kiosk kaufst. Nur bis zu diesem Maximalbetrag werden die Kosten des Einkaufs erstattet.</li>
-				<li>Bringe deine Ware in das Kiosk und ordne deinen Einkauf sorgsam ein. Kein anderer wird dies tun, das ist deine Aufgabe.</li>
-				<li>Bei zu k&#252;hlender Ware, achte bitte darauf, dass du die K&#252;hlkette nicht unterbrichst.</li>
-				<li>Nimm beim Einkauf stets die Rechnung mit und gebe diese dann einem Verwalter, sodass dir der Einkauf dann erstattet werden kann.</li>
-				</ul>
-			</div>
-			<div>
-				<form method="POST" class="">{% csrf_token %}
-					
-					<table><tr>
-					<td style="padding-right:20px;padding-left: 5px;">
-						<input type="checkbox" name="best" id="best">
-					</td>
-					<td><label for="best">Diese Instruktionen habe ich zur Kenntnis genommen und werde diese befolgen.</label></td>
-					</tr></table>
-
-					<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
-						Weiter
-					</button>
-				</form>	
-			</div>
-		{% else %}
-
-			<p class="itemsDef">
-				(List) Item | # | max. &#8364; 
-			</p>
-
-			<div class="dropdown">
-				<button class="dropbtn">Listenauswahl</button>
-				<div class="dropdown-content">
-					{% for item in einkaufslisteComp %}
-						<a href="#" onclick="toSelection({{item.gruppen_id}},'{{item.einkaufspakete}}')">
-							<b>({{item.gruppen_id}})</b> {{item.einkaufspakete}}
-						</a>
-					{% endfor %}
-				</div>
-			</div>
-
-			<script>
-				function toSelection(ekID,ekPakete) {
-					$("div#divSelectionContainer").show(200);
-				    $("input#ekID").val(ekID);
-				    $("div#ekID").html(ekID)
-				    $("input#ekPakete").val(ekPakete);
-				    $("div#ekPakete").html(ekPakete);
-
-				    $(document).ready(
-						$.ajax({
-							type: "GET",
-							url: "{% url 'einkauf_vormerk_page' %}",
-							data: {'gruppen_id': ekID, 'getCommentsOnProduct': true},
-							success: function(data){
-										$("div#comment").html(data);
-									}
-						})
-					);
-				}
-			</script>	
-
-			<br><br>
-			
-			<div id="divSelectionContainer" style="padding-left: 10vw;">
-				<br>
-				<form method="POST" class="">{% csrf_token %}
-					<input type="text" name="ekID" id="ekID" style="display:none" readonly>
-					<b>(Liste</b> 
-					<div class="formDiv" id="ekID"></div>) 
-					<div class="formDiv" id="ekPakete"></div> &#8364; 
-					<input type="text" name="ekPakete" id="ekPakete" readonly style="display:none">
-					<br><br>
-					<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
-						Kaufe ich ein!
-					</button>
-				</form>	
-
-				<br><br>
-				<h5>Kommentar zum Produkt:</h5>
-				<small><div id="comment"  class="eingerueckt">
-					<!-- Kommt per GET-Request -->
-				</div></small>  
-
-			</div>
-
-			<script type="text/javascript">
-				$(document).ready(function(){
-					$("div#divSelectionContainer").hide();
-				});
-			</script>
-		{% endif %}
-
+	<div class="page-header noMarginTop">
+		<h4>Besorgungen ankündigen</h4>
 	</div>
 
-	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+
+	{% if msg != '' and msg != None %}
+		{% if color == 'danger' %}
+			<p class="alert alert-danger">
+				{{msg}}
+			</p>
+		{% elif color == 'success' %}
+			<p class="alert alert-success">
+				{{msg}}
+			</p>
+		{% else %}
+			<p class="alert alert-info">
+				{{msg}}
+			</p>
+		{% endif %}
+	{% endif %}
+
+
+	{% if isInstr == False %}
+		<p class="alert alert-warning">
+			Bevor du das erste Mal einen Einkauf unternimmst, lese dir kurz folgende Instruktionen durch und best&#228;tige, dass du diese zur Kenntnis genommen hast und diese befolgen wirst.
+		</p>
+		<div class="panel panel-default panel-body justified">
+			<ul>
+			<li>F&#252;hre nach Ank&#252;ndigung eines Einkaufes diesen auch z&#252;gig durch (max. sieben Tage).</li>
+			<li>Kaufe genau die auf deiner Liste stehende Menge ein, mehr kann nicht angenommen werden. Ein Einkauf kann aber auf mehrere Teileink&#228;ufe verteilt werden.</li>
+			<li>Beachte, dass du Ware nur unterhalb des Budgets des Einkaufspakets im Kiosk kaufst. Nur bis zu diesem Maximalbetrag werden die Kosten des Einkaufs erstattet.</li>
+			<li>Bringe deine Ware in das Kiosk und ordne deinen Einkauf sorgsam ein. Kein anderer wird dies tun, das ist deine Aufgabe.</li>
+			<li>Bei zu k&#252;hlender Ware, achte bitte darauf, dass du die K&#252;hlkette nicht unterbrichst.</li>
+			<li>Nimm beim Einkauf stets die Rechnung mit und gebe diese dann einem Verwalter, sodass dir der Einkauf dann erstattet werden kann.</li>
+			</ul>
+		</div>
+
+		<div class="panel panel-default panel-body justified">
+			<form method="POST" class="">{% csrf_token %}
+				
+				<table>
+					<tr>
+						<td class="padding">
+							<input type="checkbox" name="best" id="best">
+						</td>
+						<td>
+							<label for="best">Diese Instruktionen habe ich zur Kenntnis genommen und werde diese befolgen.</label>
+						</td>
+					</tr>
+				</table>
+				<br>
+
+				<button type="submit" class="btn btn-primary" style="font-weight: bold;font-size: 100%;">
+					Weiter
+				</button>
+			</form>	
+		</div>
+	{% else %}
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold">
+				Info
+			</div>
+			<div class="panel-body justified smallText">
+				Wenn du die Produkte auf einer der unten stehenden Listen besorgen möchtest, kündige das an, indem du rechts auf die Nadel klickst und die Liste in deine <a class="" href="{% url 'meine_einkaufe_page' %}">persönlichen Einkaufsliste</a> pinst. Dort kannst du dann deine zu erledigenden Einkäufe weiter verwalten.
+				<br>
+				Führe die Einkäufe dann bitte innerhalb von sieben Tagen durch.
+			</div>	
+		</div>
+
+		<div>
+			{% if not einkaufsliste %}
+				<table class="table table-striped smallText">
+					<tr><th>keine zu erledigenden Besorgungen</th></tr>
+				</table>
+			{% else %}
+				<table class="table table-striped smallText">
+					<tr>
+						<th>Listen-Nr.</th>
+						<th>Produkt</th>
+						<th>Anzahl zu kaufen</th>
+						<th>Maximaler Einkaufspreis</th>
+						<th>Neuester Kommentar</th>
+						<th>Besorge ich!</th>
+					</tr>
+
+					{% for item in einkaufsliste %}
+						<tr>
+							<td>{{item.gruppenID}}</td>
+							<td>{{item.produktName}}</td>				
+							<td>{{item.anzahlElemente}}</td>
+							<td>{{item.verkaufspreis | floatformat:2}} &#8364;</td>
+							<td>
+								<div class="cutTextOff">
+									<a href="{% url 'produkt_kommentieren_page' s=item.id %}">
+										{{item.kommentar}}
+									</a>
+								</div>
+							</td>
+							<td>
+								<form method="POST">{% csrf_token %}
+									<input type="text" name="gruppenID" id="gruppenID" style="display: none" readonly value="{{item.gruppenID}}">
+									<button type="submit" class="btn btn-secondary">
+										<span class="glyphicon glyphicon-pushpin" aria-hidden="true"></span>
+									</button>
+								</form>
+							</td>
+						</tr>
+					{% endfor %}
+				</table>
+			{% endif %}
+		</div>
+	{% endif %}
+
+
+
+{% endblock %}
+
+
+{% block javascript %}
+
 
 
 {% endblock %}

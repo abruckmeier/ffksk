@@ -1,41 +1,72 @@
 {% extends 'kiosk/base.html' %}	
-{% load staticfiles %}
 
 {% block content %}
-	
-	<h4> Details zu meiner Einkaufsliste: </h4>
-	<br>
-	<div class="eingerueckt">
 
-		<table class="konto">
-			<tr class="konto">
-				<th class="konto" style="min-width:50px;text-align: center;">Item</th>
-				<th class="konto" style="width:20px;text-align: center;">#</th>
-				<th class="konto" style="width:50px;text-align: center;">max. &#8364;</th>
-				<th class="konto">Comment</th>
-				<th class="konto" style="width:50px;text-align: center;"># delete</th>
-			</tr>
-			{% for item in persEinkaufsliste %}
-			<tr class="konto">
-				<td class="konto" style="text-align: center;">{{item.produktname}}</td>				
-				<td class="konto" style="text-align: right;">{{item.anzahlElemente}}</td>
-				<td class="konto" style="text-align: center;">{{item.einkaufspreis | floatformat:2}}</td>
-				<td class="konto">{{item.kommentar}}</td>
-				<td class="konto" style="text-align: center;">
-					<form method="POST">{% csrf_token %}
-						<input type="text" name="noToDelete" id="noToDelete" value="{{item.anzahlElemente}}" style="width: 20px;">
-						<input type="text" name="productID" id="productID" style="display: none" readonly value="{{item.id}}">
-						<input type="image" src="{% static 'img/delete-button.png' %}" alt="Delete" width="15px">
-					</form>
-				</td>
-			</tr>
-			{% endfor %}
-		</table>
-
+	<div class="page-header noMarginTop">
+		<h4>Meine Einkaufsliste <small>bearbeiten</small></h4>
 	</div>
 
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Hier siehst du, welche Besorgungen du angekündigt hast. 
+			Diese Einkäufe musst du innerhalb von sieben Tagen nach der Ankündigung durchführen, sonst werden diese wieder allen anderen zum Einkauf zur Verfügung gestellt.
+			<br>
+			Brauchst du Tipps für den Einkauf? Vielleicht hilft dir ein Klick auf den Kommentar weiter. Dort kannst du auch Kommentare hinterlassen.
+			<br>
+			Mit Klick auf den Mülleimer kannst du Produkte (teilweise) aus deiner persönlichen Einkaufsliste löschen.
+		</div>	
+	</div>
+
+	<div>
+		{% if not persEinkaufsliste %}
+			<table class="table table-striped smallText">
+				<tr><th>keine zu erledigenden Einkäufe</th></tr>
+			</table>
+		{% else %}
+			<table class="table table-striped smallText">
+				<tr>
+					<th>Produkt</th>
+					<th>Anzahl zu kaufen</th>
+					<th>Maximaler Einkaufspreis</th>
+					<th>Neuester Kommentar</th>
+					<th>Anzahl aus der Liste löschen</th>
+				</tr>
+
+				{% for item in persEinkaufsliste %}
+					<tr>
+						<td>{{item.produktname}}</td>				
+						<td>{{item.anzahlElemente}}</td>
+						<td>{{item.einkaufspreis | floatformat:2}}</td>
+						<td>
+							<div class="cutTextOff">
+								<a href="{% url 'produkt_kommentieren_page' s=item.id %}">
+									{{item.kommentar}}
+								</a>
+							</div>
+						</td>
+						<td>
+							<form method="POST">{% csrf_token %}
+								<input type="text" name="noToDelete" id="noToDelete" value="{{item.anzahlElemente}}" style="width: 25px;">
+								<input type="text" name="productID" id="productID" style="display: none" readonly value="{{item.id}}">
+								<button type="submit" class="btn btn-secondary">
+									<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+								</button>
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</table>
+		{% endif %}
+	</div>
+
+
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ankündigen</a>
+	<br><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
 
 
 	

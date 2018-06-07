@@ -8,10 +8,9 @@
 
 
 	{% if msg != '' and msg != None %}
-		<div style="color: red;">
+		<p class="alert alert-danger">
 			{{msg}}
-			<br>
-		</div>
+		</p>
 	{% endif %}
 
 	{% if allowed == True %}

@@ -69,12 +69,13 @@
 
 
 					{% if user.is_authenticated %}
-						<li class="dropdown-header">Quick Links</li>
+						<li class="dropdown-header">Aktionen</li>
 						{% if perms.profil.perm_kauf %}
 							<li><a href="{% url 'kauf_page' %}">Einkaufen</a></li>
 						{% endif %}
 						{% if perms.profil.do_einkauf %}
-							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorungen ankündigen</a></li>
+							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ankündigen</a></li>
+							<li><a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a></li>
 						{% endif %}
 						<li role="separator" class="divider"></li>
 					{% endif %}
