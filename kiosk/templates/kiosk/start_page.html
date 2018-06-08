@@ -3,7 +3,14 @@
 {% block content %}
 
 	<div class="page-header noMarginTop">
-		<h4>Herzlich Willkommen!</h4>
+		<h4>
+			Herzlich Willkommen 
+			{% if user.is_authenticated %}
+				<small>{{ user.first_name }}!<small>
+			{% else %}
+				!
+			{% endif %}
+		</h4>
 	</div>
 
 	<div class="justified">
@@ -12,7 +19,7 @@
 			Jeder Mitarbeitende und Studierende ist herzlich eingeladen, beizutreten und den Kiosk zu nutzen.
 		</p>
 		<p>
-			Alle wichtigen Informationen zum Kiosk findest du unter <a class="bigLink" href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a>
+			Alle wichtigen Informationen zum Kiosk findest du unter <a class="bigLink" href="{% url 'anleitung_page' %}">Info & Erste Schritte.</a>
 		</p>
 		<p>
 			Du möchtest beitreten? Erstelle unter <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a> dein Nutzerkonto.

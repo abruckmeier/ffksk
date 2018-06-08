@@ -107,13 +107,12 @@ class UserErstellenForm(UserCreationForm):
 
 	class Meta:
 		model = KioskUser
-		fields = ('username','first_name','last_name','email','aktivBis','positionFfE','password1','password2')
+		fields = ('username','first_name','last_name','email','aktivBis','password1','password2')
 		widgets = {
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		labels = {
 			'aktivBis': _('Angestellt bis'),
-			'positionFfE': _('Anstellung als'),
 		}
 		help_texts = {
 			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
@@ -131,5 +130,5 @@ class AktivBisChangeForm(forms.ModelForm):
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		help_texts = {
-			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
+			#'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}

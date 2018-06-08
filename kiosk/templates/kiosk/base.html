@@ -11,17 +11,22 @@
 		<!--<script type="text/javascript" src="{% static 'js/jquery-ui-1.12.1.min.js' %}"></script>
 		<link rel="stylesheet" href="{% static 'css/jquery-ui-1.12-base.min.css' %}">-->
 
+		<!-- Momentjs -->
+		<!--<script type="text/javascript" src="{% static 'js/moment.2.18.1.min.js' %}"></script>-->
+
 		<!-- Bootstrap -->
 		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap3.3.7/css/bootstrap.min.css' %}">
 		<script type="text/javascript" src="{% static 'bootstrap3.3.7/js/bootstrap.min.js' %}"></script>
+
+		<!-- Bootstrap DatePicker -->
+		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-datepicker-1.6.4/css/bootstrap-datepicker3.min.css' %}">
+		<script type="text/javascript" src="{% static 'bootstrap-datepicker-1.6.4/js/bootstrap-datepicker.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'bootstrap-datepicker-1.6.4/locales/bootstrap-datepicker.de.min.js' %}"></script>
 
 		<!-- Chart JS -->
 		<script type="text/javascript" 
 			src="{% static 'js/Chart.bundle.min.js' %}">
 		</script>
-
-		<!-- Momentjs -->
-		<!--<script type="text/javascript" src="{% static 'js/moment.2.18.1.min.js' %}"></script>-->
 
 		<!-- Date Range Picker -->
 		<!--<script type="text/javascript" src="{% static 'js/bootstrap.dateranepicker.2.js' %}"></script>
@@ -97,8 +102,8 @@
 
 
 					<li role="separator" class="divider"></li>
-					<li class="dropdown-header">Info</li>
-					<li><a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a></li>
+					<li class="dropdown-header">Information</li>
+					<li><a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a></li>
 					<li><a href="{% url 'impressum_page' %}">Kontakt & Impressum</a></li>
 				</div>
 
@@ -116,9 +121,13 @@
 			<hr>
 
 			<div class="smallText">
+				<div style="font-style: italic;">&#9400; FfE-Kiosk Mitwirkende</div>
+				Dies ist ein Open-Source Projekt. Wirke mit unter <a href="https://github.com/AndiBr/ffksk">https://github.com/AndiBr/ffksk</a>!
+				<br /><br />
+				<a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
+				<br />
 				<a href="{% url 'impressum_page' %}">Impressum & Kontakt</a>
 				<br />
-				This project is open-source (License?). View the source code on GitHub: <a href="https://github.com/AndiBr/ffksk">https://github.com/AndiBr/ffksk</a>
 			</div>
 
 			<br>

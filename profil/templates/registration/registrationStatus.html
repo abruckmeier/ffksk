@@ -2,36 +2,34 @@
 
 {% block content %}
 
-    <h4>Registrierungsstatus</h4>
-    <br>
+	<div class="page-header noMarginTop">
+        <h4>Anlegen eines Benutzerkontos <small>Registrierungsstatus</small></h4>
+    </div>
 
-    <div class="eingerueckt">
+    <div class="justified">
 
     	{% if not user.is_verified %}
-    		Dir wurde eine Slack-Nachricht in der FfE-Gruppe zugesendet um deinen angegebenen Nutzernamen zu verifizieren.<br>
+    		Dir wurde eine Slack-Nachricht in der FfE-Gruppe zugesendet um deinen angegebenen Nutzernamen zu verifizieren.
     		Bitte klicke in der Slack-Nachricht auf den mitgelieferten Link um deinen Usernamen zu verifizieren.<br>
     		Falls du keine Nachricht erhalten hast, melde dich bitte bei einem der Administratoren ({{ admins }}).
-	    	<br>
-	    {% endif %}
 
-	    {% if user.is_verified %}
+	    {% else %}
 	    	
 	    	{% if just_verified %}
-	    		<b>Deine Verifikation hat geklappt. Nun bist du ein FfE-Kiosk Mitglied!</b>
-	    		<br>
+
+	    		<p class="alert alert-success">Deine Verifikation hat geklappt. Nun bist du ein FfE-Kiosk Mitglied!</p>
+	    		
 	    		<ul>
-			    	<li>Du hast eine Slack-Nachricht mit allen wichtigen Informationen bekommen.</li>
+			    	<li>Du hast eine Slack-Nachricht mit allen wichtigen Informationen zugesendet bekommen.</li>
 		    		<li>Hier gehts zu deinem <a href="{% url 'home_page' %}">pers&#246;nlichen Bereich.</a></li>
-		    		<li>Hier erf&#228;hrst du alles Wichtige, wie du das Kiosk nutzen kannst: <a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a></li>
+		    		<li>Hier erf&#228;hrst du alles Wichtige, wie du das Kiosk nutzen kannst: <a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>.</li>
 	    		</ul>
-	    		<br>
 	    	{% endif %}
 	    	
 	    {% endif %}
         
     </div>
 
-    <hr>
-    <a href="{% url 'start_page' %}">zur&#252;ck</a><br>
+
 
 {% endblock %}
