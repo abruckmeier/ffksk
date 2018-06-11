@@ -2,14 +2,6 @@ from django import forms
 from django.core.validators import MinValueValidator
 
 
-class EinkaufAnnahmeForm(forms.Form):
-	userID = forms.IntegerField()
-	produktName = forms.CharField(max_length=40)
-	anzahlElemente = forms.IntegerField()
-	anzahlAngeliefert = forms.IntegerField(validators=[MinValueValidator(1)])
-	gesPreis = forms.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(0)])
-
-
 class TransaktionenForm(forms.Form):
 	idFrom = forms.IntegerField()
 	idTo = forms.IntegerField()

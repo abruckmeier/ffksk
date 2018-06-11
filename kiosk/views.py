@@ -8,7 +8,7 @@ from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 
-from .forms import EinkaufAnnahmeForm, TransaktionenForm, EinzahlungenForm, RueckbuchungForm
+from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -17,6 +17,7 @@ import pytz
 import datetime
 from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
+import re
 
 from django.db import transaction
 
@@ -326,68 +327,122 @@ def vorgemerkt_page(request):
 		{'currentUser': currentUser,'persEinkaufsliste':persEinkaufsliste,'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
+# String Input to Cent Values
+def strToCents(num):
+	try:
+		left = int(re.findall('^(\d+)',num)[0])
+		right = re.findall('[.,](\d*)$',num)
+		if right == []:
+			right = 0
+		else:
+			right = int(right[0])
+
+		erg = int(left*100 + right)
+
+	except:
+		erg = None
+
+	return erg
+
 # Der Verwalter pflegt den Einkauf ins System ein
 @login_required
 @permission_required('profil.do_verwaltung',raise_exception=True)
 def einkauf_annahme_page(request):
+	currentUser = request.user
+	# Besorge alle User
+	allUsers = readFromDatabase('getUsersToBuy')
+	# Hier auch nach Einkaeufer und hoeher filtern, User duerfen nichts einkaufen.
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/einkauf_annahme_page.html', 
+		{'currentUser': currentUser, 'allUsers': allUsers,  
+		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+@login_required
+@permission_required('profil.do_verwaltung',raise_exception=True)
+def einkauf_annahme_user_page(request, userID):
 
 	if request.method == "POST":
-		# Hier kommt der Post mit dem Einkaeufer, der Ware und dem Preis
 		
-		form = EinkaufAnnahmeForm(request.POST)
+		# Get the "Verwalter"
 		currentUser = request.user
 
-		returnDict = ZumEinkaufVorgemerkt.einkaufAnnehmen(form,currentUser)
+		# Input-Daten den Produkten zuordnen
+		keys = [x for x in request.POST.keys()]
 
-		if returnDict['error'] is True:
-			return HttpResponse(returnDict['retHtml'])
+		# Get the product IDs
+		productIds = [int(re.findall('^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match('^input_id_angeliefert_\d+$', x)]
+		
+		# Connect the input values to the corresponding products and only allow correct entries
+		formInp = []
+		ret = []
+		for x in productIds:
+			a = request.POST['input_id_angeliefert_'+str(x)]
+			try:
+				a = int(a)
+			except:
+				a = None
 
-		else:
-			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
-				# Send new products info to kiosk channel
+			b = request.POST['input_id_bezahlt_'+str(x)]
+			b = strToCents(b)
+
+			if not a is None and not b is None:
+				formInp.append({
+					'userID': userID,
+					'product_id':x ,
+					'anzahlAngeliefert': a,
+					'gesPreis': b,
+				})
+
+				# For each List-Item, Run the procedure of "Einkauf-Annahme"
+				ret.append(ZumEinkaufVorgemerkt.einkaufAnnehmen(formInp[-1],currentUser))
+
+		# Create the response for the website
+		notifications = chr(10).join( [r['html'] for r in ret] )
+			
+		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				
+			# Send new products info to kiosk channel
+			angeliefert = []
+			for a in ret:
+				if not a['angeliefert'] is None:
+					for aa in a['angeliefert']:
+						angeliefert.append(aa.produktpalette.produktName)
+
+			angeliefert = list(set(angeliefert))
+			try:
+				slack_PostNewProductsInKioskToChannel(angeliefert)
+			except:	pass
+
+
+			# Send Thank You message to user who bought the products
+			gesPreis = 0.0
+			for a in ret:
+				if not a['dct'] is None:
+					gesPreis += a['dct']['gesPreis']
+
+			if gesPreis > 0.0:
 				try:
-					slack_PostNewProductsInKioskToChannel(returnDict['angeliefert'])
-				except:	pass
-
-				# Send Thank You message to user who bought the products
-				try:
-					userID = int(form['userID'].value())
 					user = KioskUser.objects.get(id = userID)
 
-					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % returnDict['retDict']['gesPreis'])+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
+					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
 					slack_SendMsg(txt,user)
 				except:	pass
 
-			request.session['annahme_data'] = returnDict['retDict']
-			return HttpResponseRedirect(reverse('einkauf_angenommen_page'))
 
 	else:
+		notifications = ''
 
-		if not request.GET.get("getUserData") is None:
-			# Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
-			userID = request.GET.get("userID")
-
-			seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
-			userName = KioskUser.objects.get(id=userID)
-			html = render_to_string('kiosk/einkauf_annahme_page_ekListe.html',
-				{'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'userName': userName})
-			return HttpResponse(html)
-			
-		else:
-
-			currentUser = request.user
-			# Besorge alle User
-			allUsers = readFromDatabase('getUsersToBuy')
-			# Hier auch nach Einkaeufer und hoeher filtern, User duerfen nichts einkaufen.
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			return render(request, 'kiosk/einkauf_annahme_page.html', 
-				{'currentUser': currentUser, 'allUsers': allUsers,  
-				'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+	# Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
+	seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
+	user = KioskUser.objects.get(id=userID)
+	return render(request,'kiosk/einkauf_annahme_user_page.html',
+		{'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user, 'notifications': notifications,})
 
 
 @login_required

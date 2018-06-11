@@ -63,8 +63,8 @@ class ProduktVerkaufspreise(models.Model):
 		return(self.produktpalette.produktName + ", " +
 			str(price) + " "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
 
-	def getActPrices(produktName):
-		verkaufspreis = readFromDatabase('getActPrices',[produktName])
+	def getActPrices(produkt_id):
+		verkaufspreis = readFromDatabase('getActPrices',[produkt_id])
 		return(verkaufspreis[0])
 
 
@@ -139,46 +139,42 @@ class ZumEinkaufVorgemerkt(models.Model):
 	@transaction.atomic
 	def einkaufAnnehmen(form, currentUser):
 
+		retVal = {'product_id': None, 'err': False, 'msg': None, 'html': None, 'dct': None, 'angeliefert': None}
+
 		finanz = getattr(settings,'FINANZ')
-		prodVkPreis = ProduktVerkaufspreise.getActPrices(form.data.get('produktName'))
+		product_id= form['product_id']
+		product = Produktpalette.objects.get(id=product_id)
+		retVal['product_id'] = product_id
+		prodVkPreis = ProduktVerkaufspreise.getActPrices(product_id)
 		prodVkPreis = prodVkPreis.get('verkaufspreis')
-		eingabefehler = False
+		retVal['err'] = False
 
-		# Checken, ob Eingaben syntaktisch korrekt sind
-		if not form.is_valid():
-			errorMsg = "Fehler in Eingabe. Sind die Zahlen korrekt eingegeben?"
-			eingabefehler = True
-		else:
-			userID = int(form['userID'].value())
-			produktName = form['produktName'].value()
-			anzahlElemente = int(form['anzahlElemente'].value())
-			anzahlAngeliefert = int(form['anzahlAngeliefert'].value())
-			gesPreis = int(100*float(form['gesPreis'].value()))
 
-			# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
-			if anzahlAngeliefert > anzahlElemente:
-				errorMsg = "Die Anzahl angelieferter Elemente ist zu gro"+chr(223)+"."
-				eingabefehler = True
+		userID = form['userID']
+		anzahlAngeliefert = form['anzahlAngeliefert']
+		gesPreis = form['gesPreis']
 
-			# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
-			minProduktMarge = finanz['minProduktMarge']
+		# Get the maximal number of products to accept
+		persEkList = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
+		anzahlElemente = [x['anzahlElemente'] for x in persEkList if x['id']==product_id][0]
 
-			if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
-				errorMsg = "Die Einkaufskosten sind zu hoch. Produkte k"+chr(246)+"nnen nicht angenommen werden."
-				eingabefehler = True
+		# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
+		if anzahlAngeliefert > anzahlElemente:
+			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" für '"+product.produktName+"'"
+			retVal['err'] = True
 
-		if eingabefehler == True:
+		# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
+		minProduktMarge = finanz['minProduktMarge']
 
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
+			retVal['msg'] = "Die Kosten für den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
+			retVal['err'] = True
+
+		if retVal['err'] == True:
 
 			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return {
-				'error': True,
-				'retHtml': render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}),
-			}
+			retVal['html'] = render_to_string('kiosk/fehler_message.html', {'message':retVal['msg']})
+			return retVal
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
@@ -190,7 +186,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 			datum = timezone.now()
 
 			angeliefert = ZumEinkaufVorgemerkt.objects.filter(einkaeufer__id=userID,
-				produktpalette__produktName=produktName).order_by('kiosk_ID')[:anzahlAngeliefert]
+				produktpalette__id=product_id).order_by('kiosk_ID')[:anzahlAngeliefert]
 
 			if len(angeliefert) != anzahlAngeliefert:
 				raise ValueError
@@ -209,6 +205,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 			# Gewinn und Gesamtrechnung berechnen
 			gewinnEK = finanz['gewinnEK']
 			provision = int(((float(prodVkPreis) * float(anzahlAngeliefert)) - float(gesPreis)) * float(gewinnEK))
+			paidPrice = gesPreis
 			gesPreis = gesPreis + provision
 
 
@@ -216,14 +213,14 @@ class ZumEinkaufVorgemerkt(models.Model):
 			userBank = KioskUser.objects.get(username='Bank')
 			userAnlieferer = KioskUser.objects.get(id=userID)
 			GeldTransaktionen.doTransaction(userBank,userAnlieferer,gesPreis,datum,
-			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
+			"Erstattung Einkauf " + product.produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			return {
-				'error': False,
-				'retDict': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName':produktName,'anzahlElemente':anzahlElemente},
-				'angeliefert': angeliefert,
-			}
+			retVal['dct'] = {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName': product.produktName,'anzahlElemente':anzahlElemente}
+			retVal['angeliefert'] = angeliefert
+			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' Stück zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
+			retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
+			return retVal
 
 
 class Kiosk(models.Model):
@@ -285,7 +282,7 @@ class Kiosk(models.Model):
 			foundInKiosk = True
 		
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
-		actPrices = ProduktVerkaufspreise.getActPrices(wannaBuyItem)
+		actPrices = ProduktVerkaufspreise.getActPrices(item.produktpalette.id)
 		actPrices = actPrices.get('verkaufspreis')
 
 		# Check if user is allowed to buy something and has enough money

@@ -111,11 +111,10 @@ def slack_PostWelcomeMessage(user):
 # Neue Produkte sind im Kiosk: Im Channel informieren
 def slack_PostNewProductsInKioskToChannel(angeliefert):
 
-	ang = set()
-	for item in angeliefert:
-		ang.add(item.produktpalette.produktName)
+	if angeliefert==[] or angeliefert is None:
+		return
 
-	textToChannel = ':tada: Frisch angeliefert: ' + ', '.join(ang) + ':grey_exclamation:'
+	textToChannel = ':tada: Frisch angeliefert: ' + ', '.join(angeliefert) + ':grey_exclamation:'
 
 	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	slackSettings = getattr(settings,'SLACK_SETTINGS')

@@ -7,13 +7,15 @@
 		<h4>Ein Produkt kaufen <small>Dein Einkauf ist fehlgeschlagen!</small></h4>
 	</div>
 
-	<div class="panel panel-default">
+	<div class="alert alert-danger">
 		Uuups! Da ist was schief gelaufen! Die Fehlermeldung lautet
-		<div class="panel panel-default code">
+		<div class="panel panel-default bold">
 			{{msg}}
 		</div>
-		Bei Fragen, wende dich an den Administrator!
+		Bei Fragen, wende dich an einen der Administratoren.
 		<br><br>
+		<b>Zur Info:</b>
+		<br>
 		Dein Kontostand ist {{account | floatformat:2}} &#8364;.
 
 	</div>
