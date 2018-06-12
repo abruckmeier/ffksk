@@ -7,6 +7,7 @@ from profil.models import KioskUser
 from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse
+from django.forms import formset_factory
 
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm
 from django.contrib.auth.decorators import login_required, permission_required
@@ -445,26 +446,7 @@ def einkauf_annahme_user_page(request, userID):
 		{'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user, 'notifications': notifications,})
 
 
-@login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
-def einkauf_angenommen_page(request):
 
-	currentUser = request.user
-	# Hole den Kioskinhalt
-	kioskItems = Kiosk.getKioskContent()
-	# Einkaufsliste abfragen
-	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-	if 'annahme_data' in request.session.keys():
-		annahme_data = request.session['annahme_data']
-		del request.session['annahme_data']
-	else:
-		return HttpResponseRedirect(reverse('home_page'))
-
-	annahme_data['currentUser'] = currentUser
-	annahme_data['kioskItems'] = kioskItems
-	annahme_data['einkaufsliste'] = einkaufsliste
-	return render(request,'kiosk/einkauf_angenommen_page.html',annahme_data)
 
 @login_required
 @permission_required('profil.do_admin_tasks',raise_exception=True)
@@ -612,6 +594,8 @@ def einzahlung_page(request):
 
 	currentUser = request.user
 	errorMsg = ''
+	successMsg = ''
+	form = None
 
 	if request.method == "POST":
 
@@ -619,17 +603,18 @@ def einzahlung_page(request):
 		form = EinzahlungenForm(request.POST)
 
 		if not form.is_valid():
-			errorMsg = 'Fehler in der Eingabe, bitte erneut eingeben.'
+			errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
 
 		# Testen bei Auszahlung, ob nicht zu viel ausgezahlt wird
 		else:
+
+			auszUser = KioskUser.objects.get(id=form['idUser'].value())
 		
 			if form['typ'].value() == 'Auszahlung':
-				auszUser = KioskUser.objects.get(id=form['idUser'].value())
 				auszKto = Kontostand.objects.get(nutzer=auszUser)
 				
 			if form['typ'].value() == 'Auszahlung' and int(100*float(form['betrag'].value())) > auszKto.stand:
-					errorMsg = 'Das Konto deckt diesen Betrag nicht ab.'
+					errorMsg = 'Das Konto deckt den eingegebenen Betrag nicht ab.'
 
 			else:
 				returnHttp = GeldTransaktionen.makeEinzahlung(form,currentUser)
@@ -640,8 +625,7 @@ def einzahlung_page(request):
 					except:
 						pass
 					
-				request.session['einzahlung_data'] = {'type':returnHttp['type'],'betrag':returnHttp['betrag']}
-				return HttpResponseRedirect(reverse('einzahlung_done_page'))
+				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde für '+auszUser.username+' '+returnHttp['type']+'.'
 	
 	# Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
 	if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
@@ -653,37 +637,18 @@ def einzahlung_page(request):
 	# Besorge alle User
 	allUsers = readFromDatabase('getUsersForEinzahlung')
 
+	if form is None or successMsg!='':
+		form = EinzahlungenForm()
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/einzahlung_page.html', 
-		{'user': currentUser, 'allUsers': allUsers,  
+		{'user': currentUser, 'form': form, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-		'errorMsg': errorMsg})
-
-
-@login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
-def einzahlung_done_page(request):
-	currentUser = request.user
-	# Hole den Kioskinhalt
-	kioskItems = Kiosk.getKioskContent()
-	# Einkaufsliste abfragen
-	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-	if 'einzahlung_data' in request.session.keys():
-		einzahlung_data = request.session['einzahlung_data']
-		del request.session['einzahlung_data']
-	else:
-		return HttpResponseRedirect(reverse('home_page'))
-
-	einzahlung_data['currentUser'] = currentUser
-	einzahlung_data['kioskItems'] = kioskItems
-	einzahlung_data['einkaufsliste'] = einkaufsliste
-
-	return render(request,'kiosk/einzahlung_done_page.html',einzahlung_data)
+		'errorMsg': errorMsg, 'successMsg': successMsg})
 
 
 
@@ -1000,39 +965,6 @@ def anleitung(request):
 @permission_required('profil.do_verwaltung',raise_exception=True)
 def rueckbuchung(request):
 
-	currentUser = request.user
-
-	if request.method == "POST":
-
-		currentUser = request.user
-		form = RueckbuchungForm(request.POST)
-
-		session_data = Gekauft.rueckbuchen(form,currentUser)
-
-		if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
-			# Send notice to user
-			try:
-				user = KioskUser.objects.get(id = session_data['userID'])
-
-				txt = 'Dir wurde das Produkt "'+str(session_data['anzahlZurueck'])+'x '+str(session_data['product'])+'" r'+chr(252)+'ckgebucht und der Betrag von '+str('%.2f' % session_data['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'
-				slack_SendMsg(txt,user)
-			except:	pass
-
-		request.session['rueckbuchung_done'] = session_data
-		return HttpResponseRedirect(reverse('rueckbuchung_done'))
-
-	else:
-
-		if not request.GET.get("getUserData") is None:
-			# Kaeufer wurde ausgewaehlt, jetzt wird die Liste seiner Einkaeufe ausgegeben.
-			userID = request.GET.get("userID")
-			userName = KioskUser.objects.get(id=userID)
-			seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
-
-			html = render_to_string('kiosk/rueckbuchungen_gekauft_liste.html',{'userID': userID, 'userName': userName, 'seineKaeufe': seineKaeufe})
-			return HttpResponse(html)
-
-
 	# Abfrage aller Nutzer
 	allActiveUsers = KioskUser.objects.filter(is_active=True,visible=True)
 	# Hier Ordnen: .order_by('username')
@@ -1049,26 +981,65 @@ def rueckbuchung(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'allActiveUsers': allActiveUsers, })
 
+
 @login_required
 @permission_required('profil.do_verwaltung',raise_exception=True)
-def rueckbuchung_done(request):
+def rueckbuchung_user(request, userID):
+	
+	user = KioskUser.objects.get(id=userID)
 	currentUser = request.user
+	RueckbuchungFormSet = formset_factory(RueckbuchungForm, extra=0)
+
+	notifications = ''
+
+	if request.method=='POST':
+		formset = RueckbuchungFormSet(request.POST)
+
+		if formset.is_valid():
+			
+			# Do the Rueckbuchung
+			ret = []
+			for f in formset:
+				
+				r = Gekauft.rueckbuchen(f)
+				if r['anzahlZurueck'] > 0:
+				
+					html = str(r['anzahlZurueck'])+' '+r['product']+' wurden ins Kiosk zurück verbucht.'+chr(10)+'Der Betrag von '+str('%.2f' % r['price'])+' '+chr(8364)+' wurde gutgeschrieben.'
+					r['html'] = render_to_string('kiosk/success_message.html', {'message':html})
+
+					r['slackMsg'] = 'Dir wurde das Produkt "'+str(r['anzahlZurueck'])+'x '+str(r['product'])+'" r'+chr(252)+'ckgebucht und der Betrag von '+str('%.2f' % r['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'
+
+					ret.append(r)
+
+			# Create the response for the website
+			notifications = chr(10).join( [r['html'] for r in ret] )
+
+			# Write Slack-Messages to the user
+			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+				# Send notice to user
+				
+				for r in ret:
+					try:
+						u = KioskUser.objects.get(id = r['userID'])
+						slack_SendMsg(r['slackMsg'],u)
+					except:	pass
+
+
+			# Get the new/updated formset
+			seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
+			formset = RueckbuchungFormSet(initial=seineKaeufe)
+
+	else:
+		seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
+		formset = RueckbuchungFormSet(initial=seineKaeufe)
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
+
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-	if 'rueckbuchung_done' in request.session.keys():
-		rueckbuchung_done = request.session['rueckbuchung_done']
-		del request.session['rueckbuchung_done']
-	else:
-		return HttpResponseRedirect(reverse('home_page'))
-
-	rueckbuchung_done['currentUser'] = currentUser
-	rueckbuchung_done['kioskItems'] = kioskItems
-	rueckbuchung_done['einkaufsliste'] = einkaufsliste
-
-	return render(request,'kiosk/rueckbuchungen_done_page.html',rueckbuchung_done)
+	return render(request, 'kiosk/rueckbuchungen_user_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'user': user, 'formset':formset, 'notifications': notifications, })
 
 
 

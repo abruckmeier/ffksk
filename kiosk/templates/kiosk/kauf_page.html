@@ -6,6 +6,15 @@
 		<h4>Ein Produkt kaufen</h4>
 	</div>
 
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Klicke auf "Produktauswahl" und wähle dein einzukaufendes Produkt. Es erscheint der Produktpreis und der "Kaufen"-Button zum Abschluss des Kaufs.
+		</div>
+	</div>
+
 
 	{% if msg != '' and msg != None %}
 		<p class="alert alert-danger">
@@ -17,7 +26,7 @@
 
 		<div class="dropdown">
 
-			<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				Produktauswahl
 				<span class="caret"></span>
 			</button>
@@ -28,7 +37,7 @@
 			</ul>
 		</div>	
 
-		<br>
+
 		
 		<div id="divSelectionContainer" class="panel panel-default indented" style="display: none;">
 			<br>
@@ -45,7 +54,7 @@
 				<input type="text" name="produktName" id="produktName" style="display: none" readonly>
 				<input type="text" name="verkaufspreis" id="verkaufspreis" style="display: none" readonly>
 				
-				<button type="submit" class="btn" style="font-weight: bold;">
+				<button type="submit" class="btn btn-primary" style="font-weight: bold;">
 					Kaufen
 				</button>
 			</form>	

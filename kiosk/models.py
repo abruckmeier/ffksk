@@ -356,53 +356,26 @@ class Gekauft(models.Model):
 		return dR['item']
 
 	@transaction.atomic
-	def rueckbuchen(form, currentUser):
+	def rueckbuchen(form):
 
-		eingabefehler = False
+		userID = form.cleaned_data['kaeufer_id']
+		productID = form.cleaned_data['produkt_id']
+		anzahlZurueck = form.cleaned_data['anzahl_zurueck']
+		dR = doRueckbuchung(userID,productID,anzahlZurueck)
+		price = dR['price']
 
-		# Checken, ob Eingaben syntaktisch korrekt sind
-		if not form.is_valid():
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
+		# Einkaufsliste abfragen
+		einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-			errorMsg = "Fehler in Eingabe. Wurde eine korrekte Anzahl eingegeben?"
-			eingabefehler = True
-		else:
-			userID = int(form['userID'].value())
-			productID = int(form['productID'].value())
-			anzahlElemente = int(form['anzahlElemente'].value())
-			anzahlZurueck = int(form['anzahlZurueck'].value())
-
-			# Pruefen, ob nicht mehr zurueck gegeben werden soll, als gekauft wurde
-			if anzahlZurueck > anzahlElemente:
-				errorMsg = "Die Anzahl zur"+chr(252)+"ckzubuchender Elemente ist zu gro"+chr(223)+"."
-				eingabefehler = True
-
-		if eingabefehler == True:
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return render_to_string('kiosk/fehler_message_rueckbuchung.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
-			
-			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
-
-		else:
-			dR = doRueckbuchung(userID,productID,anzahlZurueck)
-			price = dR['price']
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			product = Produktpalette.objects.get(id=productID)
-			
-			return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
+		product = Produktpalette.objects.get(id=productID)
+		
+		return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
 
 
 def doRueckbuchung(userID,productID,anzahlZurueck):
+
 	productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
 	
 	price = 0

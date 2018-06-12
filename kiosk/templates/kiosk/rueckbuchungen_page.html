@@ -2,61 +2,49 @@
 
 {% block content %}
 	
-	<h3>R&#252;ckbuchung von K&#228;ufen</h3>
-	<br>
+	<div class="page-header noMarginTop">
+		<h4>R&#252;ckbuchung von K&#228;ufen <small>Käufer(in) wählen</small></h4>
+	</div>
 
-	<div class="eingerueckt">
+	
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Wähle für die Rückbuchung eines Kaufs den/die Käufer(in) aus. Auf der nächsten Seite kannst dann die Käufe rückbuchen.
+		</div>
+	</div>
 
-		<div class="dropdown">
-			<button class="dropbtn">K&#228;ufer w&#228;hlen</button>
-			<div class="dropdown-content">
-				{% for item in allActiveUsers %}
-					<a href="#" onclick="goOnWithUser({{item.id}})">
+	<table class="table table-striped smallText autoSize">
+		<tr>
+			<th style="text-align: right;"></th>
+			<th>Käufer(in) wählen</th>
+		</tr>
+
+		{% for item in allActiveUsers %}
+			<tr>
+				<td style="text-align: right;">
+					<a href="{% url 'einkauf_annahme_user_page' userID=item.id %}">
+						<span class="glyphicon glyphicon-user" aria-hidden="true"></span>						
+					</a>
+				</td>
+				<td>
+					<a href="{% url 'rueckbuchungen_user_page' userID=item.id %}">
 						{{item.username}} ({{item.first_name}} {{item.last_name}})
 					</a>
-				{% endfor %}
-			</div>
-		</div>
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
 
-		<script>
-			function goOnWithUser(userID) {
-				$(document).ready(
-					$.ajax({
-						type: "GET",
-						url: "{% url 'rueckbuchungen_page' %}",
-						data: {'userID': userID, 'getUserData': true},
-						success: function(data){
-									$("div#divSeineEinkaeufe").html(data);
-								}
-					})
-				);
-				$("div#divWarenAuswahl").hide();
-				$("input#anzahlZurueck").val(1);
-				$("div#divSeineEinkaeufe").show(200);
 
-				setTimeout(
-					function(){
-						$("div.dropdown-contentt").hide(500);
-		  				$("button.dropbtnt").click(function(){
-		  					if (!isClickedt) {
-		  						$("div.dropdown-contentt").show(500);
-		  						isClickedt = true;
-		  						$("div.dropdown-content").hide(500);
-		  						isClicked = false;
-		  					} else {
-		  						$("div.dropdown-contentt").hide(500);
-		  						isClickedt = false;
-		  					}
-		  				});
-		  				$("div.dropdown-contentt").click(function(e){
-		  					e.preventDefault();
-		  					$("div.dropdown-contentt").hide(500);
-		  					isClickedt = false;
-		  				});
-  					}
-  				,300);
-			}
-		</script>	
+	<hr>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum persönlichen Bereich</a><br>
+
+
+
+
 
 
 		<div class="eingerueckt">
@@ -117,10 +105,7 @@
 
 		</div>
 
-	</div>
 
-	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
 
 
 {% endblock %}
