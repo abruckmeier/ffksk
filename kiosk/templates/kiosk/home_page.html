@@ -11,20 +11,17 @@
 		{% if perms.profil.perm_kauf %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
-					<h5 class="panel-title smallText bold">
+					<h5 class="panel-title bold">
 						<a class="accordion-toggle">
 							Mein Kontostand
 						</a>
 					</h5>
 				</div>
 				<div id="collapse_1" class="panel-collapse collapse in">
-					<div class="panel-body smallText justified">
+					<div class="panel-body justified">
 						<div class="bigLink">{{kontostand | floatformat:2}} &#8364;</div>
-						<div class="panel-body smallText">
-							<div class="panel panel-default">
-								<a class="bigLink" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
-							</div>
-						</div>
+						<br>
+						<a class="btn btn-info" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
 					</div>
 				</div>
 			</div>
@@ -33,14 +30,14 @@
 		{% if perms.profil.do_einkauf %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_2">
-					<h5 class="panel-title smallText bold">
+					<h5 class="panel-title bold">
 						<a class="accordion-toggle">
 							Meine zu erledigenden Eink&#228;ufe
 						</a>
 					</h5>
 				</div>
 				<div id="collapse_2" class="panel-collapse collapse">
-					<div class="panel-body smallText justified">
+					<div class="panel-body justified">
 
 						{% if not persEinkaufsliste %}
 							<table class="table table-striped smallText">
@@ -64,16 +61,11 @@
 							</table>
 						{% endif %}
 
-						<div class="panel-body smallText">
-							<div class="panel panel-default">
-								<a class="bigLink" href="{% url 'meine_einkaufe_page' %}">Verwalten meiner Einkaufsliste</a>
-							</div>
-
-							<div class="panel panel-default">
-								<a class="bigLink" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
-							</div>
-						</div>
-
+						<br>
+						<a class="btn btn-info" href="{% url 'meine_einkaufe_page' %}">Verwalten meiner Einkaufsliste</a>
+						<br><br>
+						<a class="btn btn-info" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+						
 					</div>
 				</div>
 			</div>
@@ -81,34 +73,26 @@
 
 		<div class="panel panel-default">
 			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_3">
-				<h5 class="panel-title smallText bold">
+				<h5 class="panel-title bold">
 					<a class="accordion-toggle">
 						Einstellungen
 					</a>
 				</h5>
 			</div>
 			<div id="collapse_3" class="panel-collapse collapse">
-				<div class="panel-body smallText justified">
+				<div class="panel-body justified">
 					
 					{% if perms.profil.perm_kauf %}
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a><br><br>
 					{% endif %}
 
 					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
-						<div class="panel panel-default">
-							<a class="bold" style="color: #888888;" href="#">Eink&#228;ufer werden</a>
-						</div>
+						<a class="btn btn-info" style="color: #888888;" href="#">Eink&#228;ufer werden</a><br><br>
 					{% endif %}
 						
-					<div class="panel panel-default">
-						<a class="bold" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
-					</div>
-
-					<div class="panel panel-default">
-						<a class="bold" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>
-					</div>
+					<a class="btn btn-info" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
+					<br><br>
+					<a class="btn btn-info" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>
 
 				</div>
 			</div>
@@ -117,30 +101,22 @@
 		{% if perms.profil.do_verwaltung %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_4">
-					<h5 class="panel-title smallText bold">
+					<h5 class="panel-title bold">
 						<a class="accordion-toggle">
 							Verwaltung
 						</a>
 					</h5>
 				</div>
 				<div id="collapse_4" class="panel-collapse collapse">
-					<div class="panel-body smallText justified">
+					<div class="panel-body justified">
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a><br><br>
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
 
 					</div>
 				</div>
@@ -150,26 +126,20 @@
 		{% if perms.profil.do_admin_tasks %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_5">
-					<h5 class="panel-title smallText bold">
+					<h5 class="panel-title bold">
 						<a class="accordion-toggle">
 							Administrator-Bereich
 						</a>
 					</h5>
 				</div>
 				<div id="collapse_5" class="panel-collapse collapse">
-					<div class="panel-body smallText justified">
+					<div class="panel-body justified">
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung der Bedarfsliste ausf&#252;hren</a><br><br>
 
-						<div class="panel panel-default">
-							<a class="bold" href="{% url 'statistics' %}">Statistiken anzeigen</a>
-						</div>
+						<a class="btn btn-info" href="{% url 'statistics' %}">Statistiken anzeigen</a>
 					
 					</div>
 				</div>
