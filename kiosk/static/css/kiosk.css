@@ -1,4 +1,5 @@
-/* overwrite Bootstrap */
+/* -------------------------------------- */
+/* Overwrite and complement Bootstrap */
 
 a {
     cursor: pointer;
@@ -22,25 +23,122 @@ table.autoSize {
     margin: 0;
 }
 
-/* Divs and fundamental style */
+.list-group-item.disabled:hover {
+    cursor: context-menu;
+}
 
-.divTopHeading {
-    display: inline-block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    max-width: 100%;
-    height: 70px;
-    text-align: center;
-    vertical-align: top;
-    padding-bottom: 7px;
-    /*background-color: #428bca;*/
-    color: #428bca;
-    margin: 0;
+
+
+/* -------------------------------------- */
+/* Divs and fundamental style */
+/* 
+    @screen-xs = 480px
+    @screen-sm = 768px
+    @screen-lg = 1200px
+*/
+
+
+/*@media (max-width: @screen-xs-max) { ... } */
+/*@media (max-width: 479px) { ... } */
+    .divTopHeading {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-width: 100%;
+        height: 70px;
+        text-align: center;
+        vertical-align: top;
+        padding-bottom: 7px;
+        color: #428bca;
+        margin: 0;
+    }
+
+    .divTopMenu {
+        display: inline-block;
+        position: sticky;
+        top: 22px;
+        left:80vw;
+        margin: 0;
+        z-index: 99;
+    }
+
+    .divTopMenuBigScreen {
+        display: none;
+    }
+
+    .divMain {
+        position: relative;
+        top:70px;
+        padding-left: 3vw;
+        padding-right: 3vw;
+    }
+
+    .divRightSide {
+        display: none;
+    }
+/*}*/
+
+/*@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {*/
+@media (min-width: 768px) {
+
+    .divTopHeading {
+        left:25vw;
+        width: 73vw;
+    }
+
+    .divMain {
+        left: 25vw; 
+        width: 73vw;   
+    }
+
+    .divTopMenu {
+        display: none;
+    }
+
+    .divTopMenuBigScreen {
+        display: inline-block;
+        position: absolute;
+        top: 125px;
+        left: 0;
+        padding-left: 2vw;
+        width: 25vw;
+        margin: 0;
+    }
 
 }
 
+
+/*@media (min-width: @screen-lg-min) { .divTopHeading {*/
+@media (min-width: 1200px) {
+
+    .divTopHeading {
+        left: 20vw;
+        width: 60vw;
+    }
+
+    .divMain {
+        left: 20vw;
+        width: 60vw;
+    }
+
+    .divRightSide {
+        display: inline-block;
+        position: absolute;
+        top: 125px;
+        left: 80vw;
+        padding-right: 2vw;
+        margin: 0;
+    }
+
+    .divTopMenuBigScreen {
+        width: 20vw;
+    }
+}
+
+
+/* Not dependent on screen-size */
 .aTopHeading {
     color: #428bca;
     text-decoration: none;
@@ -50,34 +148,14 @@ table.autoSize {
     text-decoration: none;
 }
 
-.divTopMenu {
-    display: inline-block;
-    position: sticky;
-    top: 22px;
-    left:80vw;
-    margin: 0;
-    z-index: 99;
-}
-
 .ulTopMenuWidth {
     min-width: 50vw;
 }
 
-.divMain {
-    /*display: inline-block;*/
-    position: relative;
-    top:70px;
-    padding-left:3vw;
-    padding-right: 3vw;
-}
-
-.divRightSide {
-    display: none;
-}
 
 
-
-/* Styles */
+/* -------------------------------------- */
+/* Class Styles */
 
 .bold{
     font-weight: bold;
@@ -143,189 +221,13 @@ table.autoSize {
     padding-bottom: 10px;
 }
 
-
-
-
-
-
-@media screen and (min-width: 600px) {
-
-
-/* Allgemein */
-#bodystyle{
-
+.sideMenu {
+    background-color: #f8f8f8;
+    border: 1px solid #f1f1f1;
+    border-radius: 5px;
+    padding: 1vw;
 }
 
-hr.small {
-    margin:3px;
-    padding:0;
-}
-
-
-/* Divs */
-.headDivHeading {
-    display: inline-block;
-    padding-left: 10vw;
-    padding-top: 10px;
-    width: 70vw;
-    text-align: center;
-    vertical-align: top;
-    min-height: 
-
-}
-
-.headDivLinks {
-    display: inline-block;
-    max-width: 40vw;
-    padding-left:10px;
-    padding-top:10px;
-    font-size: 75%;
-
-}
-
-.mainDiv {
-    display: inline-block;
-    padding-left:3vw;
-    padding-right: 3vw;
-    width: 100vw;
-    min-width: 100px;
-    vertical-align: top;
-}
-
-
-    .mainDiv {
-        width: 68vw;
-    }
-
-
-.allgInfoDiv {
-    display: inline-block;
-    width: 29vw;
-    min-width: 200px;
-    padding-left: 2vw;
-    vertical-align: top;
-    border-left: 1px solid #dddddd;
-}
-
-/* Format Style */
-
-.eingerueckt {
-     padding-left: 20px;
-}
-.eingeruecktklein {
-     padding-left: 10px;
-}
-
-.formDiv {
-    display: inline;
-    font-weight: bold;
-    font-size: 125%;
-}
-
-.commandTexts {
-    font-family: "Courier New";
-    font-style: italic;
-    font-size: 90%;
-    text-align: left;
-    margin-top:1%;
-    margin-left:5%;
-    margin-right:5%;
-    border: 1px solid #e9e9e9;
-    background-color: #f3f3f3;
-}
-
-
-/* Text Style */
-h5 {
-    font-weight: bold;
-}
-
-.items { 
-    margin:0; 
-    word-spacing:0.5em; 
-}
-
-.itemsDef { 
-    margin:0; 
-    word-spacing:0.5em; 
-    font-size:85%; 
-    color:#cccccc;
-    margin-bottom: 5px;
-}
-
-
-.headHeading{
-    /*font-weight: bold;*/
-}
-
-.errorColums {
-    color: #F5A9A9;
-    font-size: 85%;
-    font-weight: bold;
-}
-
-
-/* Tabelle */
-table.konto {
-    width: 100%;
-    font-size: 90%;
-    border-spacing: 10px;
-}
-
-td.konto, th.konto {
-    border: 1px solid #eeeeee;
-    padding: 8px;
-}
-
-tr.konto:nth-child(even) {
-    background-color: #eeeeee;
-}
-
-
-/* Dropdown-Auswahl */
-
-.dropbtn, .dropbtnt {
-    background-color: #428BCA;
-    color: white;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border: none;
-    cursor: pointer;
-    min-width: 200px;
-}
-
-.dropdown, .dropdownt {
-    position: relative;
-    display: inline-block;
-}
-
-.dropdown-content, .dropdown-contentt {
-    display: block;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-.dropdown-content a, .dropdown-contentt a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-/*.dropdown-content a:hover {background-color: #f1f1f1}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.dropdown:hover .dropbtn {
-    background-color: #1D4E7A;
-}
-*/
-
+.grey {
+    color: #999999;
 }

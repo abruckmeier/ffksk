@@ -79,7 +79,7 @@
 						Benutzeraccount
 						{% if user.is_authenticated %}
 							<br>
-							Eingeloggt als <b>{{ user.username }}</b>
+							(Eingeloggt als <b>{{ user.username }}</b>)
 						{% endif %}
 					</li>
 					{% if not user.is_authenticated %}
@@ -94,7 +94,7 @@
 					<li class="dropdown-header">Information</li>
 					<li><a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a></li>
 					<li><a href="{% url 'impressum_page' %}">Kontakt & Impressum</a></li>
-				</div>
+				</ul>
 
 			</div>
 
@@ -115,7 +115,7 @@
 				<br /><br />
 				<a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
 				<br />
-				<a href="{% url 'impressum_page' %}">Impressum & Kontakt</a>
+				<a href="{% url 'impressum_page' %}">Kontakt & Impressum</a>
 				<br />
 			</div>
 
@@ -123,48 +123,111 @@
 		</div>
 
 
+		<div class="container-fluid divTopMenuBigScreen">
+			<div class="sideMenu smallText">
 
+				<br>
 
-		<div class="container-fluid divRightSide">
-			{% if perms.profil.perm_kauf %}
-			<div>
-				<h4> Im Kiosk: </h4>
-				<div class="eingeruecktklein">
-					<p class="itemsDef">
-						Item | # | &#8364; 
-					</p>
-					
-					{% for item in kioskItems %}
-						<p class="items">
-							{{item.produktName}}  | 
-							{{item.anzahl}} | 
-							{{item.verkaufspreis | floatformat:2}} 
-						</p>
-					{% endfor %}
+				<div class="list-group">
+					<a class="list-group-item disabled">Navigation</a>
+					<a class="list-group-item" href="{% url 'start_page' %}">Startseite</a>
+					{% if user.is_authenticated and perms.profil.perm_kauf %}
+						<a class="list-group-item" href="{% url 'imkiosk_page' %}">Im Kiosk</a>
+						<a class="list-group-item" href="{% url 'offeneEkListe_page' %}">Offene Einkaufslisten</a>
+					{% endif %}
 				</div>
-			</div>
-			{% endif %}
-			{% if perms.profil.do_einkauf %}
-			<hr>
 
-			<div>
-				<h4>offene Einkaufslisten: </h4>
-				<div class="eingeruecktklein">
-					<p class="itemsDef">
-						Item | # 
-					</p>
-
-					{% for item in einkaufsliste %}
-						<b>Liste {{item.gruppenID}}:</b><br>
-						<div class="eingeruecktklein">
-							{{item.paket |safe}}
-						</div>
-						<br>
-					{% endfor %}
+				<div class="list-group">
+					<a class="list-group-item disabled">Aktionen</a>
+					{% if perms.profil.perm_kauf %}
+						<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
+					{% endif %}
+					{% if perms.profil.do_einkauf %}
+						<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ankündigen</a>
+						<a class="list-group-item" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+					{% endif %}
 				</div>
+
+				<div class="list-group">
+					<a class="list-group-item disabled">
+						Benutzeraccount
+						{% if user.is_authenticated %}
+							<br>
+							(Eingeloggt als <b>{{ user.username }}</b>)
+						{% endif %}
+					</a>
+					{% if not user.is_authenticated %}
+						<a class="list-group-item" href="{% url 'login' %}">Login</a>
+					{% else %}
+						<a class="list-group-item" href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a>
+						<a class="list-group-item" href="{% url 'logout' %}">Logout</a>
+					{% endif %}
+				</div>
+
+				<div class="list-group">
+					<a class="list-group-item disabled">Information</a>
+					<a class="list-group-item" href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
+					<a class="list-group-item" href="{% url 'impressum_page' %}">Kontakt & Impressum</a>
+
+				</div>
+
 			</div>
-			{% endif %}
 		</div>
+
+
+
+		{% if perms.profil.perm_kauf or perms.profil.do_einkauf %}
+		<div class="container-fluid divRightSide">
+			<div class="sideMenu smallText">
+
+				{% if perms.profil.perm_kauf %}
+					<div>
+						<h4> Im Kiosk: </h4>
+
+						<p class="smallText grey">
+							Produkt | # | &#8364; 
+						</p>
+							
+						{% for item in kioskItems %}
+							<p>
+								<div class="inline"><b>{{item.produktName}}</b></div>
+								<div class="grey inline"> 
+									| 
+									{{item.anzahl}}x | 
+									{{item.verkaufspreis | floatformat:2}} &#8364; 
+								</div>
+							</p>
+						{% endfor %}
+					</div>
+				{% endif %}
+
+				{% if perms.profil.do_einkauf %}
+					<br>
+					<hr>
+					<br>
+
+					<div>
+						<h4>Offene Einkaufslisten: </h4>
+
+						<p class="smallText grey">
+							Produkt | # 
+						</p>
+
+						{% for item in einkaufsliste %}
+							<p>
+								<div class="inline"><b>Liste {{item.gruppenID}}:</b></div>
+								<div class="grey inline">
+									{{item.anzahlElemente}}x {{item.produktName}}
+								</div>
+							</p>
+						{% endfor %}
+
+					</div>
+				{% endif %}
+
+			</div>
+		</div>
+		{% endif %}
 
 	</body>
 </html>
