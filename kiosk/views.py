@@ -84,23 +84,33 @@ def imkiosk_page(request):
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
 	return render(request, 'kiosk/imkiosk_page.html', 
-		{'kioskItems': kioskItems, })
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
 @login_required
 @permission_required('profil.perm_kauf',raise_exception=True)
 def offeneEkListe_page(request):
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/offeneEkListe_page.html', 
-		{'einkaufsliste': einkaufsliste, })
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
 def impressum_page(request):
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
 
-	return render(request, 'kisok/impressum_page', {})
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
 
@@ -442,8 +452,15 @@ def einkauf_annahme_user_page(request, userID):
 	# Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
 	seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
 	user = KioskUser.objects.get(id=userID)
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
 	return render(request,'kiosk/einkauf_annahme_user_page.html',
-		{'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user, 'notifications': notifications,})
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user, 'notifications': notifications,})
 
 
 
