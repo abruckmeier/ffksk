@@ -454,37 +454,44 @@ def transaktion_page(request):
 
 	currentUser = request.user
 	errorMsg = ''
+	successMsg = ''
+	form = None
+
 	if request.method == "POST":
 		# Hier kommen die eingegebenen Daten der Transaktion an.
 		form = TransaktionenForm(request.POST)
 
-		schuldner = KioskUser.objects.get(id=form['idFrom'].value())
-		schuldnerKto = Kontostand.objects.get(nutzer=schuldner)
-
 		if not form.is_valid():
-			errorMsg = 'Fehler in der Eingabe, bitte erneut eingeben.'
-
-		elif form['idTo'].value() == form['idFrom'].value():
-			errorMsg = chr(220)+'berweiser und Empf'+chr(228)+'nger sind identisch.'
-
-		elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username not in ('Bank','Dieb','Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
-			errorMsg = 'Kontostand des Schuldners ist nicht gedeckt.'
+			errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
 
 		else:
-			returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
 
-			if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
-				try:
-					slack_PostTransactionInformation(returnHttp)
-				except:
-					pass
+			schuldner = KioskUser.objects.get(id=form.cleaned_data['idFrom'])
+			schuldnerKto = Kontostand.objects.get(nutzer=schuldner)
 
-			request.session['transaktion_data'] = returnHttp['returnDict']
-			return HttpResponseRedirect(reverse('transaktion_done_page'))
+			if form.cleaned_data['idTo'] == form.cleaned_data['idFrom']:
+				errorMsg = chr(220)+'berweiser(in) und Empf'+chr(228)+'nger(in) sind identisch.'
+
+			elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username not in ('Bank','Dieb','Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
+				errorMsg = 'Kontostand des Schuldners ist nicht gedeckt.'
+
+			else:
+				returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
+
+				if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+					try:
+						slack_PostTransactionInformation(returnHttp)
+					except:
+						pass
+
+				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '+returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' überwiesen.'
 			
 	# Besorge alle User
 	#allUsers = KioskUser.objects.filter(visible=True).order_by('username')
 	allUsers = readFromDatabase('getUsersForTransaction')
+
+	if form is None or successMsg!='':
+		form = TransaktionenForm()
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -494,30 +501,8 @@ def transaktion_page(request):
 	return render(request, 'kiosk/transaktion_page.html', 
 		{'user': currentUser, 'allUsers': allUsers,  
 		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-		'errorMsg': errorMsg})
+		'errorMsg': errorMsg, 'successMsg': successMsg, 'form': form,})
 
-
-@login_required
-@permission_required('profil.do_admin_tasks',raise_exception=True)
-def transaktion_done_page(request):
-
-	currentUser = request.user
-	# Hole den Kioskinhalt
-	kioskItems = Kiosk.getKioskContent()
-	# Einkaufsliste abfragen
-	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-	if 'transaktion_data' in request.session.keys():
-		transaktion_data = request.session['transaktion_data']
-		del request.session['transaktion_data']
-	else:
-		return HttpResponseRedirect(reverse('home_page'))
-
-	transaktion_data['currentUser'] = currentUser
-	transaktion_data['kioskItems'] = kioskItems
-	transaktion_data['einkaufsliste'] = einkaufsliste
-
-	return render(request,'kiosk/transaktion_done_page.html',transaktion_data)
 
 
 # Anmelden neuer Nutzer, Light-Version: Jeder darf das tun, aber nur Basics, jeder wird Standardnutzer

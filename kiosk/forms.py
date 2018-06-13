@@ -3,10 +3,15 @@ from django.core.validators import MinValueValidator
 
 
 class TransaktionenForm(forms.Form):
-	idFrom = forms.IntegerField()
-	idTo = forms.IntegerField()
+	idFrom = forms.IntegerField(
+		widget=forms.TextInput(attrs={'readonly':'true'})
+	)
+	idTo = forms.IntegerField(
+		widget=forms.TextInput(attrs={'readonly':'true'})
+	)
 	betrag = forms.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(0)])
-	kommentar = forms.CharField(max_length=500)
+	kommentar = forms.CharField(widget=forms.Textarea, max_length=500)
+	
 
 class EinzahlungenForm(forms.Form):
 	CHOICES = [('Einzahlung','Einzahlung'),('Auszahlung','Auszahlung')]

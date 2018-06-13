@@ -1,140 +1,162 @@
 {% extends 'kiosk/base.html' %}	
 
+{% load widget_tweaks %}
+
 {% block content %}
 	
-	<h3>&#220;berweisungen</h3>
+	<div class="page-header noMarginTop">
+		<h4>&#220;berweisungen</h4>
+	</div>
 
 
-	<div class="eingerueckt">
-
-		<div style="color: red">
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Wähle eine(n) Einkäufer(in) aus und es erscheint eine Eingabemaske zur Verbuchung einer Ein- oder Auszahlung.<br>
+			Klicke dazu den entsprechenden Modus in der Eingabemaske an. Ein Kommentar ist nicht nötig und kann leer gelassen werden. Mit einem Klick auf "Transaktion tätigen" wird die Eingabe verbucht.
 			<br>
+			<b>Tipp: </b>Für Auszahlungen ist manchmal ein Klick auf "Kontostand einblenden" hilfreich.
+		</div>
+	</div>
+
+
+	{% if errorMsg != '' and errorMsg != None %}
+		<p class="alert alert-danger">
 			{{errorMsg}}
-			<br><br>
-		</div>
+		</p>
+	{% endif %}
 
-		<div class="dropdown">
-			<button class="dropbtn">Geldgeber w&#228;hlen</button>
-			<div class="dropdown-content">
-				{% for item in allUsers %}
-					<a href="#" onclick="goOnWithUserFrom({{item.id}},'{{item.username}}')">
+	{% if successMsg != '' and successMsg != None %}
+		<p class="alert alert-success">
+			{{successMsg}}
+		</p>
+	{% endif %}
+
+
+	<div class="dropdown">
+
+		<button class="btn btn-primary dropdown-toggle inline" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Eine(n) Geldgeber(in) ausw&#228;hlen
+			<span class="caret"></span>
+		</button>
+		&nbsp;&nbsp;
+		<div id="userFromAtButton" class="inline bold"></div>
+		
+		<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
+			{% for item in allUsers %}
+				<li><a onclick="goOnWithUserFrom({{item.id}},'{{item.username}}')">
 						{{item.username}} ({{item.first_name}} {{item.last_name}})
-					</a>
+					</a></li>
+			{% endfor %}
+		</ul>
+	</div>	
+
+
+	<div id="divEmpfaenger" style="display: none;" class="panel panel-default">
+		<br>
+
+		<div class="dropdown indented">
+			<button class="btn btn-primary dropdown-toggle inline" type="button" id="dropdownHeadTo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Eine(n) Geldempfänger(in) ausw&#228;hlen
+				<span class="caret"></span>
+			</button>
+			&nbsp;&nbsp;
+			<div id="userToAtButton" class="inline bold"></div>
+			
+			<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHeadTo">
+				{% for item in allUsers %}
+					<li><a onclick="goOnWithUserTo({{item.id}},'{{item.username}}')">
+							{{item.username}} ({{item.first_name}} {{item.last_name}})
+						</a></li>
 				{% endfor %}
-			</div>
-		</div>
+			</ul>
+		</div>	
 
-		<script>
-			function goOnWithUserFrom(userID,username) {
-				//$("div#divEingabeform").hide();
-				$("div#divEmpfaenger").show(200);
-				$("input#idFrom").val(userID);
-				$("div#userFrom").html(username);
-			}
-		</script>	
-
-
-		<div class="eingerueckt">
-
-		<br><br>
-
-			<div id="divEmpfaenger">
-				<div class="dropdownt">
-					<button class="dropbtnt">Empf&#228;nger w&#228;hlen</button>
-					<div class="dropdown-contentt">
-						{% for item in allUsers %}
-							<a href="#" onclick="goOnWithUserTo({{item.id}},'{{item.username}}')">
-								{{item.username}} ({{item.first_name}} {{item.last_name}})
-							</a>
-						{% endfor %}
-					</div>
-				</div>
-			</div>
-
-			<script type="text/javascript">
-				
-				$(document).ready(function(){
-					$("div#divEmpfaenger").hide();
-
-						$("div.dropdown-contentt").hide(500);
-		  				$("button.dropbtnt").click(function(){
-		  					if (!isClickedt) {
-		  						$("div.dropdown-contentt").show(500);
-		  						isClickedt = true;
-		  						$("div.dropdown-content").hide(500);
-		  						isClicked = false;
-		  					} else {
-		  						$("div.dropdown-contentt").hide(500);
-		  						isClickedt = false;
-		  					}
-		  				});
-		  				$("div.dropdown-contentt").click(function(e){
-		  					e.preventDefault();
-		  					$("div.dropdown-contentt").hide(500);
-		  					isClickedt = false;
-		  				});
- 
-				});
-
-				function goOnWithUserTo(userID,username){
-				    $("div#divEingabeform").show(200);
-				    $("input#idTo").val(userID);
-					$("div#userTo").html(username);
-				};
-			</script>
+	
+		<div class="indented">
+		<div id="divEingabeform" style="display: none;" class="panel panel-default">
 
 			<br>
 
-			<div id="divEingabeform" style="padding-left: 8vw;">
-				<br>
-				<form method="POST" class="">{% csrf_token %}
-					<input type="text" name="idFrom" id="idFrom" style="display: none" readonly>
-					<input type="text" name="idTo" id="idTo" style="display: none" readonly>
-					
-					<div class="formDiv" id="userFrom"></div> --> 
-					<div class="formDiv" id="userTo"></div>
-					
-					<br><br>
-					
-					<table style="max-width:80%; border-spacing: 5px;text-align: left;">
-						<tr>
-							<td style="min-width: 110px"><label>Betrag 
-								<div style="display:inline;font-weight: normal;font-size:75%">
-									(xx.yy &#8364;)
-								</div></label>
-							</td>
-							<td><input type="text" name="betrag" 
-								id="betrag" class="form-control" 
-								style="width: 70px;display: inline;">
-							</td>
-						</tr>
-						<tr>
-							<td><label>Kommentar</label>
-							</td>
-							<td><textarea name="kommentar" rows="5" cols="150" wrap="soft"
-								id="kommentar" class="form-control" maxlength="500" 
-								style=""></textarea>
-							</td>
-						</tr>
-					</table>
+			<form method="POST" class="">
+				{% csrf_token %}
 
+				<div class="indented">
+					<b>Geldgeber(in):</b>
+					<div class="inline" id="userFrom"></div>
 					<br>
-					<button type="submit" class="btn">&#220;berweisung t&#228;tigen</button>
-				</form>	
+					<b>Geldempfänger(in): </b>
+					<div class="inline" id="userTo"></div>
+					<br><br>
+				</div>
 
-			</div>
-			<script type="text/javascript">
-				$(document).ready(function(){
-					$("div#divEingabeform").hide();
-				});
-			</script>
+				
+				{% render_field form.idFrom style+="display: none;" %}
+				{% render_field form.idTo style+="display: none;" %}
+
+				<div class="form-group indented">
+	                {{ form.betrag.label_tag }}
+	                {{ form.betrag | attr:"class:form-control" | attr:"placeholder:x,yz €" }}
+	                <br>
+	                {% if form.betrag.errors %}
+	                    <p class="alert alert-danger">{{ form.betrag.errors.as_text }}</p>
+	                {% endif %}
+	                {% if form.betrag.help_text %}
+	                    <p class="alert alert-info">{{ form.betrag.help_text|safe }}</p>
+	                {% endif %}
+	            </div>
+
+	            <div class="form-group indented">
+	                {{ form.kommentar.label_tag }}
+	                {{ form.kommentar | attr:"class:form-control" | attr:"rows:5"}}
+	                <br>
+	                {% if form.kommentar.errors %}
+	                    <p class="alert alert-danger">{{ form.kommentar.errors.as_text }}</p>
+	                {% endif %}
+	                {% if form.kommentar.help_text %}
+	                    <p class="alert alert-info">{{ form.kommentar.help_text|safe }}</p>
+	                {% endif %}
+	            </div>
+
+	            <div class="indented">
+					<button type="submit" class="btn btn-primary ">&#220;berweisung t&#228;tigen</button>
+				</div>
+			</form>	
 
 		</div>
+		</div>
+
+	<br>
 
 	</div>
 
+	<br>
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum persönlichen Bereich</a><br>
 
+
+{% endblock %}
+
+{% block javascript %}
+
+	<script type="text/javascript">
+
+		function goOnWithUserFrom(userID,username) {
+			$("div#divEmpfaenger").show(400);
+			$('input[name="idFrom"]').val(userID);
+			$("div#userFrom").html(username);
+			$("div#userFromAtButton").html(username);
+		}
+
+		function goOnWithUserTo(userID,username){
+		    $("div#divEingabeform").show(400);
+		    $('input[name="idTo"]').val(userID);
+			$("div#userTo").html(username);
+			$("div#userToAtButton").html(username);
+		}
+
+	</script>	
 
 {% endblock %}
