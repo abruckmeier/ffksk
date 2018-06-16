@@ -36,15 +36,15 @@ from django.utils.encoding import force_bytes, force_text
 
 def start_page(request):
 	
-	# Einkaeufer des Monats
-	data = readFromDatabase('getEinkaeuferDesMonats')
+	# Einkaeufer der Woche
+	data = readFromDatabase('getEinkaeuferDerWoche')
 	bestBuyers = []
 	for item in data:
 		bestBuyers.append(item['first_name'] + ' ' + item['last_name'])
 	bestBuyers = ', '.join(bestBuyers)
 
-	# Verwalter des Monats
-	data = readFromDatabase('getVerwalterDesMonats')
+	# Verwalter der Woche
+	data = readFromDatabase('getVerwalterDerWoche')
 	bestVerwalter = []
 	for item in data:
 		bestVerwalter.append(item['first_name'] + ' ' + item['last_name'])

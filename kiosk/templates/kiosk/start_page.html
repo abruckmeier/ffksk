@@ -37,13 +37,16 @@
 			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
 				<h5 class="panel-title smallText bold">
 					<a class="accordion-toggle">
-						(05. Jun. 2018) Neues Erscheinungsbild der Webseite
+						(16. Jun. 2018) Neues Erscheinungsbild der Webseite
 					</a>
 				</h5>
 			</div>
 			<div id="collapse_1" class="panel-collapse collapse in">
 				<div class="panel-body smallText justified">
-					Nun endlich wurde die Kioskwebseite für Mobiltelefone optimiert. Viel Spaß mit dem neuen Layout!
+					Nun endlich wurde die Kioskwebseite für die Darstellung auf Mobiltelefonen und anderen kleinen Bildschirmen optimiert. Viel Spaß mit dem neuen Layout!
+					<br>
+					<br>
+					Hast du Anmerkungen und Verbesserungsvorschläge dazu? Dann kannst du diese sehr gerne weiterreichen.
 				</div>
 			</div>
 		</div>
@@ -135,20 +138,51 @@
 			<h4>Am Rande ...</h4>
 		</div>
 
-		<small>
-			<b>Eink&#228;ufer des Monats: </b>{{bestBuyers}}
-			<br>
-			<b>Verwalter des Monats: </b>{{bestVerwalter}}
-			<br>
-			Dankesch&#246;n daf&#252;r!!!
-		</small>
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Verantwortliche Personen
+			</div>
+			<div class="panel-body justified smallText">
+				<h5>Verwalter:</h5> 
+				<b>{{accountants}}</b>
+				<br>
+				<i>Zuständig für Einzahlungen/Auszahlungen, Rückbuchungen von Einkäufen und Annahme von Einkäufen</i>
 
-		<br><br>
-		<b>Unbezahlt im Kiosk</b>
-		<br>
-		<div style="min-width: 300px;max-width: 500px;">
-			{{ chart_DaylyVkValue.as_html }}
-		</div>		
+				<br><br>
+
+				<h5>Administratoren:</h5> 
+				<b>{{admins}}</b>
+				<br>
+				<i>Zuständig für Account-Verwaltung, technische Probleme, Verbesserungsvorschläge, ...</i>
+			</div>
+		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Verdiente Personen
+			</div>
+			<div class="panel-body justified smallText">
+				<b>Eink&#228;ufer der Woche: </b>{{bestBuyers}}
+				<br>
+				<b>Verwalter der Woche: </b>{{bestVerwalter}}
+				<br>
+				Dankesch&#246;n daf&#252;r!!!
+			</div>
+		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Statistik: Unbezahlt im Kiosk
+			</div>
+			<div class="panel-body justified smallText">
+				<div style="max-width: 500px;">
+					{{ chart_DaylyVkValue.as_html }}
+				</div>	
+			</div>
+		</div>
+	
 		
 	{% endif %}
 
