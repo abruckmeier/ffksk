@@ -1,5 +1,17 @@
 from django import forms
 from django.core.validators import MinValueValidator
+from . import models
+
+
+class Kontakt_Nachricht_Form(forms.ModelForm):
+
+	class Meta:
+		model = models.Kontakt_Nachricht
+		exclude = ('beantwortet',)
+		widgets= {
+			'betreff': forms.Textarea(attrs={'rows':1,})
+		}
+
 
 
 class TransaktionenForm(forms.Form):

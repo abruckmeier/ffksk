@@ -18,6 +18,18 @@ from django.db.models import Max
 
 # Create your models here.
 
+class Kontakt_Nachricht(models.Model):
+	name = models.CharField(max_length=40)
+	email = models.EmailField('E-Mail-Adresse')
+	gesendet = models.DateTimeField(auto_now_add=True)
+	betreff = models.TextField(max_length=128, blank=True)
+	text = models.TextField(max_length=1024)
+	beantwortet = models.BooleanField(default=False)
+
+	def __str__(self):
+		return ('Von: ' + str(self.name) + ': '+str(self.betreff))
+
+
 
 class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)

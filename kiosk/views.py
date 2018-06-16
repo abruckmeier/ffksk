@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect, reverse
 from django.db.models import Count
 from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
+from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft, Kontakt_Nachricht
 from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm
@@ -9,7 +9,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse
 from django.forms import formset_factory
 
-from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm
+from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -104,13 +104,65 @@ def offeneEkListe_page(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
-def impressum_page(request):
+def datenschutz_page(request):
+
+	# Get the contact data for the impressum
+	datenschutz = getattr(settings,'DATENSCHUTZ')
+
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+	return render(request, 'kiosk/datenschutz_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'datenschutz': datenschutz})
+
+
+def kontakt_page(request):
+
+	successMsg = None
+	errorMsg = None
+
+	if request.method == "POST":
+
+		form = Kontakt_Nachricht_Form(request.POST)
+
+		if form.is_valid():
+			try:
+				data = KioskUser.objects.filter(visible=True, rechte='Admin')
+				msg = 'Es kam eine neue Nachricht über das Kontaktformular herein. Bitte kümmere dich im Admin-Bereich um diese Anfrage.'
+				for u in data:
+					slack_SendMsg(msg, user=u)
+
+				form.save()
+				successMsg = 'Deine Nachricht wurde an die Administratoren der Webseite gesendet. Dir wird so schnell wie möglich an die E-Mail-Adresse "'+form.cleaned_data['email']+'" geantwortet. Bitte vergewissere dich, dass diese Adresse korrekt ist.'
+				form = Kontakt_Nachricht_Form()
+
+			except:
+				errorMsg = 'Interner Fehler beim Speichern der Nachricht. Benutze alternativ die angegebene E-Mail-Adresse im Impressum.'
+
+	else:
+		# Load the contact formular
+		form = Kontakt_Nachricht_Form()
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+	return render(request, 'kiosk/kontakt_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'form': form, 'successMsg': successMsg, 'errorMsg': errorMsg})
+
+
+def impressum_page(request):
+
+	# Get the contact data for the impressum
+	impressum = getattr(settings,'IMPRESSUM')
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'impressum': impressum,})
 
 
 

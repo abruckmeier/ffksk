@@ -1,0 +1,70 @@
+{% extends 'kiosk/base.html' %}	
+
+{% load widget_tweaks %}
+
+{% block content %}
+
+	<div class="page-header noMarginTop">
+		<h4>Kontakt</h4>
+	</div>
+
+	
+	<div class="justified">
+		Deine Frage bezieht sich auf die Webseite selbst oder du möchtest einen Beitrag zur Webseiten-Entwicklung leisten? Dann nutze bitte dazu die entsprechenden Features auf <a class="bold" href="https://github.com/AndiBr/ffksk">GitHub</a>.
+		<br>
+		<br>
+		Kann deine Frage evtl. durch die <a class="bold" href="{% url 'anleitung_page' %}">Anleitung und die ersten Schritte</a> beantwortet werden?
+		<br>
+		<br>
+		Falls nicht, kannst du dich sehr gerne mit folgendem Kontaktformular an uns wenden. Die <a class="bold" href="{% url 'datenschutz_page' %}">Datenschutzerklärung</a> informiert über die Verwendung der Daten in diesem Formular.
+		<br><br>
+	</div>
+
+	<div class="panel-group" id="accordion">
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
+				<h5 class="panel-title smallText bold">
+					<a class="accordion-toggle">
+						Nachricht über das Kontaktformular senden
+					</a>
+				</h5>
+			</div>
+			<div id="collapse_1" class="panel-collapse collapse in padding">
+				
+				{% if successMsg != '' and successMsg != None %}
+					<p class="alert alert-success">
+						{{successMsg}}
+					</p>
+				{% endif %}
+				{% if errorMsg != '' and errorMsg != None %}
+					<p class="alert alert-danger">
+						{{errorMsg}}
+					</p>
+				{% endif %}
+
+				<form method="post" action="{% url 'kontakt_page' %}">
+			        {% csrf_token %}
+
+			        {% for field in form %}
+			            <div class="form-group">
+			                {{ field.label_tag }}
+			                {{ field | add_class:"form-control" }}
+			                <br>
+			                {% if field.errors %}
+			                    <p class="alert alert-danger">{{ field.errors.as_text }}</p>
+			                {% endif %}
+			                {% if field.help_text %}
+			                    <div class="alert alert-info">{{ field.help_text|safe }}</div>
+			                {% endif %}
+			            </div>
+			        {% endfor %}
+			        
+			        <input type="submit" class="btn btn-primary" value="Nachricht senden" />  
+			    </form>
+
+			</div>
+		</div>
+	</div>
+
+
+{% endblock %}
