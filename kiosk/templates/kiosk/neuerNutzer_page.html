@@ -8,10 +8,16 @@
         <h4>Anlegen eines Benutzerkontos</h4>
     </div>
 
-
-    <div class="panel panel-body justified">
-        Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Bestätige außerdem die gültigen Regeln im Kiosk (tbd) und die Hinweise zur Datenverwendung (tbd).
-    </div>
+	
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified">
+			Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Bestätige außerdem die <a class="bold" href="{% url 'anleitung_page' %}">gültigen Regeln im Kiosk</a> und die <a class="bold" href="{% url 'anleitung_page' %}">Hinweise zur Datenverwendung</a>.
+		</div>
+	</div>
+	<br>
 
 
     {% if msg != '' and msg != None %}

@@ -29,7 +29,7 @@ class KioskUserAdmin(UserAdmin):
 	superuser_fieldsets = UserAdmin.fieldsets + (
 		(_('Slack'), {'fields': ('slackName',),}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
-		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg',),},),
+		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
 	)
 
 	# Restricted views for non-superuser staff
@@ -38,7 +38,7 @@ class KioskUserAdmin(UserAdmin):
 		(_('Personal Info'), {'fields': ('first_name', 'last_name', 'email','slackName')}),
 		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
-		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg',),},),
+		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
 	)
 
 	# Change the view, when staff or superuser accesses the page

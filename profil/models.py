@@ -30,6 +30,8 @@ class KioskUser(AbstractUser):
 	visible = models.BooleanField(default=True) # Bank, Dieb, usw. sollen nicht gesehn und nicht angewaehlt werden duerfen, z.B. bei Einkauf-Annahme
 	activity_end_msg = models.IntegerField(default=0) # 0: Active, nothing sent. 1: Active, message sent that in 7 days, account will be blocked. 2: Inactive, invisible, Inactivity message sent. 3: Account is now unpersonalised, money is donated to Kiosk
 
+	dsgvo_accepted = models.BooleanField(default=False)
+
 	class Meta:
 		permissions = (
 			("do_admin_tasks","Einpflegen von Usern, Geldtransaktionen, ..."),
