@@ -175,7 +175,7 @@
 		</div>
 
 
-
+		{% if kioskItems and einkaufsliste %}
 		{% if perms.profil.perm_kauf or perms.profil.do_einkauf %}
 		<div class="container-fluid divRightSide">
 			<div class="sideMenu smallText">
@@ -227,6 +227,7 @@
 
 			</div>
 		</div>
+		{% endif %}
 		{% endif %}
 
 	</body>
