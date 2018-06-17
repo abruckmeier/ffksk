@@ -128,7 +128,7 @@ class UserErstellenForm(UserCreationForm):
 			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
 			'email': _('<small>Die E-Mail-Adresse muss die @ffe.de-Domain besitzen.</small>'),
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
-            'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/anleitung/">gültigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
+            'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/anleitung/">g'+chr(252)+'ltigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
 		}
 
 

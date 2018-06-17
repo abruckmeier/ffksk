@@ -22,7 +22,7 @@
 			Alle wichtigen Informationen zum Kiosk findest du unter <a class="bigLink" href="{% url 'anleitung_page' %}">Info & Erste Schritte.</a>
 		</p>
 		<p>
-			Du möchtest beitreten? Erstelle unter <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a> dein Nutzerkonto.
+			Du m&#246;chtest beitreten? Erstelle unter <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a> dein Nutzerkonto.
 		</p>
 	</div>
 
@@ -43,10 +43,10 @@
 			</div>
 			<div id="collapse_1" class="panel-collapse collapse in">
 				<div class="panel-body smallText justified">
-					Nun endlich wurde die Kioskwebseite für die Darstellung auf Mobiltelefonen und anderen kleinen Bildschirmen optimiert. Viel Spaß mit dem neuen Layout!
+					Nun endlich wurde die Kioskwebseite f&#252;r die Darstellung auf Mobiltelefonen und anderen kleinen Bildschirmen optimiert. Viel Spa&#223; mit dem neuen Layout!
 					<br>
 					<br>
-					Hast du Anmerkungen und Verbesserungsvorschläge dazu? Dann kannst du diese sehr gerne weiterreichen.
+					Hast du Anmerkungen und Verbesserungsvorschl&#228;ge dazu? Dann kannst du diese sehr gerne weiterreichen.
 				</div>
 			</div>
 		</div>
@@ -61,11 +61,11 @@
 			</div>
 			<div id="collapse_2" class="panel-collapse collapse">
 				<div class="panel-body smallText justified">
-					Von nun an könnt ihr per Slack eure Einkäufe im Kiosk tätigen. Dazu müsst ihr lediglich (egal in welchem Gesprächsverlauf) den "Slash-Command"
+					Von nun an k&#246;nnt ihr per Slack eure Eink&#228;ufe im Kiosk t&#228;tigen. Dazu m&#252;sst ihr lediglich (egal in welchem Gespr&#228;chsverlauf) den "Slash-Command"
 					<div class="panel panel-default code">
 						/kiosk kaufen
 					</div>
-					ausführen. Alles Weitere wird euch dort erklärt.
+					ausf&#252;hren. Alles Weitere wird euch dort erkl&#228;rt.
 				</div>
 			</div>
 		</div>
@@ -106,7 +106,7 @@
 		<div class="panel panel-default">
 			Hier geht es zur
 			<a class="bigLink" href="{% url 'neuerNutzer_page' %}">Registrierung</a>
-			für neue Nutzer.
+			f&#252;r neue Nutzer.
 		</div>
 
 	{% else %}
@@ -121,7 +121,7 @@
 		{% if perms.profil.do_einkauf %}
 			<div class="panel panel-default">
 				Eine 
-				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ankündigen.</a>
+				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
 			</div>
 		{% endif %}
 
@@ -146,14 +146,14 @@
 				<h5>Verwalter:</h5> 
 				<b>{{accountants}}</b>
 				<br>
-				<i>Zuständig für Einzahlungen/Auszahlungen, Rückbuchungen von Einkäufen und Annahme von Einkäufen</i>
+				<i>Zust&#228;ndig f&#252;r Einzahlungen/Auszahlungen, R&#252;ckbuchungen von Eink&#228;ufen und Annahme von Eink&#228;ufen</i>
 
 				<br><br>
 
 				<h5>Administratoren:</h5> 
 				<b>{{admins}}</b>
 				<br>
-				<i>Zuständig für Account-Verwaltung, technische Probleme, Verbesserungsvorschläge, ...</i>
+				<i>Zust&#228;ndig f&#252;r Account-Verwaltung, technische Probleme, Verbesserungsvorschl&#228;ge, ...</i>
 			</div>
 		</div>
 

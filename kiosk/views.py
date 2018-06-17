@@ -129,12 +129,12 @@ def kontakt_page(request):
 		if form.is_valid():
 			try:
 				data = KioskUser.objects.filter(visible=True, rechte='Admin')
-				msg = 'Es kam eine neue Nachricht über das Kontaktformular herein. Bitte kümmere dich im Admin-Bereich um diese Anfrage.'
+				msg = 'Es kam eine neue Nachricht '+chr(252)+'ber das Kontaktformular herein. Bitte k'+chr(252)+'mmere dich im Admin-Bereich um diese Anfrage.'
 				for u in data:
 					slack_SendMsg(msg, user=u)
 
 				form.save()
-				successMsg = 'Deine Nachricht wurde an die Administratoren der Webseite gesendet. Dir wird so schnell wie möglich an die E-Mail-Adresse "'+form.cleaned_data['email']+'" geantwortet. Bitte vergewissere dich, dass diese Adresse korrekt ist.'
+				successMsg = 'Deine Nachricht wurde an die Administratoren der Webseite gesendet. Dir wird so schnell wie m'+chr(246)+'glich an die E-Mail-Adresse "'+form.cleaned_data['email']+'" geantwortet. Bitte vergewissere dich, dass diese Adresse korrekt ist.'
 				form = Kontakt_Nachricht_Form()
 
 			except:
@@ -553,7 +553,7 @@ def transaktion_page(request):
 					except:
 						pass
 
-				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '+returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' überwiesen.'
+				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '+returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' '+chr(252)+'berwiesen.'
 			
 	# Besorge alle User
 	#allUsers = KioskUser.objects.filter(visible=True).order_by('username')
@@ -679,7 +679,7 @@ def einzahlung_page(request):
 					except:
 						pass
 					
-				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde für '+auszUser.username+' '+returnHttp['type']+'.'
+				successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde f'+chr(252)+'r '+auszUser.username+' '+returnHttp['type']+'.'
 	
 	# Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
 	if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
@@ -1058,7 +1058,7 @@ def rueckbuchung_user(request, userID):
 				r = Gekauft.rueckbuchen(f)
 				if r['anzahlZurueck'] > 0:
 				
-					html = str(r['anzahlZurueck'])+' '+r['product']+' wurden ins Kiosk zurück verbucht.'+chr(10)+'Der Betrag von '+str('%.2f' % r['price'])+' '+chr(8364)+' wurde gutgeschrieben.'
+					html = str(r['anzahlZurueck'])+' '+r['product']+' wurden ins Kiosk zur'+chr(252)+'ck verbucht.'+chr(10)+'Der Betrag von '+str('%.2f' % r['price'])+' '+chr(8364)+' wurde gutgeschrieben.'
 					r['html'] = render_to_string('kiosk/success_message.html', {'message':html})
 
 					r['slackMsg'] = 'Dir wurde das Produkt "'+str(r['anzahlZurueck'])+'x '+str(r['product'])+'" r'+chr(252)+'ckgebucht und der Betrag von '+str('%.2f' % r['price'])+' '+chr(8364)+' erstattet.\nDein Kiosk-Verwalter'

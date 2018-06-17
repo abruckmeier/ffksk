@@ -172,14 +172,14 @@ class ZumEinkaufVorgemerkt(models.Model):
 
 		# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
 		if anzahlAngeliefert > anzahlElemente:
-			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" für '"+product.produktName+"'"
+			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" f"+chr(252)+"r '"+product.produktName+"'"
 			retVal['err'] = True
 
 		# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
 		minProduktMarge = finanz['minProduktMarge']
 
 		if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
-			retVal['msg'] = "Die Kosten für den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
+			retVal['msg'] = "Die Kosten f"+chr(252)+"r den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
 			retVal['err'] = True
 
 		if retVal['err'] == True:
@@ -230,7 +230,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 
 			retVal['dct'] = {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName': product.produktName,'anzahlElemente':anzahlElemente}
 			retVal['angeliefert'] = angeliefert
-			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' Stück zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
+			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
 			retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
 			return retVal
 

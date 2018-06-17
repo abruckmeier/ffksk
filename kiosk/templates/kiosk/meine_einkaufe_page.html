@@ -11,19 +11,19 @@
 			Info
 		</div>
 		<div class="panel-body justified smallText">
-			Hier siehst du, welche Besorgungen du angekündigt hast. 
-			Diese Einkäufe musst du innerhalb von sieben Tagen nach der Ankündigung durchführen, sonst werden diese wieder allen anderen zum Einkauf zur Verfügung gestellt.
+			Hier siehst du, welche Besorgungen du angek&#252;ndigt hast. 
+			Diese Eink&#228;ufe musst du innerhalb von sieben Tagen nach der Ank&#252;ndigung durchf&#252;hren, sonst werden diese wieder allen anderen zum Einkauf zur Verf&#252;gung gestellt.
 			<br>
-			Brauchst du Tipps für den Einkauf? Vielleicht hilft dir ein Klick auf den Kommentar weiter. Dort kannst du auch selbst Kommentare hinterlassen.
+			Brauchst du Tipps f&#252;r den Einkauf? Vielleicht hilft dir ein Klick auf den Kommentar weiter. Dort kannst du auch selbst Kommentare hinterlassen.
 			<br>
-			Mit Klick auf den Mülleimer kannst du Produkte (teilweise) aus deiner persönlichen Einkaufsliste löschen.
+			Mit Klick auf den M&#252;lleimer kannst du Produkte (teilweise) aus deiner pers&#246;nlichen Einkaufsliste l&#246;schen.
 		</div>	
 	</div>
 
 	<div>
 		{% if not persEinkaufsliste %}
 			<table class="table table-striped smallText">
-				<tr><th>keine zu erledigenden Einkäufe</th></tr>
+				<tr><th>keine zu erledigenden Eink&#228;ufe</th></tr>
 			</table>
 		{% else %}
 			<table class="table table-striped smallText">
@@ -32,7 +32,7 @@
 					<th>Anzahl zu kaufen</th>
 					<th>Maximaler Einkaufspreis</th>
 					<th>Neuester Kommentar</th>
-					<th>Anzahl aus der Liste löschen</th>
+					<th>Anzahl aus der Liste l&#246;schen</th>
 				</tr>
 
 				{% for item in persEinkaufsliste %}
@@ -64,7 +64,7 @@
 
 
 	<hr>
-	<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ankündigen</a>
+	<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
 	<br><br>
 	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
 
