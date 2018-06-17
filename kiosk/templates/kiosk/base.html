@@ -30,7 +30,25 @@
 
   		{% block javascript %}{% endblock %}
 
-
+  		<!-- Use of Cookies Pop-Up -->
+  		<link rel="stylesheet" type="text/css" href="{% static 'css/cookieconsent.min.css' %}" />
+		<script type="text/javascript" src="{% static 'js/cookieconsent.min.js' %}"></script>
+		<script type="text/javascript">
+			window.addEventListener("load", function(){
+			window.cookieconsent.initialise({
+			  "palette": {
+			    "popup": {
+			      "background": "#252e39"
+			    },
+			    "button": {
+			      "background": "#14a7d0"
+			    }
+			  },
+			  "theme": "classic",
+			  "position": "top",
+			  "static": true
+			})});
+		</script>
 
 	</head>
 	<body>
