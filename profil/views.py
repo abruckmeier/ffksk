@@ -6,15 +6,52 @@ from datetime import datetime
 from django.contrib.auth.models import Group
 from kiosk.models import Kontostand
 from django.db import transaction
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 
 from .models import KioskUser
-from .forms import AktivBisChangeForm
+from .forms import AktivBisChangeForm, LoginForm
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
 from profil.tokens import account_activation_token
 from kiosk.bot import slack_PostWelcomeMessage
+
+
+def login_page(request):
+
+	errorMsg = None
+
+	if request.method == 'POST':
+
+		form = LoginForm(request.POST)
+		print(form)
+
+		if form.is_valid():
+
+			print(form.cleaned_data)
+
+			user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+			if user is not None:
+				login(request, user)
+				# Redirect to next Page
+			else:
+				# Return to Invalid Login Page
+				errorMsg = 'Benutzername oder Passwort falsch.'
+
+		else:
+			errorMsg = 'Fehler'
+
+	else:
+		form = LoginForm()
+
+	return render(request, 'registration/login.html', 
+		{'form':form, 'errorMsg': errorMsg, })
+
+
+def logout_page(request):
+	logout(request)
+
+	return HttpResponseRedirect(reverse('start_page'))
 
 
 @login_required

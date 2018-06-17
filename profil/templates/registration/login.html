@@ -8,7 +8,7 @@
         <h4>Login</h4>
     </div>
 
-    {% if form.errors %}
+    {% if errorMsg %}
         <p class="alert alert-danger">
             Dein Benutzername und Passwort stimmen nicht &#252;berein. Versuche es noch einmal.
         </p>
@@ -30,7 +30,7 @@
         
 
         <input type="submit" class="btn btn-primary" value="Login" />
-        <input type="hidden" name="next" value="{{ next }}" />
+        <input type="hidden" name="next" id="id_next" value="{{ next }}" />
     </form>
 
     <br>

@@ -103,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'profil.KioskUser'
 
-LOGIN_REDIRECT_URL = '/accounts/registrationStatus/'
+#LOGIN_REDIRECT_URL = '/accounts/registrationStatus/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/

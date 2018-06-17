@@ -9,8 +9,8 @@ from . import forms
 
 urlpatterns = [
     
-    #url(r'^accounts/login/$', views.login, name='login'),
-    #url(r'^accounts/logout/$', views.logout, name='logout', kwargs={'next_page': '/'}),
+    url(r'^accounts/login/$', profilViews.login_page, name='login'),
+    url(r'^accounts/logout/$', profilViews.logout_page, name='logout'),
     
     url(r'^accounts/password/change/$', views.PasswordChangeView.as_view(template_name='registration/password_change.html'), name='password_change'),
     url(r'^accounts/password/change/done/$', views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'), name='password_change_done'),

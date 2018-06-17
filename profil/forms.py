@@ -14,6 +14,14 @@ from  .models import KioskUser
 from . import models
 
 
+class LoginForm(forms.Form):
+
+    username = forms.CharField()
+    password = forms.CharField(
+        widget=forms.PasswordInput
+    )
+
+
 
 # Slack Reset Form
 # This form is used in the template to enter the slack name to send a message to the user with a reset link to generate a new password. This form finds the user and sends the url.
