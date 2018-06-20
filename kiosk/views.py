@@ -87,7 +87,7 @@ def imkiosk_page(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-	return render(request, 'kiosk/imkiosk_page.html', 
+	return render(request, 'kiosk/imKiosk_page.html', 
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
