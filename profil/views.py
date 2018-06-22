@@ -138,6 +138,8 @@ class AccountActivate(View):
 
 			g = Group.objects.get(name='Nutzer')
 			g.user_set.add(user)
+			h = Group.objects.get(name='Einkaufer')
+			h.user_set.add(user)
 
 			k = Kontostand(nutzer_id = user.id, stand=0)
 			k.save()

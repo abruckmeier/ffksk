@@ -1,55 +1,63 @@
-{% extends 'kiosk/base.html' %}	
+{% extends 'kiosk/base.html' %}
+
+{% load widget_tweaks %}    
 
 {% block content %}
 
-    <h4>Datum der Deaktivierung &#228;ndern</h4>
-    <br>
 
-    <div class="eingerueckt">
-
-        <p>
-        <b>Warum sollte ich mein Austrittsdatum aus der FfE korrekt einstellen?</b><br>
-        Nach diesem Datum kannst du keine Eink&#228;ufe im FfE-Kiosk t&#228;tigen und dein Konto wird deaktiviert.
-        Durch Einstellen dieses Datums bekommst du automatisch rechtzeitig vor dem Ende deiner Besch&#228;ftigungszeit eine E-Mail und Slack-Nachricht, die dich daran erinnert, entweder dein Guthaben auszahlen zu lassen oder deine Besch&#228;ftigungszeit zu verl&#228;ngern.
-        </p>
-
-        <br>
-
-        <form method="post" action="{% url 'angestellt_bis_change' %}">
-        {% csrf_token %}
-            <table>
-
-                {% for field in aktivBisChangeForm %}
-                <tr>
-                <th style="padding:3px;">{{ field.label_tag }}</th>
-                <td>{{field}}</td>
-                <td style="padding:3px;max-width: 250px;" class="errorColums">{% if field.errors %} {{field.errors}} {% endif %}</td>
-                <td style="padding:3px;max-width: 350px;">{% if field.help_text %}
-                    <p class="help">{{ field.help_text|safe }}</p>
-                {% endif %}</td>
-                </tr>
-                {% endfor %}
-                
-            </table>
-
-            <input type="submit" class="btn" value="&#196;ndern" />
-        </form>
-
-        <script>
-            $(function() {
-                $( ".datepicker" ).datepicker({
-                  changeMonth: true,
-                  changeYear: true,
-                  yearRange: "2017:2100",
-                  dateFormat: "dd.mm.yy"
-                  // You can put more options here.
-                });
-            });
-        </script>
-
+    <div class="page-header noMarginTop">
+        <h4>Datum der Kontodeaktivieren</h4>
     </div>
 
+    <div class="panel panel-default">
+        <div class="panel-heading bold">
+            Warum sollte ich mein Austrittsdatum aus der FfE korrekt einstellen?
+        </div>
+        <div class="panel-body justified smallText">
+            Nach diesem Datum kannst du keine Eink&#228;ufe im FfE-Kiosk t&#228;tigen und dein Konto wird deaktiviert.
+            Durch Einstellen dieses Datums bekommst du automatisch rechtzeitig vor dem Ende deiner Besch&#228;ftigungszeit eine Slack-Nachricht, die dich daran erinnert, entweder dein Guthaben auszahlen zu lassen oder deine Besch&#228;ftigungszeit zu verl&#228;ngern.
+        </div>  
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in aktivBisChangeForm %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field | add_class:"form-control" }}
+                <br>
+                {% if field.errors %}
+                    <p class="alert alert-danger">{{ field.errors.as_text }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="alert alert-info">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <input type="submit" class="btn btn-primary" value="Datum &#228;ndern" />  
+    </form>
+
+
     <hr>
-    <a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+    <a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+{% endblock %}
+
+{% block javascript %}
+
+    <script type="text/javascript">
+        $(document).ready(
+            function(){
+                $('.datepicker').datepicker({
+                    language: 'de',
+                    format: 'dd.mm.yyyy',
+                    todayHighlight: true,
+                    startDate: '-3d'
+                });
+            }
+        );
+    </script>
 
 {% endblock %}

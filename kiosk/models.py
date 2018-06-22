@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
-import datetime
 from dateutil import tz
+import pytz
 from datetime import date
 from django.core.validators import MinValueValidator
 from django.db import transaction
@@ -17,6 +17,18 @@ from django.db.models import Max
 
 
 # Create your models here.
+
+class Kontakt_Nachricht(models.Model):
+	name = models.CharField(max_length=40)
+	email = models.EmailField('E-Mail-Adresse')
+	gesendet = models.DateTimeField(auto_now_add=True)
+	betreff = models.TextField(max_length=128, blank=True)
+	text = models.TextField(max_length=1024)
+	beantwortet = models.BooleanField(default=False)
+
+	def __str__(self):
+		return ('Von: ' + str(self.name) + ': '+str(self.betreff))
+
 
 
 class Produktpalette(models.Model):
@@ -63,8 +75,8 @@ class ProduktVerkaufspreise(models.Model):
 		return(self.produktpalette.produktName + ", " +
 			str(price) + " "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
 
-	def getActPrices(produktName):
-		verkaufspreis = readFromDatabase('getActPrices',[produktName])
+	def getActPrices(produkt_id):
+		verkaufspreis = readFromDatabase('getActPrices',[produkt_id])
 		return(verkaufspreis[0])
 
 
@@ -78,10 +90,6 @@ class Einkaufsliste(models.Model):
 		return("[#" + str(self.kiosk_ID) + "] " +
 			self.produktpalette.produktName + ", Bedarf angemeldet um " +
 			str(self.bedarfErstelltUm))
-
-	def getEinkaufslisteCompressed():
-		einkaufsliste = readFromDatabase('getEinkaufslisteCompressed')
-		return(einkaufsliste)
 
 	def getEinkaufsliste():
 		einkaufsliste = readFromDatabase('getEinkaufsliste')
@@ -143,46 +151,42 @@ class ZumEinkaufVorgemerkt(models.Model):
 	@transaction.atomic
 	def einkaufAnnehmen(form, currentUser):
 
+		retVal = {'product_id': None, 'err': False, 'msg': None, 'html': None, 'dct': None, 'angeliefert': None}
+
 		finanz = getattr(settings,'FINANZ')
-		prodVkPreis = ProduktVerkaufspreise.getActPrices(form.data.get('produktName'))
+		product_id= form['product_id']
+		product = Produktpalette.objects.get(id=product_id)
+		retVal['product_id'] = product_id
+		prodVkPreis = ProduktVerkaufspreise.getActPrices(product_id)
 		prodVkPreis = prodVkPreis.get('verkaufspreis')
-		eingabefehler = False
+		retVal['err'] = False
 
-		# Checken, ob Eingaben syntaktisch korrekt sind
-		if not form.is_valid():
-			errorMsg = "Fehler in Eingabe. Sind die Zahlen korrekt eingegeben?"
-			eingabefehler = True
-		else:
-			userID = int(form['userID'].value())
-			produktName = form['produktName'].value()
-			anzahlElemente = int(form['anzahlElemente'].value())
-			anzahlAngeliefert = int(form['anzahlAngeliefert'].value())
-			gesPreis = int(100*float(form['gesPreis'].value()))
 
-			# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
-			if anzahlAngeliefert > anzahlElemente:
-				errorMsg = "Die Anzahl angelieferter Elemente ist zu gro"+chr(223)+"."
-				eingabefehler = True
+		userID = form['userID']
+		anzahlAngeliefert = form['anzahlAngeliefert']
+		gesPreis = form['gesPreis']
 
-			# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
-			minProduktMarge = finanz['minProduktMarge']
+		# Get the maximal number of products to accept
+		persEkList = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
+		anzahlElemente = [x['anzahlElemente'] for x in persEkList if x['id']==product_id][0]
 
-			if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
-				errorMsg = "Die Einkaufskosten sind zu hoch. Produkte k"+chr(246)+"nnen nicht angenommen werden."
-				eingabefehler = True
+		# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
+		if anzahlAngeliefert > anzahlElemente:
+			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" f"+chr(252)+"r '"+product.produktName+"'"
+			retVal['err'] = True
 
-		if eingabefehler == True:
+		# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
+		minProduktMarge = finanz['minProduktMarge']
 
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
+			retVal['msg'] = "Die Kosten f"+chr(252)+"r den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
+			retVal['err'] = True
+
+		if retVal['err'] == True:
 
 			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return {
-				'error': True,
-				'retHtml': render_to_string('kiosk/fehler_message.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste}),
-			}
+			retVal['html'] = render_to_string('kiosk/fehler_message.html', {'message':retVal['msg']})
+			return retVal
 			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
 		else:
@@ -194,7 +198,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 			datum = timezone.now()
 
 			angeliefert = ZumEinkaufVorgemerkt.objects.filter(einkaeufer__id=userID,
-				produktpalette__produktName=produktName).order_by('kiosk_ID')[:anzahlAngeliefert]
+				produktpalette__id=product_id).order_by('kiosk_ID')[:anzahlAngeliefert]
 
 			if len(angeliefert) != anzahlAngeliefert:
 				raise ValueError
@@ -213,6 +217,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 			# Gewinn und Gesamtrechnung berechnen
 			gewinnEK = finanz['gewinnEK']
 			provision = int(((float(prodVkPreis) * float(anzahlAngeliefert)) - float(gesPreis)) * float(gewinnEK))
+			paidPrice = gesPreis
 			gesPreis = gesPreis + provision
 
 
@@ -220,14 +225,14 @@ class ZumEinkaufVorgemerkt(models.Model):
 			userBank = KioskUser.objects.get(username='Bank')
 			userAnlieferer = KioskUser.objects.get(id=userID)
 			GeldTransaktionen.doTransaction(userBank,userAnlieferer,gesPreis,datum,
-			"Erstattung Einkauf " + produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
+			"Erstattung Einkauf " + product.produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
 			# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-			return {
-				'error': False,
-				'retDict': {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName':produktName,'anzahlElemente':anzahlElemente},
-				'angeliefert': angeliefert,
-			}
+			retVal['dct'] = {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName': product.produktName,'anzahlElemente':anzahlElemente}
+			retVal['angeliefert'] = angeliefert
+			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
+			retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
+			return retVal
 
 
 class Kiosk(models.Model):
@@ -261,12 +266,16 @@ class Kiosk(models.Model):
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
 	def buyItem(wannaBuyItem,user):
+		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0}
+
 		# First, look in Kiosk.
 		try:
 			item = Kiosk.objects.filter(produktpalette__produktName=wannaBuyItem)[:1].get()
 			foundInKiosk = True
 		except:
-			print('Not in Kiosk anymore. But now, look in Dieb-Bought items...')
+			msg = 'Selected item is not in Kiosk anymore. But let\'s look into the bought items of "Dieb" ...'
+			print(msg)
+			retVals['msg'].append(msg)
 			foundInKiosk = False
 
 		# If not available in Kiosk, do Rueckbuchung from Dieb
@@ -274,8 +283,10 @@ class Kiosk(models.Model):
 			try:
 				itemBoughtByDieb = Gekauft.objects.filter(kaeufer__username='Dieb',produktpalette__produktName=wannaBuyItem)[:1].get()
 			except:
-				print('Not found in Gekauft, too. Stop it.')
-				return False
+				msg = 'No selecetd item has been found in the whole Kiosk to be bought.'
+				print(msg)
+				retVals['msg'].append(msg)
+				return retVals
 			
 			# Book back the item from Dieb
 			dieb = KioskUser.objects.get(username='Dieb')
@@ -283,20 +294,24 @@ class Kiosk(models.Model):
 			foundInKiosk = True
 		
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
-		actPrices = ProduktVerkaufspreise.getActPrices(wannaBuyItem)
+		actPrices = ProduktVerkaufspreise.getActPrices(item.produktpalette.id)
 		actPrices = actPrices.get('verkaufspreis')
 
 		# Check if user is allowed to buy something and has enough money
 		allowedConusmers = readFromDatabase('getUsersToConsume')
 		if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
-			print('User not allowed to consume')
-			return False
+			msg = 'You are not allowed to buy a product.'
+			print(msg)
+			retVals['msg'].append(msg)
+			return retVals
 
 		if not user.username=='Dieb':
 			konto = Kontostand.objects.get(nutzer = user)
 			if konto.stand - actPrices < 0:
-				print('Konto too low.')
-				return False
+				msg = 'Your account is too low.'
+				print(msg)
+				retVals['msg'].append(msg)
+				return retVals
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
@@ -315,7 +330,10 @@ class Kiosk(models.Model):
 
 		g.save()
 		
-		return True
+		retVals['success'] = True
+		retVals['msg'].append('OK')
+		retVals['price'] = actPrices/100.0
+		return retVals
 
 
 class Gekauft(models.Model):
@@ -350,53 +368,26 @@ class Gekauft(models.Model):
 		return dR['item']
 
 	@transaction.atomic
-	def rueckbuchen(form, currentUser):
+	def rueckbuchen(form):
 
-		eingabefehler = False
+		userID = form.cleaned_data['kaeufer_id']
+		productID = form.cleaned_data['produkt_id']
+		anzahlZurueck = form.cleaned_data['anzahl_zurueck']
+		dR = doRueckbuchung(userID,productID,anzahlZurueck)
+		price = dR['price']
 
-		# Checken, ob Eingaben syntaktisch korrekt sind
-		if not form.is_valid():
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
+		# Einkaufsliste abfragen
+		einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-			errorMsg = "Fehler in Eingabe. Wurde eine korrekte Anzahl eingegeben?"
-			eingabefehler = True
-		else:
-			userID = int(form['userID'].value())
-			productID = int(form['productID'].value())
-			anzahlElemente = int(form['anzahlElemente'].value())
-			anzahlZurueck = int(form['anzahlZurueck'].value())
-
-			# Pruefen, ob nicht mehr zurueck gegeben werden soll, als gekauft wurde
-			if anzahlZurueck > anzahlElemente:
-				errorMsg = "Die Anzahl zur"+chr(252)+"ckzubuchender Elemente ist zu gro"+chr(223)+"."
-				eingabefehler = True
-
-		if eingabefehler == True:
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			# Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-			return render_to_string('kiosk/fehler_message_rueckbuchung.html', {'message':errorMsg, 'user':currentUser, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
-			
-			# Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
-
-		else:
-			dR = doRueckbuchung(userID,productID,anzahlZurueck)
-			price = dR['price']
-
-			# Hole den Kioskinhalt
-			kioskItems = Kiosk.getKioskContent()
-			# Einkaufsliste abfragen
-			einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-			product = Produktpalette.objects.get(id=productID)
-			
-			return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
+		product = Produktpalette.objects.get(id=productID)
+		
+		return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
 
 
 def doRueckbuchung(userID,productID,anzahlZurueck):
+
 	productsToMove = Gekauft.objects.filter(kaeufer__id=userID, produktpalette__id=productID).order_by('-gekauftUm')[:anzahlZurueck]
 	
 	price = 0
@@ -461,6 +452,10 @@ class GeldTransaktionen(models.Model):
 
 		allTransactions = readFromDatabase('getTransactions',
 			[user.id, user.id, int(page)*int(limPP), limPPn])
+
+		# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
+		for k,v in enumerate(allTransactions):
+			allTransactions[k]['datum'] = pytz.timezone('UTC').localize(v['datum'])
 
 		return(allTransactions)
 
@@ -664,7 +659,7 @@ class ZuVielBezahlt(models.Model):
 					buyItem = item["produkt_name"]
 
 					for x in range(0,diff):
-						buySuccess = Kiosk.buyItem(buyItem,user)
+						retVal = Kiosk.buyItem(buyItem,user)
 
 					report.append({'id': item["id"], 
 						'produkt_name': item["produkt_name"], 

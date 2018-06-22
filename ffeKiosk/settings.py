@@ -38,6 +38,7 @@ SLACK_SETTINGS = {
 # Application definition
 
 INSTALLED_APPS = [
+    'widget_tweaks',
     'jchart',
     'django.contrib.humanize',
     'kiosk.apps.KioskConfig',

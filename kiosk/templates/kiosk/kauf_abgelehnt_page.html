@@ -3,20 +3,32 @@
 {% block content %}
 	
 
+	<div class="page-header noMarginTop">
+		<h4>Ein Produkt kaufen <small>Dein Einkauf ist fehlgeschlagen!</small></h4>
+	</div>
 
-	<h4>Dein Einkauf ist fehlgeschlagen</h4>
-	Entweder hast du nicht genug Guthaben auf deinem Konto oder dein Account ist abgelaufen. Bitte wende dich an den Administrator.
-	<br>
-	<br>
-
-	<div class="eingerueckt">
-
-
-		<a href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
+	<div class="alert alert-danger">
+		Uuups! Da ist was schief gelaufen! Die Fehlermeldung lautet
+		<div class="panel panel-default bold">
+			{{msg}}
+		</div>
+		Bei Fragen, wende dich an einen der Administratoren.
 		<br><br>
-		<a href="{% url 'logout' %}" style="font-size:80%">Ausloggen</a>
-		
+		<b>Zur Info:</b>
+		<br>
+		Dein Kontostand ist {{account | floatformat:2}} &#8364;.
 
 	</div>
 
+	<br><hr>
+
+	<div class="panel panel-default">
+		<a class="bigLink" href="{% url 'kauf_page' %}">Ein anderes Produkt kaufen</a>
+	</div>
+
+	<div class="panel panel-default">
+		<a style="font-size: 90%" href="{% url 'start_page' %}">zur&#252;ck</a>
+	</div>
+
 {% endblock %}
+

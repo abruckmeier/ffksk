@@ -2,79 +2,188 @@
 
 {% block content %}
 
-	<h4>Herzlich Willkommen im FfE-Kiosk!</h4>
-	<br>
-	<div class="eingerueckt">
-		<div style="background-color:#f7f8f9;padding-top:10px;border: 1px solid #eeeeee;">
-			&nbsp;&nbsp;&nbsp;<b>News (07. Feb. 2018):</b><br>
-			<p style="padding-left:30px; padding-right:30px; padding-top:10px; font-size:110%; text-align:justify;">
-				Die Abstimmung zur Verwendung erwirtschafteter Profite im Kiosk zum Ende des Jahres ist nun zu Ende. Mit gro&#223;er Mehrheit wurde dem Vorschlag zugestimmt, j&#228;hrlich zum Stichtag "15. Dezember" eventuelle Profite des Kioskbetriebs an die Hilfsorganisation von Pater Gerhard, das Blessed G&#233;rard's Care Zentrum in Mandeni, zu spenden. Vielen Dank f&#252;r die rege Teilnahme an der Abstimmung!<br>
-				Mit eurem Einkauf im Kiosk unterst&#252;tzt ihr nun die Arbeit von Pater Gerhard in S&#252;dafrika (<a href="http://www.bsg.org.za/startseite.html">Website</a>). Seien wir gespannt, wie viel Geld wir zum Ende des Jahres spenden k&#246;nnen!
-			</p>
+	<div class="page-header noMarginTop">
+		<h4>
+			Herzlich Willkommen 
+			{% if user.is_authenticated %}
+				<small>{{ user.first_name }}!</small>
+			{% else %}
+				!
+			{% endif %}
+		</h4>
+	</div>
+
+	<div class="justified">
+		<p>
+			Diese Plattform unterst&#252;tzt die FfE'ler beim Betreiben und Verwalten des gemeinschaftlichen Kiosks im Lagerraum neben der K&#252;che.
+			Jeder Mitarbeitende und Studierende ist herzlich eingeladen, beizutreten und den Kiosk zu nutzen.
+		</p>
+		<p>
+			Alle wichtigen Informationen zum Kiosk findest du unter <a class="bigLink" href="{% url 'anleitung_page' %}">Info & Erste Schritte.</a>
+		</p>
+		<p>
+			Du m&#246;chtest beitreten? Erstelle unter <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a> dein Nutzerkonto.
+		</p>
+	</div>
+
+
+
+	<div class="page-header">
+		<h4>Neuigkeiten</h4>
+	</div>
+
+	<div class="panel-group" id="accordion">
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
+				<h5 class="panel-title smallText bold">
+					<a class="accordion-toggle">
+						(16. Jun. 2018) Neues Erscheinungsbild der Webseite
+					</a>
+				</h5>
+			</div>
+			<div id="collapse_1" class="panel-collapse collapse in">
+				<div class="panel-body smallText justified">
+					Nun endlich wurde die Kioskwebseite f&#252;r die Darstellung auf Mobiltelefonen und anderen kleinen Bildschirmen optimiert. Viel Spa&#223; mit dem neuen Layout!
+					<br>
+					<br>
+					Hast du Anmerkungen und Verbesserungsvorschl&#228;ge dazu? Dann kannst du diese sehr gerne weiterreichen.
+				</div>
+			</div>
 		</div>
-		<br>
 
-		<div>
-			<b>Bereits registriert? Hier geht es zum pers&#246;nlichen Bereich:</b><br>
-			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
-				<b><a href="{% url 'registrationStatus' %}">zum pers&#246;nlichen Bereich</a></b>
-			</p>
-		</div><br>
-
-		<div>
-			<b>Ich m&#246;chte beitreten!</b><br>
-			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
-				<b><a href="{% url 'neuerNutzer_page' %}">Konto erstellen</a><br></b>
-			</p>
-		</div><br>
-
-		<div>
-			<b>Wie genau funktioniert das? Was muss ich wissen?</b><br>
-			<p style="padding-left: 30px;padding-top:10px;font-size: 110%;">
-				<b><a href="{% url 'anleitung_page' %}">Anleitung & Kleingedrucktes</a><br></b>
-			</p>
-		</div><br>
-
-		<div>
-			<b>Ich m&#246;chte Eink&#228;ufer oder Verwalter werden!</b><br>
-			Melde dich dazu bei einem Administrator oder Verwalter.
-		</div><br>
-
-		<div>
-			<b>Ich habe Vorschl&#228;ge zu den Produkten oder sonstige Anmerkungen!</b><br>
-			Beteilige dich an den Kommentaren im <a href="{% url 'produkt_kommentare_page' %}">Pers&#246;nlichen Bereich --> Produkte kommentieren</a> oder 
-			melde dich bei einem Administrator oder Verwalter.
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_2">
+				<h5 class="panel-title smallText bold">
+					<a class="accordion-toggle">
+						(05. Mrz. 2018) Einkaufen per Slack
+					</a>
+				</h5>
+			</div>
+			<div id="collapse_2" class="panel-collapse collapse">
+				<div class="panel-body smallText justified">
+					Von nun an k&#246;nnt ihr per Slack eure Eink&#228;ufe im Kiosk t&#228;tigen. Dazu m&#252;sst ihr lediglich (egal in welchem Gespr&#228;chsverlauf) den "Slash-Command"
+					<div class="panel panel-default code">
+						/kiosk kaufen
+					</div>
+					ausf&#252;hren. Alles Weitere wird euch dort erkl&#228;rt.
+				</div>
+			</div>
 		</div>
 
-		<br>
-		<hr>
-		
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_3">
+				<h5 class="panel-title smallText bold">
+					<a class="accordion-toggle">
+						(07. Feb. 2018) Abstimmung zur Verwendung erwirtschafteter Profite im Kiosk
+					</a>
+				</h5>
+			</div>
+			<div id="collapse_3" class="panel-collapse collapse">
+				<div class="panel-body smallText justified">
+					Die Abstimmung zur Verwendung erwirtschafteter Profite im Kiosk zum Ende des Jahres ist nun zu Ende. 
+					Mit gro&#223;er Mehrheit wurde dem Vorschlag zugestimmt, j&#228;hrlich zum Stichtag "15. Dezember" eventuelle Profite des Kioskbetriebs an die Hilfsorganisation von Pater Gerhard, das Blessed G&#233;rard's Care Zentrum in Mandeni, zu spenden. 
+					Vielen Dank f&#252;r die rege Teilnahme an der Abstimmung!<br>
+					Mit eurem Einkauf im Kiosk unterst&#252;tzt ihr nun die Arbeit von Pater Gerhard in S&#252;dafrika (<a href="http://www.bsg.org.za/startseite.html">Website</a>). 
+					Seien wir gespannt, wie viel Geld wir zum Ende des Jahres spenden k&#246;nnen!
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<div class="page-header">
+		<h4>Quick-Links & Navigation</h4>
+	</div>
+
+	{% if not user.is_authenticated %}
+
+		<div class="panel panel-default">
+			Hier geht es zum
+			<a class="bigLink" href="{% url 'login' %}">Login.</a>
+		</div>
+
+		<div class="panel panel-default">
+			Hier geht es zur
+			<a class="bigLink" href="{% url 'neuerNutzer_page' %}">Registrierung</a>
+			f&#252;r neue Nutzer.
+		</div>
+
+	{% else %}
+
 		{% if perms.profil.perm_kauf %}
-		<b>Administrator: </b>
-		
-			{{ admins }}
-			<br>
-			<b>Verwalter: </b>{{ accountants }}
-			<br>
-
-			<br>
-			<hr>
-			<small>
-				<b>Eink&#228;ufer des Monats: </b>{{bestBuyers}}
-				<br>
-				<b>Verwalter des Monats: </b>{{bestVerwalter}}
-				<br>
-				Dankesch&#246;n daf&#252;r!!!
-			</small>
-
-			<br>
-			<hr>
-			<div style="min-width: 300px;max-width: 500px;">
-				{{ chart_DaylyVkValue.as_html }}
+			<div class="panel panel-default">
+				Ein Produkt
+				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
 			</div>
 		{% endif %}
 
+		{% if perms.profil.do_einkauf %}
+			<div class="panel panel-default">
+				Eine 
+				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
+			</div>
+		{% endif %}
 
-	</div>
+		<div class="panel panel-default">
+			Hier geht es zum
+			<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
+		</div>
+
+	{% endif %}
+
+
+	{% if user.is_authenticated and perms.profil.perm_kauf %}
+		<div class="page-header">
+			<h4>Am Rande ...</h4>
+		</div>
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Verantwortliche Personen
+			</div>
+			<div class="panel-body justified smallText">
+				<h5>Verwalter:</h5> 
+				<b>{{accountants}}</b>
+				<br>
+				<i>Zust&#228;ndig f&#252;r Einzahlungen/Auszahlungen, R&#252;ckbuchungen von Eink&#228;ufen und Annahme von Eink&#228;ufen</i>
+
+				<br><br>
+
+				<h5>Administratoren:</h5> 
+				<b>{{admins}}</b>
+				<br>
+				<i>Zust&#228;ndig f&#252;r Account-Verwaltung, technische Probleme, Verbesserungsvorschl&#228;ge, ...</i>
+			</div>
+		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Verdiente Personen
+			</div>
+			<div class="panel-body justified smallText">
+				<b>Eink&#228;ufer der Woche: </b>{{bestBuyers}}
+				<br>
+				<b>Verwalter der Woche: </b>{{bestVerwalter}}
+				<br>
+				Dankesch&#246;n daf&#252;r!!!
+			</div>
+		</div>
+
+
+		<div class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Statistik: Unbezahlt im Kiosk
+			</div>
+			<div class="panel-body justified smallText">
+				<div style="max-width: 500px;">
+					{{ chart_DaylyVkValue.as_html }}
+				</div>	
+			</div>
+		</div>
+	
+		
+	{% endif %}
 
 {% endblock %}

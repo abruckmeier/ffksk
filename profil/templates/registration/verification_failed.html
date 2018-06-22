@@ -1,15 +1,20 @@
 {% extends 'kiosk/base.html' %}	
 {% block content %}
 
-    <h4>Failed Slack Verification</h4>
-    <br>
+	<div class="page-header noMarginTop">
+        <h4>Anlegen eines Benutzerkontos <small>Gescheiterte Slack-Verifikation</small></h4>
+    </div>
+
     
-	    <div class="eingerueckt">
-			<p> The verification link was invalid, possibly because it has already been used. Please try to log in. <br>
-			If you face any troubles, please contact us ({{admins}}).</p>
-	    </div>
+    <p class="alert alert-danger">
+    	Der benutzte Link zur Verifikation war ung&#252;ltig, wahrscheinlich, weil er schon benutzt wurde.
+    	<br>
+    	Versuche, dich mal einzuloggen.
+    	<br>
+    	Falls du weiterhin Probleme hast, melde dich bei einem der Administratoren ({{admins}}).
+    </p>
 	    
     <hr>
-    <a href="{% url 'start_page' %}">zur&#252;ck</a><br>
+    <a class="bigLink" href="{% url 'login' %}">zum Login</a><br>
 
 {% endblock %}

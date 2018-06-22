@@ -2,20 +2,22 @@
 
 {% block content %}
 	
-	<h3>Benachrichtigungen auf Slack testen</h3> 
-	<br>
+	<div class="page-header noMarginTop">
+        <h4>Slack-Benachrichtigungen testen</h4>
+    </div>
 
-	<div class="eingerueckt">
+	<div class="justified">
 		Eine Testnachricht wurde an deinen pers&#246;nlichen Slackbot-Channel gesendet.
 		Falls keine Nachricht angekommen ist, wende dich bitte an einen Administrator.
 
 
 		<br><br>
 
-		<a href="{% url 'slackComTest_page' %}">Testnachricht erneut senden</a>
+		<a class="bigLink" href="{% url 'slackComTest_page' %}">Testnachricht erneut senden</a>
 		<br>
 		<br>
-		<a href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
+		<hr>
+		<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
 		
 
 	</div>

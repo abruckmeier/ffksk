@@ -3,6 +3,8 @@ select
   b."produktName" as produktname,
   count(*) as anzahlElemente,
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
+  ("input_id_angeliefert_" || b.id) as input_id_angeliefert,
+  ("input_id_bezahlt_" || b.id) as input_id_bezahlt,
   e.kommentar as kommentar
 from
   kiosk_zumEinkaufVorgemerkt a

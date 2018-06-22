@@ -1,54 +1,81 @@
 {% extends 'kiosk/base.html' %}	
 
+{% load widget_tweaks %}	
+
 {% block content %}
 	
-	<h3> Neuen Nutzer anlegen </h3>
+    <div class="page-header noMarginTop">
+        <h4>Anlegen eines Benutzerkontos</h4>
+    </div>
 
-	<div class="eingerueckt">
-
-		<div style="color: {{ color }};">
-			<br>
-			{{msg}}
-			<br><br>
-		</div>
-		
-		<form method="POST">{% csrf_token %}
-			
-			<table>
-
-				{% for field in form %}
-    			<tr>
-    			<th style="padding:3px;">{{ field.label_tag }}</th>
-    			<td>{{field}}</td>
-    			<td style="padding:3px;max-width: 250px;" class="errorColums">{% if field.errors %} {{field.errors}} {% endif %}</td>
-    			<td style="padding:3px;max-width: 350px;">{% if field.help_text %}
-    				<p class="help">{{ field.help_text|safe }}</p>
-    			{% endif %}</td>
-				</tr>
-				{% endfor %}
-				
-			</table>
-
-			<br>
-			<button type="submit" class="save btn btn-default">Nutzer anlegen</button>
-
-		</form>
-
-		<script>
-			$(function() {
-		    	$( ".datepicker" ).datepicker({
-			      changeMonth: true,
-			      changeYear: true,
-			      yearRange: "2017:2100",
-			      dateFormat: "dd.mm.yy"
-			      // You can put more options here.
-		  	  	});
-		  	});
-  		</script>
 	
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified">
+			Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Best&#228;tige au&#223;erdem die <a class="bold" href="{% url 'anleitung_page' %}">g&#252;ltigen Regeln im Kiosk</a> und die <a class="bold" href="{% url 'anleitung_page' %}">Hinweise zur Datenverwendung</a>.
+		</div>
 	</div>
+	<br>
+
+
+    {% if msg != '' and msg != None %}
+		{% if color == 'danger' %}
+			<p class="alert alert-danger">
+				{{msg}}
+			</p>
+		{% elif color == 'success' %}
+			<p class="alert alert-success">
+				{{msg}}
+			</p>
+		{% else %}
+			<p class="alert alert-info">
+				{{msg}}
+			</p>
+		{% endif %}
+	{% endif %}
+
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field | add_class:"form-control" }}
+                <br>
+                {% if field.errors %}
+                	<p class="alert alert-danger">{{ field.errors.as_text }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="alert alert-info">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <input type="submit" class="btn btn-primary" value="Konto erstellen" />  
+    </form>
+	
 
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
+
+{% endblock %}
+
+{% block javascript %}
+
+	<script type="text/javascript">
+		$(document).ready(
+			function(){
+				$('.datepicker').datepicker({
+					language: 'de',
+					format: 'dd.mm.yyyy',
+					todayHighlight: true,
+	    			startDate: '-3d'
+				});
+			}
+		);
+	</script>
 
 {% endblock %}

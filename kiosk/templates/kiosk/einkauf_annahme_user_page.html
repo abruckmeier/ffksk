@@ -1,0 +1,69 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+	<div class="page-header noMarginTop">
+		<h4>Besorgungen annehmen <small>von {{user.first_name}} {{user.last_name}}</small></h4>
+	</div>
+
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			F&#252;lle die Zeilen mit Produkten vollst&#228;ndig aus, die du verbuchen m&#246;chtest, leere und unvollst&#228;ndig ausgef&#252;llte Zeilen werden ignoriert.
+		</div>
+	</div>
+
+	<div>
+		{{notifications|safe}}
+	</div>
+
+	{% if not seineVorgemerktenEinkaeufe %}
+		<table class="table table-striped smallText">
+			<tr><th>keine angek&#252;ndigten Besorgungen</th></tr>
+		</table>
+	{% else %}
+		
+		<form method="POST" class="">{% csrf_token %}
+
+			<table class="table table-striped smallText autoSize">
+				<tr>
+					<th>Produkt</th>
+					<th>Anzahl zu kaufen</th>
+					<th>Maximaler Einkaufspreis</th>
+					<th>Angelieferte Menge</th>
+					<th>Bezahlter Preis in &#8364;</th>
+				</tr>
+
+				{% for item in seineVorgemerktenEinkaeufe %}
+				
+					<tr>
+						<td>{{item.produktname}}</td>
+						<td>{{item.anzahlElemente}}</td>
+						<td>{{item.einkaufspreis|floatformat:2}} &#8364;</td>
+						<td>
+							<input type="text" name="{{item.input_id_angeliefert}}" id="{{item.input_id_angeliefert}}" class="form-control" style="width:60px;" placeholder="x">
+						</td>
+						<td>
+							<input type="text" name="{{item.input_id_bezahlt}}" id="{{item.input_id_bezahlt}}" class="form-control" style="width:60px;" placeholder="x,yz €">
+						</td>
+					</tr>
+				
+				{% endfor %}
+			</table>
+		
+			<input type="text" name="userID" id="userID" style="display: none" readonly value="{{userID}}">
+			<button type="submit" class="btn btn-primary">Annehmen!</button>
+
+		</form>
+
+	{% endif %}
+
+	<hr>
+	<a class="bigLink" href="{% url 'einkauf_annahme_page' %}">zur&#252;ck</a>
+	<br><br>
+	<a class="" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+
+{% endblock %}

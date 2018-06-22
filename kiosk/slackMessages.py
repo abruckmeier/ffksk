@@ -89,14 +89,14 @@ def process_kiosk_buy(message):
 	wannaBuyItem = item.produktName
 	# Buy the item(s)
 	for i in range(0,numBuy,1):
-		success = Kiosk.buyItem(wannaBuyItem,user)
-		if not success:
+		retVal = Kiosk.buyItem(wannaBuyItem,user)
+		if not retVal['success']:
 			msg = '*Ooh!*'+chr(10)+'Es wurden '+str(i)+' von '+str(numBuy)+' Produkten verbucht.'+chr(10)+'Es sind vielleicht keine Produkte im Kiosk zum Verbuchen mehr vorhanden. Oder hast du nicht genug Guthaben auf deinem Konto? Oder ist dein Account ist abgelaufen. Bitte wende dich dann an den Administrator.'
 			slack_sendMessageToResponseUrl(message.get('response_url'), msg, getCancelAttachementForResponse())
 			break
 
 	# Send message with success
-	if success:
+	if retVal['success']:
 		konto = Kontostand.objects.get(nutzer = user)
 		msg = 'Es wurde '+str(numBuy)+'x '+str(wannaBuyItem)+' erfolgreich verbucht.'+chr(10)+'Dein Kontostand ist nun '+ '%.2f' % (konto.stand/100) +' '+chr(8364)+'.'
 		slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())

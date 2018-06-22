@@ -34,3 +34,14 @@ BACKUP = {
     'backupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)),'backupFolderName'),
     'sendWeeklyBackupToUsers': ['slackUserName',],
 }
+
+
+IMPRESSUM = { # As html code!
+	'personal_data': 'My Company', # Main Contact, for example a company name
+	'contact_data': 'Responsible Person Name <br><a href="mailto:address@company.com?Subject=My%20Subject">address@company.com</a>', # Specific person of responsibility
+}
+
+DATENSCHUTZ = { # As html code!
+	'responsibility': 'Person Name',
+	'cookies': '<ul><li>List of</li><li>My Cookies</li></ul>'
+}

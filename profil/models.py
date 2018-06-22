@@ -20,18 +20,17 @@ class KioskUser(AbstractUser):
 	email = models.EmailField(_('E-Mail-Adresse'), unique=True)
 	is_verified = models.BooleanField(default=False)
 
-	positionsFfE = (('WiHi','Student'),
-		('MA','Festangestellter'))
 	permissions = (('User','Standardnutzer'),
 		('Buyer','Eink'+chr(228)+'ufer'),('Accountant','Verwalter'),('Admin','Admin'))
 	
 	slackName = models.CharField(max_length=40)
-	aktivBis = models.DateField() #default=date.today
-	positionFfE = models.CharField(max_length=15,choices=positionsFfE,blank=True)
+	aktivBis = models.DateField()
 	instruierterKaeufer = models.BooleanField(default=False)
 	rechte = models.CharField(max_length=15,default='User',choices=permissions)
 	visible = models.BooleanField(default=True) # Bank, Dieb, usw. sollen nicht gesehn und nicht angewaehlt werden duerfen, z.B. bei Einkauf-Annahme
 	activity_end_msg = models.IntegerField(default=0) # 0: Active, nothing sent. 1: Active, message sent that in 7 days, account will be blocked. 2: Inactive, invisible, Inactivity message sent. 3: Account is now unpersonalised, money is donated to Kiosk
+
+	dsgvo_accepted = models.BooleanField(default=False)
 
 	class Meta:
 		permissions = (

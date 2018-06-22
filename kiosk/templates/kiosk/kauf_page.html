@@ -2,62 +2,81 @@
 
 {% block content %}
 	
-	<h3>Im FfE-Kiosk einkaufen</h3>
-
-	<div class="eingerueckt">
-
-		<div style="color: red;">
-			<br>
-			{{msg}}
-			<br>
-		</div>
-
-		{% if allowed == True %}
-			<div class="dropdown">
-				<button class="dropbtn">Produktauswahl</button>
-				<div class="dropdown-content">
-					{% for item in kioskItems %}
-						<a href="#" onclick="toSelection('{{item.produktName}}','{{item.verkaufspreis | floatformat:2}}')">{{item.produktName}}: {{item.verkaufspreis | floatformat:2}} &#8364;</a>
-					{% endfor %}
-				</div>
-			</div>
-
-			<script>
-				function toSelection(inputItem,inputPrice) {
-					$("div#divSelectionContainer").show(200);
-				    $("div#produktName").html(inputItem);
-				    $("div#verkaufspreis").html(inputPrice); 
-				    $("input#produktName").val(inputItem);
-				    $("input#verkaufspreis").val(inputPrice);
-				}
-			</script>	
-
-			<br><br>
-			
-			<div id="divSelectionContainer" style="padding-left: 15vw;">
-				<br>
-				<form method="POST" class="">{% csrf_token %}
-					<div class="formDiv" id="produktName"></div><b>:</b> 
-					<div class="formDiv" id="verkaufspreis"></div> <b>&#8364;</b>
-					<br><br>
-					<input type="text" name="produktName" id="produktName" style="display: none" readonly>
-					<input type="text" name="verkaufspreis" id="verkaufspreis" style="display: none" readonly>
-					<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
-						Kaufen
-					</button>
-				</form>	
-
-			</div>
-			<script type="text/javascript">
-				$(document).ready(function(){
-					$("div#divSelectionContainer").hide();
-				});
-			</script>
-		{% endif %}
-
+	<div class="page-header noMarginTop">
+		<h4>Ein Produkt kaufen</h4>
 	</div>
 
-	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Klicke auf "Produktauswahl" und w&#228;hle dein einzukaufendes Produkt. Es erscheint der Produktpreis und der "Kaufen"-Button zum Abschluss des Kaufs.
+		</div>
+	</div>
+
+
+	{% if msg != '' and msg != None %}
+		<p class="alert alert-danger">
+			{{msg}}
+		</p>
+	{% endif %}
+
+	{% if allowed == True %}
+
+		<div class="dropdown">
+
+			<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Produktauswahl
+				<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
+				{% for item in kioskItems %}
+					<li><a onclick="toSelection('{{item.produktName}}','{{item.verkaufspreis | floatformat:2}}')">{{item.produktName}}: {{item.verkaufspreis | floatformat:2}} &#8364;</a></li>
+				{% endfor %}
+			</ul>
+		</div>	
+
+
+		
+		<div id="divSelectionContainer" class="panel panel-default indented" style="display: none;">
+			<br>
+			<form method="POST" class="">{% csrf_token %}
+				<div class="inline bigLink">
+					<div id="produktName" class="inline bigLink"></div>
+					:
+					<div id="verkaufspreis" class="inline bigLink"></div>
+					&#8364;
+				</div>
+				
+				<br><br>
+
+				<input type="text" name="produktName" id="produktName" style="display: none" readonly>
+				<input type="text" name="verkaufspreis" id="verkaufspreis" style="display: none" readonly>
+				
+				<button type="submit" class="btn btn-primary" style="font-weight: bold;">
+					Kaufen
+				</button>
+			</form>	
+
+		</div>
+
+	{% endif %}
+
+
+{% endblock %}
+
+
+{% block javascript %}
+
+	<script type="text/javascript">
+		function toSelection(inputItem,inputPrice) {
+			$("div#divSelectionContainer").show(400);
+		    $("div#produktName").html(inputItem);
+		    $("div#verkaufspreis").html(inputPrice); 
+		    $("input#produktName").val(inputItem);
+		    $("input#verkaufspreis").val(inputPrice);
+		}
+	</script>
 
 {% endblock %}

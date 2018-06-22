@@ -2,94 +2,150 @@
 
 {% block content %}
 	
-	<h3> Mein pers&#246;nlicher Bereich </h3>
-	<br>
+	<div class="page-header noMarginTop">
+		<h4>Mein pers&#246;nlicher Bereich</h4>
+	</div>
 
-	<div class="eingerueckt">
-		
-		<h4>Mein Kontostand:</h4> 
-		<div class="eingerueckt">
-			<b>{{kontostand | floatformat:2}} &#8364;</b>
-			<br>	
-			<a href="{% url 'kontobewegungen_page' %}" style="font-size: 75%;">Kontobewegungen anzeigen</a>
-		</div>
-
-		{% if perms.profil.do_einkauf %}
-			<hr>
-			<h4>Meine zu erledigenden Eink&#228;ufe:</h4> 
-			<div class="eingerueckt">
-				<p class="itemsDef">
-					Item | # | &#8364; 
-				</p>
-				
-				{% for item in persEinkaufsliste %}
-					<p class="items">
-						{{item.produktname}}  | 
-						{{item.anzahlElemente}}  |
-						<{{item.einkaufspreis | floatformat:2}} &#8364;
-					</p>
-				{% endfor %}
-
-				<br>	
-				<a href="{% url 'meine_einkaufe_page' %}" style="font-size: 75%;">
-					Verwalten meiner Einkaufsliste
-				</a>
-			</div>
-		{% endif %}
-
-		<hr>
+	<div class="panel-group" id="accordion">
 
 		{% if perms.profil.perm_kauf %}
-			<h4>Aktionen:</h4>
-			<div class="eingerueckt">
-					<a href="{% url 'kauf_page' %}">Im FfE-Kiosk einkaufen</a><br><br>
-					<a href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a><br><br>
-					<a href="" style="color: #888888;">Geld &#252;berweisen</a><br><br>
-					
-					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
-						<a href="" style="color: #888888;">Eink&#228;ufer werden</a><br><br>
-					{% endif %}
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
+					<h5 class="panel-title bold">
+						<a class="accordion-toggle">
+							Mein Kontostand
+						</a>
+					</h5>
+				</div>
+				<div id="collapse_1" class="panel-collapse collapse in">
+					<div class="panel-body justified">
+						<div class="bigLink">{{kontostand | floatformat:2}} &#8364;</div>
+						<br>
+						<a class="btn btn-info" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
+					</div>
+				</div>
 			</div>
 		{% endif %}
+
 		{% if perms.profil.do_einkauf %}
-			<h4>Eink&#228;ufer-Bereich:</h4>
-			<div class="eingerueckt">
-				<a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a><br><br>
-				<a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a><br><br>
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_2">
+					<h5 class="panel-title bold">
+						<a class="accordion-toggle">
+							Meine zu erledigenden Eink&#228;ufe
+						</a>
+					</h5>
+				</div>
+				<div id="collapse_2" class="panel-collapse collapse">
+					<div class="panel-body justified">
+
+						{% if not persEinkaufsliste %}
+							<table class="table table-striped smallText">
+								<tr><th>keine zu erledigenden Eink&#228;ufe</th></tr>
+							</table>
+						{% else %}
+							<table class="table table-striped smallText autoSize">
+								<tr>
+									<th>Produkt</th>
+									<th>Anzahl zu kaufen</th>
+									<th>Maximaler Einkaufspreis</th>
+								</tr>
+
+								{% for item in persEinkaufsliste %}
+									<tr>
+										<td>{{item.produktname}}</td>
+										<td>{{item.anzahlElemente}}</td>
+										<td>{{item.einkaufspreis | floatformat:2}} &#8364;</td>
+									</tr>
+								{% endfor %}
+							</table>
+						{% endif %}
+
+						<br>
+						<a class="btn btn-info" href="{% url 'meine_einkaufe_page' %}">Verwalten meiner Einkaufsliste</a>
+						<br><br>
+						<a class="btn btn-info" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+						
+					</div>
+				</div>
 			</div>
 		{% endif %}
+
+		<div class="panel panel-default">
+			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_3">
+				<h5 class="panel-title bold">
+					<a class="accordion-toggle">
+						Einstellungen
+					</a>
+				</h5>
+			</div>
+			<div id="collapse_3" class="panel-collapse collapse">
+				<div class="panel-body justified">
+					
+					{% if perms.profil.perm_kauf %}
+						<a class="btn btn-info" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a><br><br>
+					{% endif %}
+
+					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
+						<a class="btn btn-info" style="color: #888888;" href="#">Eink&#228;ufer werden</a><br><br>
+					{% endif %}
+						
+					<a class="btn btn-info" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
+					<br><br>
+					<a class="btn btn-info" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>
+
+				</div>
+			</div>
+		</div>
+
 		{% if perms.profil.do_verwaltung %}
-			<h4>Verwaltungs-Bereich:</h4>
-			<div class="eingerueckt">
-				<a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
-				<a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a><br><br>
-				<a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
-				<a href="{% url 'inventory' %}">Inventur durchf&#252;hren</a><br><br>
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_4">
+					<h5 class="panel-title bold">
+						<a class="accordion-toggle">
+							Verwaltung
+						</a>
+					</h5>
+				</div>
+				<div id="collapse_4" class="panel-collapse collapse">
+					<div class="panel-body justified">
+
+						<a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
+
+						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a><br><br>
+
+						<a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
+
+						<a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
+
+					</div>
+				</div>
 			</div>
 		{% endif %}
 
 		{% if perms.profil.do_admin_tasks %}
-			<hr>
+			<div class="panel panel-default">
+				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_5">
+					<h5 class="panel-title bold">
+						<a class="accordion-toggle">
+							Administrator-Bereich
+						</a>
+					</h5>
+				</div>
+				<div id="collapse_5" class="panel-collapse collapse">
+					<div class="panel-body justified">
 
-			<h4>Admin-Bereich:</h4>
-			<div class="eingerueckt">
-				<a href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
-				<a href="{% url 'neuerNutzer_page' %}">Nutzer anlegen</a><br><br>
-				<a href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a><br><br>
-				<a href="{% url 'statistics' %}">Statistiken anzeigen</a><br><br>
+						<a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
+
+						<a class="btn btn-info" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a><br><br>
+
+						<a class="btn btn-info" href="{% url 'statistics' %}">Statistiken anzeigen</a>
+					
+					</div>
+				</div>
 			</div>
 		{% endif %}
 
-		<hr>
-		<h4>Meine Einstellungen:</h4>
-		<div class="eingerueckt">
-			<a href="{% url 'password_change' %}">Passwort &#228;ndern</a><br><br>
-			<a href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a><br><br>
-		</div>
-	
 	</div>
-
-	<hr>
-	<a href="{% url 'start_page' %}">zur&#252;ck</a><br>
 
 {% endblock %}

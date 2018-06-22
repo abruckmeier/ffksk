@@ -92,7 +92,9 @@ class UserErstellenForm(UserCreationForm):
 		valid = super(UserErstellenForm,self).is_valid()
 		ffeEmailDomain = self['email'].value().find('@ffe.de') != -1
 
-		if valid and ffeEmailDomain: return True
+		dsgvo_accepted = self['dsgvo_accepted'].value()
+
+		if valid and ffeEmailDomain and dsgvo_accepted: return True
 		else: return False
 
 	def clean_email(self):
@@ -105,20 +107,28 @@ class UserErstellenForm(UserCreationForm):
 
 		return email
 
+	def clean_dsgvo_accepted(self):
+		dsgvo_accepted = self.cleaned_data['dsgvo_accepted']
+		if not dsgvo_accepted is True:
+			raise ValidationError(_('Du musst die Regelungen im Kiosk und die Datenverwendung akzeptieren.'), code='invalid')
+
+		return dsgvo_accepted
+
 	class Meta:
 		model = KioskUser
-		fields = ('username','first_name','last_name','email','aktivBis','positionFfE','password1','password2')
+		fields = ('username','first_name','last_name','email','aktivBis','password1','password2', 'dsgvo_accepted')
 		widgets = {
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		labels = {
 			'aktivBis': _('Angestellt bis'),
-			'positionFfE': _('Anstellung als'),
+            'dsgvo_accepted': _('Akzeptieren der Regelungen im Kiosk und der Datenverwendung'),
 		}
 		help_texts = {
 			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
 			'email': _('<small>Die E-Mail-Adresse muss die @ffe.de-Domain besitzen.</small>'),
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
+            'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/anleitung/">g'+chr(252)+'ltigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
 		}
 
 
@@ -131,5 +141,5 @@ class AktivBisChangeForm(forms.ModelForm):
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		help_texts = {
-			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
+			#'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}
