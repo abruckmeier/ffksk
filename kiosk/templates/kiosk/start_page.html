@@ -32,31 +32,41 @@
 		<h4>Neuigkeiten</h4>
 	</div>
 
-
 	<div class="panel-group" id="accordion">
 		{% for n in news %}
 
-			<div class="panel panel-default">
+			{% if n.html_id == "collapse_0" %}
 
-				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{n.html_id}}">
-					<h5 class="panel-title smallText bold">
-						<a class="accordion-toggle">
-							({{ n.date | date:"d.m.Y" }}) {{ n.heading | safe }}
-						</a>
-					</h5>
-				</div>
-
-				{% if n.html_id == "collapse_0" %}
+				<div class="panel panel-success">				
+					<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{n.html_id}}">
+						<h5 class="panel-title smallText bold">
+							<a class="accordion-toggle">
+								({{ n.date | date:"d.m.Y" }}) {{ n.heading | safe }}
+							</a>
+						</h5>
+					</div>					
 					<div id="{{n.html_id}}" class="panel-collapse collapse in">
-				{% else %}
-					<div id="{{n.html_id}}" class="panel-collapse collapse">
-				{% endif %}
-					<div class="panel-body smallText justified">
-						{{ n.content | safe }}
+						<div class="panel-body smallText justified">
+							{{ n.content | safe }}
+						</div>
 					</div>
 				</div>
-
-			</div>
+			{% else %}
+				<div class="panel panel-default">	
+					<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{n.html_id}}" >
+						<h5 class="panel-title smallText bold">
+							<a class="accordion-toggle">
+								({{ n.date | date:"d.m.Y" }}) {{ n.heading | safe }}
+							</a>
+						</h5>
+					</div>					
+					<div id="{{n.html_id}}" class="panel-collapse collapse">
+						<div class="panel-body smallText justified">
+							{{ n.content | safe }}
+						</div>
+					</div>
+				</div>
+			{% endif %}	
 
 		{% endfor %}
 	</div>
