@@ -32,64 +32,34 @@
 		<h4>Neuigkeiten</h4>
 	</div>
 
+
 	<div class="panel-group" id="accordion">
-		<div class="panel panel-default">
-			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
-				<h5 class="panel-title smallText bold">
-					<a class="accordion-toggle">
-						(16. Jun. 2018) Neues Erscheinungsbild der Webseite
-					</a>
-				</h5>
-			</div>
-			<div id="collapse_1" class="panel-collapse collapse in">
-				<div class="panel-body smallText justified">
-					Nun endlich wurde die Kioskwebseite f&#252;r die Darstellung auf Mobiltelefonen und anderen kleinen Bildschirmen optimiert. Viel Spa&#223; mit dem neuen Layout!
-					<br>
-					<br>
-					Hast du Anmerkungen und Verbesserungsvorschl&#228;ge dazu? Dann kannst du diese sehr gerne weiterreichen.
-				</div>
-			</div>
-		</div>
+		{% for n in news %}
 
-		<div class="panel panel-default">
-			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_2">
-				<h5 class="panel-title smallText bold">
-					<a class="accordion-toggle">
-						(05. Mrz. 2018) Einkaufen per Slack
-					</a>
-				</h5>
-			</div>
-			<div id="collapse_2" class="panel-collapse collapse">
-				<div class="panel-body smallText justified">
-					Von nun an k&#246;nnt ihr per Slack eure Eink&#228;ufe im Kiosk t&#228;tigen. Dazu m&#252;sst ihr lediglich (egal in welchem Gespr&#228;chsverlauf) den "Slash-Command"
-					<div class="panel panel-default code">
-						/kiosk kaufen
+			<div class="panel panel-default">
+
+				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{n.html_id}}">
+					<h5 class="panel-title smallText bold">
+						<a class="accordion-toggle">
+							({{ n.date | date:"d.m.Y" }}) {{ n.heading | safe }}
+						</a>
+					</h5>
+				</div>
+
+				{% if n.html_id == "collapse_0" %}
+					<div id="{{n.html_id}}" class="panel-collapse collapse in">
+				{% else %}
+					<div id="{{n.html_id}}" class="panel-collapse collapse">
+				{% endif %}
+					<div class="panel-body smallText justified">
+						{{ n.content | safe }}
 					</div>
-					ausf&#252;hren. Alles Weitere wird euch dort erkl&#228;rt.
 				</div>
-			</div>
-		</div>
 
-		<div class="panel panel-default">
-			<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_3">
-				<h5 class="panel-title smallText bold">
-					<a class="accordion-toggle">
-						(07. Feb. 2018) Abstimmung zur Verwendung erwirtschafteter Profite im Kiosk
-					</a>
-				</h5>
 			</div>
-			<div id="collapse_3" class="panel-collapse collapse">
-				<div class="panel-body smallText justified">
-					Die Abstimmung zur Verwendung erwirtschafteter Profite im Kiosk zum Ende des Jahres ist nun zu Ende. 
-					Mit gro&#223;er Mehrheit wurde dem Vorschlag zugestimmt, j&#228;hrlich zum Stichtag "15. Dezember" eventuelle Profite des Kioskbetriebs an die Hilfsorganisation von Pater Gerhard, das Blessed G&#233;rard's Care Zentrum in Mandeni, zu spenden. 
-					Vielen Dank f&#252;r die rege Teilnahme an der Abstimmung!<br>
-					Mit eurem Einkauf im Kiosk unterst&#252;tzt ihr nun die Arbeit von Pater Gerhard in S&#252;dafrika (<a href="http://www.bsg.org.za/startseite.html">Website</a>). 
-					Seien wir gespannt, wie viel Geld wir zum Ende des Jahres spenden k&#246;nnen!
-				</div>
-			</div>
-		</div>
+
+		{% endfor %}
 	</div>
-
 
 
 	<div class="page-header">

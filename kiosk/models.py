@@ -18,6 +18,21 @@ from django.db.models import Max
 
 # Create your models here.
 
+class Start_News(models.Model):
+	heading = models.CharField(max_length=256)
+	date = models.DateTimeField(default=timezone.now)
+	content = models.TextField(max_length=2048, blank=True)
+	created = models.DateTimeField(auto_now_add=True)
+	modified = models.DateTimeField(auto_now=True)
+	starred = models.BooleanField(default=False)
+	visible = models.BooleanField(default=True)
+
+	def __str__(self):
+		return(str(self.date) + ': ' + str(self.heading))
+
+
+
+
 class Kontakt_Nachricht(models.Model):
 	name = models.CharField(max_length=40)
 	email = models.EmailField('E-Mail-Adresse')
