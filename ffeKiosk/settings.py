@@ -29,7 +29,7 @@ DB_IN_USE = 'SQLite' #'SQLite'
 
 ACTIVATE_SLACK_INTERACTION = True
 SLACK_SETTINGS = {
-    'channelToPost': '#kiosk',
+    'channelToPost': '#kiosk_bot',
     'MaxBankBalance': 3000, # Cent
     'MinBankBalance': 100, # Cent
 }
