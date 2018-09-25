@@ -607,7 +607,7 @@ def neuerNutzer_page(request):
 			res.is_staff = False
 			res.is_active = True
 			res.instruierterKaeufer = False
-			res.rechte = 'User'
+			res.rechte = 'Buyer'
 			res.visible = True
 
 			u = res.save()

@@ -71,6 +71,11 @@
 							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a></li>
 							<li><a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a></li>
 						{% endif %}
+						{% if perms.profil.do_verwaltung %}
+							<li><a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a></li>
+							<li><a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a></li>
+							<li><a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a></li>
+						{% endif %}
 						<li role="separator" class="divider"></li>
 					{% endif %}
 
@@ -143,16 +148,23 @@
 					{% endif %}
 				</div>
 
-				<div class="list-group">
-					<a class="list-group-item disabled">Aktionen</a>
-					{% if perms.profil.perm_kauf %}
-						<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
-					{% endif %}
-					{% if perms.profil.do_einkauf %}
-						<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
-						<a class="list-group-item" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
-					{% endif %}
-				</div>
+				{% if user.is_authenticated %}
+					<div class="list-group">
+						<a class="list-group-item disabled">Aktionen</a>
+						{% if perms.profil.perm_kauf %}
+							<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
+						{% endif %}
+						{% if perms.profil.do_einkauf %}
+							<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
+							<a class="list-group-item" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
+						{% endif %}
+						{% if perms.profil.do_verwaltung %}
+							<a class="list-group-item" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
+							<a class="list-group-item" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a>
+							<a class="list-group-item" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
+						{% endif %}
+					</div>
+				{% endif %}
 
 				<div class="list-group">
 					<a class="list-group-item disabled">
