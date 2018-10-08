@@ -896,6 +896,8 @@ def statistics(request):
 
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
 	bargeld = - bargeld.stand / 100.0
+	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
+	bargeld_tresor = - bargeld_tresor.stand / 100.0
 
 	usersMoneyValue = readFromDatabase('getUsersMoneyValue')
 	usersMoneyValue = usersMoneyValue[0]['value']
@@ -909,6 +911,9 @@ def statistics(request):
 		if item['what'] == 'Dieb': stolenValue = item['preis']
 		if item['what'] == 'alle': vkValueGekauft = item['preis']
 
+	# Bargeld "gestohlen"
+	bargeld_Dieb = Kontostand.objects.get(nutzer__username='Bargeld_Dieb')
+	bargeld_Dieb = - bargeld_Dieb.stand / 100.0
 
 	# Gewinn & Verlust
 	theoAlloverProfit = vkValueAll - ekValueAll
@@ -918,10 +923,10 @@ def statistics(request):
 	adminsProvision = 0
 	profitHandback = 0
 
-	expProfit = theoProfit - stolenValue - adminsProvision - profitHandback
+	expProfit = theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback
 
-	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue
-	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk)
+	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue - bargeld_Dieb - bargeld_tresor
+	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk - bargeld_tresor)
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -951,7 +956,7 @@ def statistics(request):
 		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0, 
 		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue, 
 		'vkValueAll': vkValueAll, 'ekValueAll': ekValueAll, 'ekValueKiosk': ekValueKiosk,
-		'bargeld': bargeld, 'usersMoneyValue': usersMoneyValue, 
+		'bargeld': bargeld, 'bargeld_tresor':bargeld_tresor, 'bargeld_Dieb':bargeld_Dieb, 'usersMoneyValue': usersMoneyValue, 
 		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit, 
 		'theoProfit': theoProfit, 'buyersProvision': buyersProvision, 
 		'adminsProvision': adminsProvision, 'profitHandback': profitHandback, 

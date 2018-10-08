@@ -60,9 +60,9 @@
 							Wareneinkaufswert im Kiosk (und gekauft): {{ekValueKiosk | floatformat:2}} &#8364; ({{ekValueAll | floatformat:2}} &#8364;)<br>
 							Durchschn. Preiserh&#246;hung: {{priceIncrease | floatformat:1}} % <br>
 							Geldwert auf der Kiosk-Bank: {{kioskBankValue | floatformat:2}} &#8364; <br>
-							Bargeld: {{bargeld | floatformat:2}} &#8364; <br>
+							Bargeld: {{bargeld | floatformat:2}} &#8364; (+{{bargeld_tresor | floatformat:2}} &#8364; sicher hinterlegt) <br>
 							Geldwert auf Konten realer Nutzer: {{usersMoneyValue | floatformat:2}} &#8364; <br>
-							Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364;
+							Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; (+{{bargeld_Dieb | floatformat:2}} &#8364; Bargeld-Differenz) 
 						</small>
 					</div>
 

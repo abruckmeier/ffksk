@@ -14,3 +14,4 @@ from (
 	group by week_start
 	order by week_start asc
 ) a
+where week_start > datetime(datetime('now'), '-6 months')
