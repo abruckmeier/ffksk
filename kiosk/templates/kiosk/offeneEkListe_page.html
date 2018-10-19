@@ -1,0 +1,29 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+	<div class="page-header noMarginTop">
+		<h4>Offene Einkaufslisten</h4>
+	</div>
+
+	<div>
+
+		<table class="table table-striped small">
+			<tr>
+				<th># Liste</th>
+				<th>Produkt</th>
+				<th>Anzahl zu kaufen</th>
+			</tr>
+
+			{% for item in einkaufsliste %}
+				<tr>
+					<td>{{item.gruppenID}}</td>
+					<td>{{item.produktName}}</td>
+					<td>{{item.anzahlElemente}}</td>
+				</tr>
+			{% endfor %}
+		</table>
+
+	</div>
+
+{% endblock %}

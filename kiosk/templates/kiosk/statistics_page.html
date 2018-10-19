@@ -3,183 +3,211 @@
 
 {% block content %}
 	
-	<h4> Statistiken </h4>
-	<br>
-	<div class="eingerueckt">
+	<div class="page-header noMarginTop">
+		<h4>Kiosk-Statistiken</h4>
+	</div>
 
-		<h5>Verkaufsstatistik </h5>
-		<br>
 
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td>
-					<small>
-						Verkaufswert heute (gestern): {{vkToday | floatformat:2}} &#8364; ({{vkYesterday | floatformat:2}} &#8364;) <br>
-						Verkaufswert diese (letzte) Woche: {{vkThisWeek | floatformat:2}} &#8364; ({{vkLastWeek | floatformat:2}} &#8364;) <br>
-						Verkaufswert diesen (letzten) Monat: {{vkThisMonth | floatformat:2}} &#8364; ({{vkLastMonth | floatformat:2}} &#8364;) <br><br>
-					</small>
-					</td>
-				<tr>
-					<td style="width:50%;">
-						<div style="min-width: 300px;max-width: 500px;">
+	<div calss="panel-group" id="accordion">
+
+		<div class="row panel panel-default">
+			<div class="col-xs-12 col-sm-12 col-lg-12 panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_1">
+				<h4 class="panel-title">
+					<a class="accordion-toggle">Verkaufsstatistik</a>
+				</h4>
+			</div>
+			<div id="collapse_1" class="panel-collapse collapse">
+				<div class="panel-body">
+
+					<div class="col-xs-12 col-sm-10 col-lg-7 panel panel-default marginPadding">
+						<small>
+							Verkaufswert heute (gestern): {{vkToday | floatformat:2}} &#8364; ({{vkYesterday | floatformat:2}} &#8364;) <br>
+							Verkaufswert diese (letzte) Woche: {{vkThisWeek | floatformat:2}} &#8364; ({{vkLastWeek | floatformat:2}} &#8364;) <br>
+							Verkaufswert diesen (letzten) Monat: {{vkThisMonth | floatformat:2}} &#8364; ({{vkLastMonth | floatformat:2}} &#8364;)
+						</small>
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-6 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{ chart_WeeklyVkValue.as_html }}
 						</div>
-					</td>
-					<td>
-						<div style="min-width: 300px;max-width: 500px;">
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-6 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{ chart_MonthlyVkValue.as_html }}
 						</div>
-					</td>
-				</tr>
-			</table>
+					</div>
+
+				</div>
+			</div>
+
 		</div>
-		<br><br>
 
-		<h5> Geldwerte </h5>
-		<br>
 
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td>
-					<small>
-						Warenverkaufswert im Kiosk (und gekauft): {{vkValueKiosk | floatformat:2}} &#8364; ({{vkValueAll | floatformat:2}} &#8364;) <br>
-						Wareneinkaufswert im Kiosk (und gekauft): {{ekValueKiosk | floatformat:2}} &#8364; ({{ekValueAll | floatformat:2}} &#8364;)<br>
-						Durchschn. Preiserh&#246;hung: {{priceIncrease | floatformat:1}} % <br>
-						Geldwert auf der Kiosk-Bank: {{kioskBankValue | floatformat:2}} &#8364; <br>
-						Bargeld: {{bargeld | floatformat:2}} &#8364; <br>
-						Geldwert auf Konten realer Nutzer: {{usersMoneyValue | floatformat:2}} &#8364; <br>
-						Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; <br>
-					</small>
-					</td>
-					<td>
-						<div style="min-width: 300px;max-width: 500px;">
+		<div class="row panel panel-default">
+			<div class="col-xs-12 col-sm-12 col-lg-12 panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_2">
+				<h4 class="panel-title">
+					<a class="accordion-toggle">Geldwerte</a>
+				</h4>
+			</div>
+			<div id="collapse_2" class="panel-collapse collapse">
+				<div class="panel-body">
+
+					<div class="col-xs-12 col-sm-10 col-lg-5 panel panel-default marginPadding">
+						<small>
+							Warenverkaufswert im Kiosk (und gekauft): {{vkValueKiosk | floatformat:2}} &#8364; ({{vkValueAll | floatformat:2}} &#8364;) <br>
+							Wareneinkaufswert im Kiosk (und gekauft): {{ekValueKiosk | floatformat:2}} &#8364; ({{ekValueAll | floatformat:2}} &#8364;)<br>
+							Durchschn. Preiserh&#246;hung: {{priceIncrease | floatformat:1}} % <br>
+							Geldwert auf der Kiosk-Bank: {{kioskBankValue | floatformat:2}} &#8364; <br>
+							Bargeld: {{bargeld | floatformat:2}} &#8364; (+{{bargeld_tresor | floatformat:2}} &#8364; sicher hinterlegt) <br>
+							Geldwert auf Konten realer Nutzer: {{usersMoneyValue | floatformat:2}} &#8364; <br>
+							Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; (+{{bargeld_Dieb | floatformat:2}} &#8364; Bargeld-Differenz) 
+						</small>
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-7 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{ chart_DaylyVkValue.as_html }}
 						</div>
-					</td>
-				</tr>
-			</table>
+					</div>
+
+				</div>
+			</div>
 		</div>
 
-		<br><br>
 
-		<h5> Umsatz & Anteil unbezahlter Ware </h5>
-		<br>
+		<div class="row panel panel-default">
+			<div class="col-xs-12 col-sm-12 col-lg-12 panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_3">
+				<h4 class="panel-title">
+					<a class="accordion-toggle">Umsatz & Anteil unbezahlter Ware</a>
+				</h4>
+			</div>
+			<div id="collapse_3" class="panel-collapse collapse">
+				<div class="panel-body">
 
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td>
+					<div class="col-xs-12 col-sm-10 col-lg-7 panel panel-default marginPadding">
 						<small>
-						Im Kiosk gekaufter/gestohlener Warenwert: {{vkValueGekauft | floatformat:2}} &#8364; <br>
-						bezahlter Warenwert: {{vkValueBezahlt | floatformat:2}} &#8364; <b>({{relBezahlt|floatformat:1}} %)</b><br>
-						unbezahlter Warenwert: {{stolenValue | floatformat:2}} &#8364; <b>({{relDieb|floatformat:1}} %)</b><br>
+							Im Kiosk gekaufter/gestohlener Warenwert: {{vkValueGekauft | floatformat:2}} &#8364; <br>
+							bezahlter Warenwert: {{vkValueBezahlt | floatformat:2}} &#8364; <b>({{relBezahlt|floatformat:1}} %)</b><br>
+							unbezahlter Warenwert: {{stolenValue | floatformat:2}} &#8364; <b>({{relDieb|floatformat:1}} %)</b>
 						</small>
-					</td>
-					<td>
-						<div style="min-width: 300px;max-width: 500px;">
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-6 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{chart_Un_Bezahlt.as_html}}
 						</div>
-					</td>
-					<td>
-						<div style="min-width: 300px;max-width: 500px;">
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-6 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{chart_UmsatzHistorie.as_html}}
 						</div>
-					</td>
-				</tr>
-			</table>
+					</div>
 
+				</div>
+			</div>
 		</div>
 
-		<br><br>
 
-		<h5> Gewinn & Verlust </h5>
-		<br>
+		<div class="row panel panel-default">
+			<div class="col-xs-12 col-sm-12 col-lg-12 panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_4">
+				<h4 class="panel-title">
+					<a class="accordion-toggle">Gewinn & Verlust</a>
+				</h4>
+			</div>
+			<div id="collapse_4" class="panel-collapse collapse">
+				<div class="panel-body">
 
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td>
-					<small>
-						Theoretischer Gesamtprofit: {{theoAlloverProfit | floatformat:2}} &#8364; <br>
-						Provisionen f&#252;r Eink&#228;ufer: {{buyersProvision | floatformat:2}} &#8364; <br>
-						Theoretischer Gewinn des Kiosks: {{theoProfit | floatformat:2}} &#8364; <br>
-						Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; <br>
-						Provisionen f&#252;r Admin und Verwalter: {{adminsProvision | floatformat:2}} &#8364; <br>
-						Gewinnaussch&#252;ttungen f&#252;r Nutzer: {{profitHandback | floatformat:2}} &#8364; <br>
-						Erwarteter Gewinn des Kiosks: {{expProfit | floatformat:2}} &#8364; <br>
-						<br>
-						Bilanzcheck (Check der Kontost&#228;nde): {{bilanzCheck | floatformat:2}} &#8364; <br>
-						Gegencheck Erwarteter Gewinn: {{checkExpProfit | floatformat:2}} &#8364; <br>
-					</small>
-					</td>
-					<td>
-						<div style="min-width: 300px;max-width: 500px;">
+					<div class="col-xs-12 col-sm-8 col-lg-7 panel panel-default marginPadding">
+						<small>
+							Theoretischer Gesamtprofit: {{theoAlloverProfit | floatformat:2}} &#8364; <br>
+							Provisionen f&#252;r Eink&#228;ufer: {{buyersProvision | floatformat:2}} &#8364; <br>
+							Theoretischer Gewinn des Kiosks: {{theoProfit | floatformat:2}} &#8364; <br>
+							Gestohlener Warenwert: {{stolenValue | floatformat:2}} &#8364; <br>
+							Provisionen f&#252;r Admin und Verwalter: {{adminsProvision | floatformat:2}} &#8364; <br>
+							Gewinnaussch&#252;ttungen f&#252;r Nutzer: {{profitHandback | floatformat:2}} &#8364; <br>
+							Erwarteter Gewinn des Kiosks: {{expProfit | floatformat:2}} &#8364; <br>
+							<br>
+							Bilanzcheck (Check der Kontost&#228;nde): {{bilanzCheck | floatformat:2}} &#8364; <br>
+							Gegencheck Erwarteter Gewinn: {{checkExpProfit | floatformat:2}} &#8364;
+						</small>
+					</div>
+
+					<div class="col-xs-12 col-sm-10 col-lg-8 panel panel-default marginPadding">
+						<div style="max-width: 500px;">
 							{{ chart_Profits.as_html }}
 						</div>
-					</td>
-				</tr>
-			</table>
+					</div>
+
+				</div>
+			</div>
 		</div>
 
-		<br><br>
 
-		<h5> Prduktstatistik (bezahlte Produkte)</h5>
-		<br>
+		<div class="row panel panel-default">
+			<div class="col-xs-12 col-sm-12 col-lg-12 panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_5">
+				<h4 class="panel-title">
+					<a class="accordion-toggle">Einzelproduktstatistik</a>
+				</h4>
+			</div>
+			<div id="collapse_5" class="panel-collapse collapse">
+				<div class="panel-body">
 
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td style="width:50%;">
-						Gesamtgewinn der Produkte in &#8364;:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_ProductsWin.as_html }}
+					<div class="col-xs-12 col-sm-12 col-lg-12 panel panel-default marginPadding">
+
+						<div class="panel panel-default">
+							<div class="panel-heading bold">
+								Info
+							</div>
+							<div class="panel-body justified smallText">
+								Durch Klick auf den jeweiligen Spaltennamen wird nach dieser Spalte sortiert, erst aufsteigend, dann absteigend.
+							</div>
 						</div>
-					</td>
-					<td style="width:50%;">
-						Anzahl gekaufter Produkte:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_ProductsCount.as_html }}
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
+						
+						<table id="einzelproduktstatistik" class="sortable table table-striped smallText autoSize">
+							<tr>
+								<th>Produkt</th>
+								<th># gekauft</th>
+								<th># unbezahlt</th>
+								<th>% unbezahlt</th>
+								<th>&#8364; Gewinn</th>
+								<th>&#8364;/# Gewinn</th>
+								<th>&#8364;/# entg. Gewinn</th>
+							</tr>
+							{% for item in singleProductStatistics %}
+								<tr>
+									<td>{{item.name}}</td>
+									<td>{{item.anzahl}}</td>
+									<td>{{item.stolen_anzahl}}</td>
+									<td>{{item.spec_stolen_anzahl| floatformat:1}}</td>
+									<td>{{item.gewinn| floatformat:2}}</td>
+									<td>{{item.spec_gewinn| floatformat:2}}</td>
+									<td>{{item.spec_entg_gewinn| floatformat:2}}</td>
+								</tr>
+							{% endfor %}
+						</table>
 
-		<br><br>
+					</div>
 
-		<h5> Prduktstatistik (unbezahlte Produkte)</h5>
-		<br>
-
-		<div class="eingerueckt">
-			<table style="width:100%;">
-				<tr>
-					<td style="width:50%;">
-						Unbezahlter Wert der Produkte in &#8364;:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_Stolen_ProductsWin.as_html }}
-						</div>
-					</td>
-					<td style="width:50%;">
-						Anteil unbezahlter Produkte in %:<br>
-						<div style="min-width: 300px;max-width: 800px;">
-							{{ chart_StolenProductsShare.as_html }}
-						</div>
-					</td>
-				</tr>
-			</table>
+				</div>
+			</div>
 		</div>
 
 	</div>
+		
 
-	
-
+	<br>
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+{% endblock %}
 
 
-	
 
+{% block javascript %}
+
+	<script src="{% static 'js/sorttable.js' %}"></script>
 
 {% endblock %}

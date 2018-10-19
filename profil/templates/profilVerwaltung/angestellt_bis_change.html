@@ -1,0 +1,63 @@
+{% extends 'kiosk/base.html' %}
+
+{% load widget_tweaks %}    
+
+{% block content %}
+
+
+    <div class="page-header noMarginTop">
+        <h4>Datum der Kontodeaktivieren</h4>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading bold">
+            Warum sollte ich mein Austrittsdatum aus der FfE korrekt einstellen?
+        </div>
+        <div class="panel-body justified smallText">
+            Nach diesem Datum kannst du keine Eink&#228;ufe im FfE-Kiosk t&#228;tigen und dein Konto wird deaktiviert.
+            Durch Einstellen dieses Datums bekommst du automatisch rechtzeitig vor dem Ende deiner Besch&#228;ftigungszeit eine Slack-Nachricht, die dich daran erinnert, entweder dein Guthaben auszahlen zu lassen oder deine Besch&#228;ftigungszeit zu verl&#228;ngern.
+        </div>  
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+
+        {% for field in aktivBisChangeForm %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field | add_class:"form-control" }}
+                <br>
+                {% if field.errors %}
+                    <p class="alert alert-danger">{{ field.errors.as_text }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="alert alert-info">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <input type="submit" class="btn btn-primary" value="Datum &#228;ndern" />  
+    </form>
+
+
+    <hr>
+    <a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+{% endblock %}
+
+{% block javascript %}
+
+    <script type="text/javascript">
+        $(document).ready(
+            function(){
+                $('.datepicker').datepicker({
+                    language: 'de',
+                    format: 'dd.mm.yyyy',
+                    todayHighlight: true,
+                    startDate: '-3d'
+                });
+            }
+        );
+    </script>
+
+{% endblock %}

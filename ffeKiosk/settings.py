@@ -29,7 +29,7 @@ DB_IN_USE = 'SQLite' #'SQLite'
 
 ACTIVATE_SLACK_INTERACTION = True
 SLACK_SETTINGS = {
-    'channelToPost': '#kiosk',
+    'channelToPost': '#kiosk_bot',
     'MaxBankBalance': 3000, # Cent
     'MinBankBalance': 100, # Cent
 }
@@ -38,10 +38,12 @@ SLACK_SETTINGS = {
 # Application definition
 
 INSTALLED_APPS = [
+    'widget_tweaks',
     'jchart',
     'django.contrib.humanize',
     'kiosk.apps.KioskConfig',
     'profil.apps.ProfilConfig',
+    'ffeKiosk',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -101,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTH_USER_MODEL = 'profil.KioskUser'
 
-LOGIN_REDIRECT_URL = '/menu/'
+LOGIN_REDIRECT_URL = '/accounts/registrationStatus/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -125,6 +127,11 @@ THOUSAND_SEPARATOR = ' '
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+    #os.path.join(BASE_DIR, "static"),
+    #'/var/www/static/',
+] # python manage.py collectstatic
+
 
 # Finanzielle Konstanten -> spaeter in den KioskBot geben
 FINANZ = {
@@ -142,6 +149,3 @@ VIEWS = {
     'itemsInKontobewegungen': 10,
 }
 
-
-# E-Mails
-EMAIL_USE_TLS = True

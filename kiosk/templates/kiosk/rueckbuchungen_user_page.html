@@ -1,0 +1,91 @@
+{% extends 'kiosk/base.html' %}	
+
+{% load widget_tweaks %}
+
+{% block content %}
+	
+	<div class="page-header noMarginTop">
+		<h4>R&#252;ckbuchung von K&#228;ufen <small>von {{user.first_name}} {{user.last_name}}</small></h4>
+	</div>
+
+
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			F&#252;lle die Zeilen mit Produkten vollst&#228;ndig aus, die du r&#252;ckbuchen m&#246;chtest, leere und unvollst&#228;ndig ausgef&#252;llte Zeilen werden ignoriert.
+		</div>
+	</div>
+
+	<div>
+		{{notifications|safe}}
+	</div>
+
+
+	{% if not formset %}
+	<!-- Das klappt noch nicht -->
+		<table class="table table-striped smallText">
+			<tr><th>keine K&#228;ufe bisher</th></tr>
+		</table>
+	{% else %}
+		
+		<form method="POST" class="">
+			{% csrf_token %}
+			{{formset.management_form}}
+			<table class="table table-striped smallText autoSize">
+				<tr>
+					<th>Produkt</th>
+					<th>Anzahl gekauft</th>
+					<th>Anzahl zum R&#252;ckbuchen</th>
+				</tr>
+
+				{% for form in formset %}
+					<tr>
+						<td>
+							{{form.produkt_name.value}}
+
+							<!-- Non-displayed but important fields -->
+							{{form.produkt_name | attr:"style:display:none;"}}
+							{{form.kaeufer_id | attr:"style:display:none;"}}
+							{{form.produkt_id | attr:"style:display:none;"}}
+						</td>
+						<td>
+							{{form.anzahl_gekauft.value}}
+
+							<!-- Non-displayed but important fields -->
+							{{form.anzahl_gekauft | attr:"style:display:none;"}}
+						</td>
+						<td>
+							{{form.anzahl_zurueck | attr:"style:width:50px;"}}
+							{% if form.anzahl_zurueck.errors %}
+								<p class="alert alert-danger">
+									{{form.anzahl_zurueck.errors.as_text}}
+								</p>
+							{% endif %}
+							{% if form.anzahl_zurueck.help_text %}
+								<p class="alert alert-info">
+									{{form.anzahl_zurueck.help_text|safe}}
+								</p>
+							{% endif %}
+						</td>
+					</tr>
+
+				{% endfor %}
+
+			</table>
+		
+			<input type="text" name="userID" id="userID" style="display: none" readonly value="{{userID}}">
+			<button type="submit" class="btn btn-primary">R&#252;ckbuchen!</button>
+
+		</form>
+
+
+	{% endif %}
+
+	<hr>
+	<a class="bigLink" href="{% url 'rueckbuchungen_page' %}">zur&#252;ck</a>
+	<br><br>
+	<a class="" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+	
+{% endblock %}

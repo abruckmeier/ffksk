@@ -1,166 +1,233 @@
-/* Allgemein */
-#bodystyle{
+/* -------------------------------------- */
+/* Overwrite and complement Bootstrap */
+
+a {
+    cursor: pointer;
+}
+
+table {
+    table-layout: fixed;
+}
+
+.table td.fit,
+.table th.fit {
+    width: 50px;
+}
+
+table.autoSize {
+    table-layout: auto;
+}
+
+.container-fluid {
+    padding: 0;
+    margin: 0;
+}
+
+.list-group-item.disabled:hover {
+    cursor: context-menu;
+}
+
+
+
+/* -------------------------------------- */
+/* Divs and fundamental style */
+/* 
+    @screen-xs = 480px
+    @screen-sm = 768px
+    @screen-lg = 1200px
+*/
+
+
+/*@media (max-width: @screen-xs-max) { ... } */
+/*@media (max-width: 479px) { ... } */
+    .divTopHeading {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-width: 100%;
+        height: 70px;
+        text-align: center;
+        vertical-align: top;
+        padding-bottom: 7px;
+        color: #428bca;
+        margin: 0;
+    }
+
+    .divTopMenu {
+        display: inline-block;
+        position: sticky;
+        top: 22px;
+        left:80vw;
+        margin: 0;
+        z-index: 99;
+    }
+
+    .divTopMenuBigScreen {
+        display: none;
+    }
+
+    .divMain {
+        position: relative;
+        top:70px;
+        padding-left: 3vw;
+        padding-right: 3vw;
+    }
+
+    .divRightSide {
+        display: none;
+    }
+/*}*/
+
+/*@media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {*/
+@media (min-width: 768px) {
+
+    .divTopHeading {
+        left:25vw;
+        width: 73vw;
+    }
+
+    .divMain {
+        left: 25vw; 
+        width: 73vw;   
+    }
+
+    .divTopMenu {
+        display: none;
+    }
+
+    .divTopMenuBigScreen {
+        display: inline-block;
+        position: absolute;
+        top: 125px;
+        left: 0;
+        padding-left: 2vw;
+        width: 25vw;
+        margin: 0;
+    }
 
 }
 
-hr.small {
-    margin:3px;
-    padding:0;
+
+/*@media (min-width: @screen-lg-min) { .divTopHeading {*/
+@media (min-width: 1200px) {
+
+    .divTopHeading {
+        left: 20vw;
+        width: 60vw;
+    }
+
+    .divMain {
+        left: 20vw;
+        width: 60vw;
+    }
+
+    .divRightSide {
+        display: inline-block;
+        position: absolute;
+        top: 125px;
+        left: 80vw;
+        padding-right: 2vw;
+        margin: 0;
+    }
+
+    .divTopMenuBigScreen {
+        width: 20vw;
+    }
 }
 
 
-/* Divs */
-.headDivHeading {
-    display: inline-block;
-    padding-left: 10vw;
-    padding-top: 10px;
-    min-width: 100px;
-    width: 70vw;
-    text-align: center;
-    vertical-align: top;
-    min-height: 
-
+/* Not dependent on screen-size */
+.aTopHeading {
+    color: #428bca;
+    text-decoration: none;
+}
+.aTopHeading:hover {
+    color: #428bca;
+    text-decoration: none;
 }
 
-.headDivLinks {
-    display: inline-block;
-    max-width: 40vw;
-    padding-left:10px;
-    padding-top:10px;
-    font-size: 75%;
-
+.ulTopMenuWidth {
+    min-width: 50vw;
 }
 
-.mainDiv {
-    display: inline-block;
-    padding-left:3vw;
-    padding-right: 3vw;
-    width: 68vw;
-    min-width: 100px;
-    vertical-align: top;
-}
 
-.allgInfoDiv {
-    display: inline-block;
-    width: 29vw;
-    min-width: 200px;
-    padding-left: 2vw;
-    vertical-align: top;
-    border-left: 1px solid #dddddd;
-}
 
-/* Format Style */
+/* -------------------------------------- */
+/* Class Styles */
 
-.eingerueckt {
-     padding-left: 20px;
-}
-.eingeruecktklein {
-     padding-left: 10px;
-}
-
-.formDiv {
-    display: inline;
+.bold {
     font-weight: bold;
-    font-size: 125%;
 }
 
-.commandTexts {
+.noMarginTop {
+    margin-top: 0;
+}
+
+.smallText {
+    font-size: 85%;
+}
+
+.justified {
+    text-align: justify;
+}
+
+.bigLink {
+    font-weight: bold;
+    font-size: 115%;
+}
+
+.code {
+    padding: 5px;
+    padding-left: 5vw;
     font-family: "Courier New";
-    font-style: italic;
-    font-size: 90%;
-    text-align: left;
-    margin-top:1%;
-    margin-left:5%;
-    margin-right:5%;
-    border: 1px solid #e9e9e9;
-    background-color: #f3f3f3;
+    color: green;
 }
 
-
-/* Text Style */
-h5 {
-    font-weight: bold;
+.indented {
+    padding-left: 5vw;
 }
 
-.items { 
-    margin:0; 
-    word-spacing:0.5em; 
+.inline {
+    display: inline;
 }
 
-.itemsDef { 
-    margin:0; 
-    word-spacing:0.5em; 
-    font-size:85%; 
-    color:#cccccc;
-    margin-bottom: 5px;
+.bigCaret {
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid;
 }
 
-
-.headHeading{
-    /*font-weight: bold;*/
+.bigCaretUp {
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 12px solid;
 }
 
-
-
-/* Tabelle */
-table.konto {
-    width: 100%;
-    font-size: 90%;
-    border-spacing: 10px;
+.cutTextOff {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-td.konto, th.konto {
-    border: 1px solid #eeeeee;
-    padding: 8px;
+.padding {
+    padding: 2vw;
 }
-
-tr.konto:nth-child(even) {
-    background-color: #eeeeee;
-}
-
-
-/* Dropdown-Auswahl */
-
-.dropbtn, .dropbtnt {
-    background-color: #428BCA;
-    color: white;
+.marginPadding {
+    margin-top: 10px;
+    margin-bottom: 10px;
     padding-top: 10px;
     padding-bottom: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
-    border: none;
-    cursor: pointer;
-    min-width: 200px;
 }
 
-.dropdown, .dropdownt {
-    position: relative;
-    display: inline-block;
+.sideMenu {
+    background-color: #f8f8f8;
+    border: 1px solid #f1f1f1;
+    border-radius: 5px;
+    padding: 1vw;
 }
 
-.dropdown-content, .dropdown-contentt {
-    display: block;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 250px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
+.grey {
+    color: #999999;
 }
-
-.dropdown-content a, .dropdown-contentt a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-/*.dropdown-content a:hover {background-color: #f1f1f1}
-
-.dropdown:hover .dropdown-content {
-    display: block;
-}
-
-.dropdown:hover .dropbtn {
-    background-color: #1D4E7A;
-}
-*/

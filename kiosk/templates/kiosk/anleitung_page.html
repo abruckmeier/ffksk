@@ -2,14 +2,16 @@
 
 {% block content %}
 
-	<h3>Anleitung & Kleingedrucktes</h3>
-	<h4 style="color:#ff3333;">vorl&#228;ufig, im Aufbau</h4>
-	<br>
-	<div class="eingerueckt">
-		
+	<div class="page-header noMarginTop">
+		<h4>Informationen zum Kiosk <small style="color:#ff3333;">vorl&#228;ufig, im Aufbau</small></h4>
+	</div>
+
+	Erste Schritte als eigene Seite!
+
+	<div>	
 
 		<h4>Inhalt</h4>
-		<div class="eingerueckt" style="font-size: 110%;">
+		<div>
 			<a href="#">Um was geht es hier?</a>
 			<br>
 			<a href="#">Wie funktioniert es?</a>
@@ -36,7 +38,7 @@
 		<br>
 
 		<h4>Um was geht es hier?</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Diese Plattform unterst&#252;tzt die FfE'ler beim Betreiben und Verwalten des gemeinschaftlichen Kiosks im Lagerraum neben der K&#252;che. Vertrieben werden S&#252;&#223;igkeiten und Fertiggerichte.
 			Jeder Mitarbeitende und Studierende ist herzlich eingeladen, dieser Gemeinschaft beizutreten, sofern er/sie die Regelungen auf dieser Seite mit seiner/ihrer <a href='#'>Registrierung</a> akzeptiert.
 			<br> 
@@ -47,7 +49,7 @@
 		<br>
 
 		<h4>Wie funktioniert es?</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Jeder registrierte Nutzer besitzt einen <a href='#'>Account</a> auf dieser Webseite mit einem Konto, von welchem das Gekaufte bezahlt wird. Zugriff auf das pers&#246;nliche Konto besitzt jeder Nutzer &#252;ber den eigenen <a href='#'>Login</a>.
 			Dort <a href='#'>verbucht</a> jeder Nutzer selbst&#228;ndig und zuverl&#228;ssig die aus dem Kiosk entnommene Ware.
 			Das Guthaben auf dem Konto l&#228;sst sich bei einem <a href='#'>Verwalter</a> per Barzahlung aufladen. (Auch kann dort das Guthaben auf dem Konto ausbezahlt werden.)
@@ -56,7 +58,7 @@
 		<br>
 
 		<h4>Einrichten eines Kontos</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Unter dem Link <a href="#">Konto erstellen</a> kann ein neuer Benutzeraccount angelegt werden. Als Nutzername sollte der Name auf Slack verwendet werden um die Interaktion mit Slack zu erm&#246;glichen (Diese kann nach Erstellen des Kontos unter <a href="#">diesem Link</a> &#252;berpr&#252;ft werden).
 			Als E-Mail-Adresse ist die @ffe.de-Adresse zu verwenden, lediglich diese l&#228;sst eine Registrierung im Kiosk zu.
 			Unter "angestellt bis" ist das Datums des Austritts aus der FfE anzugeben. Zu diesem Datum wird das Konto deaktiviert und eine Woche zuvor wird eine Erinnerungsnachricht gesendet, das eigene Guthaben vom Konto auszahlen zu lassen.
@@ -66,20 +68,20 @@
 		<br>
 
 		<h4>Kauf von Produkten</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Jeder registrierte Nutzer mit Guthaben auf dem Konto (<a href='#'>Konto einrichten und Guthaben aufladen</a>) kann Eink&#228;ufe im Kiosk t&#228;tigen. Die Ware kann per Selbstbedienung aus den Regalen im Raum hinter der K&#252;che entnommen werden und muss dann <b>sofort</b> <a href="#">hier</a> auf der Webseite verbucht werden. Sollte ein Produkt nicht mehr abbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig war, bitte sofort den <a href="#">Administrator</a> kontaktieren, er k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.
 			<br>
 			Mit einer funktionierenden Verbindung des pers&#246;nlichen Kontos zu Slack (Verbindungstest unter <a href="#">diesem Link</a>) kann der Kauf von Produkten &#252;ber eine Befehlseingabe (egal in welchem Channel oder Chat) durchgef&#252;hrt werden:
-			<p class="commandTexts">
+			<p class="panel panel-default code">
 				/kiosk Kauf "Produkt" "evtl. Anzahl"
 			</p>
 			Der Kiosk-Bot wird mit diesem Befehl eine Interaktion zum Kauf starten und bei uneindeutiger Eingabe Auswahlm&#246;glichkeiten bieten. Au&#223;erdem ist stets eine Hilfestellung bei Fehleingabe oder folgenden Befehlen verf&#252;gbar:
-			<p class="commandTexts">
+			<p class="panel panel-default code">
 				/kiosk Hilfe<br>
 				/kiosk Kauf Hilfe
 			</p>
 			Beispiele f&#252;r Kommandoeingaben:
-			<p class="commandTexts">
+			<p class="panel panel-default code">
 				/kiosk Kauf Pizza<br>
 				/kiosk Kauf 2 Pesto<br>
 				/kiosk "saure Zunge" 3<br>
@@ -89,13 +91,13 @@
 		<br>
 
 		<h4>&#220;berweisung von Geld an andere Mitglieder</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Diese Funktionalit&#228;t ist momentan noch nicht verf&#252;gbar. Es wird momentan aber daran gearbeitet.
 		</p>
 		<br>
 
 		<h4>Besorgungen f&#252;r das Kiosk durchf&#252;hren</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Jeder Nutzer ist herzlich eingeladen, "Eink&#228;ufer" zu werden und gegen Provision Besorgungen f&#252;r das Kiosk durchzuf&#252;hren. Dazu ist eine kurze Benachrichtigung des <a href="#">Administrators</a> n&#246;tig, welcher dann den Zugang zu Eink&#228;ufer-Funktionen freischaltet. Nach der Freischaltung ist die Mitarbeit bei den Besorgungen f&#252;r das Kiosk m&#246;glich.<br>
 			Das Kiosk-System &#252;berpr&#252;ft automatisch, welche Produkte demn&#228;chst zu Neige gehen und generiert Einkaufspakete, welche, wenn eingeloggt, rechts unten auf der <a href="#">Kiosk-Webseite</a> angezeigt werden. Au&#223;erdem werden vom Kiosk-Bot Benachrichtigungen in den #kiosk-Channel auf Slack gepostet. M&#246;chte man eines oder mehrer dieser Einkaufspakete besorgen, muss dies unter <a href="#">Besorgungen ank&#252;ndigen</a> angek&#252;ndigt werden. Das Einkaufspaket erscheint dann in der <a href="#">pers&#246;nlichen Einkaufsliste</a> im <a href="#">pers&#246;nlichen Bereich</a> und verbleibt l&#228;ngstens drei Tage dort. So lange bleibt Zeit, um die Besorgungen durchzuf&#252;hren. Danach wird das Einkaufspaket wieder f&#252;r alle Eink&#228;ufer zum Einkauf freigegeben. In der <a href="#">pers&#246;nlichen Einkaufsliste</a> k&#246;nnen die zu kaufenden Produkte verwaltet werden und wahlweise Produkte herausgel&#246;scht werden.<br>
 			Beim Einkauf ist darauf zu achten, nicht mehr Produkte zu kaufen, als in der Einkaufsliste stehen. Au&#223;erdem muss darauf geachtet werden, <b>nicht teurer als in der Einkaufsliste genannten Budget einzukaufen</b>. Nur bis zu diesem Maximalbetrag werden die Kosten des Einkaufs erstattet. <b>Der Kaufbeleg wird f&#252;r die sp&#228;tere Verrechnung ben&#246;tigt</b>, also beim Einkauf daran denken! Die eingekaufte Ware ist im Kiosk einzuordnen und der Kaufbeleg bei einem <a href="#">Verwalter</a> abzugeben. Dieser verbucht die Ware als besorgt und erstattet die Einkaufskosten plus die Provision f&#252;r den Einkauf.<br>
@@ -105,7 +107,7 @@
 		<br>
 
 		<h4>T&#196;tigkeiten des Verwalters im Kiosk</h4>
-		<p style="text-align: justify;">
+		<p class="justified">
 			Die <a href="#">Verwalter</a> des Kiosks k&#252;mmern sich um finanzielle und verwaltungstechnische Tagesgesch&#228;fte. Ein drei Personen starkes Team an Verwaltern hat sich als eine passende Anzahl erwiesen um die Aufgaben zu bearbeiten und um st&#228;ndige Verf&#252;gbarkeit eines Verwalters zu gew&#228;hrleisten. Bei Bedarf wird nach freiwilligen Personen f&#252;r eine Neubesetzung des Verwalter-Jobs im #kiosk-Channel gefragt. Die Aufgaben des Verwalters sind folgende:
 			<ul>
 				<li>
@@ -163,8 +165,6 @@
 
 	</div>
 
-	<hr>
-	<a href="{% url 'start_page' %}">zur&#252;ck</a><br>
 
 
 {% endblock %}

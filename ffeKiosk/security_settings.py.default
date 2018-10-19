@@ -1,6 +1,7 @@
 
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '0'
@@ -10,14 +11,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = [] if DEBUG else ['localhost']
 
-#SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 
 
+DATABASE_NAME = 'myDatabase.sqlite3'
 DATABASES = {
-    'default': {
+    'default': { # SQLite
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME':  os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + 'x',
+        'NAME': os.path.join(BASE_DIR,DATABASE_NAME),
     }
 }
 
@@ -25,9 +29,19 @@ DATABASES = {
 SLACK_O_AUTH_TOKEN = ''
 SLACK_VERIFICATION_TOKEN = ''
 
+BACKUP = {
+    'active': True,
+    'backupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)),'backupFolderName'),
+    'sendWeeklyBackupToUsers': ['slackUserName',],
+}
 
-# E-Mails
-EMAIL_HOST = ''
-EMAIL_PORT = 0
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
+
+IMPRESSUM = { # As html code!
+	'personal_data': 'My Company', # Main Contact, for example a company name
+	'contact_data': 'Responsible Person Name <br><a href="mailto:address@company.com?Subject=My%20Subject">address@company.com</a>', # Specific person of responsibility
+}
+
+DATENSCHUTZ = { # As html code!
+	'responsibility': 'Person Name',
+	'cookies': '<ul><li>List of</li><li>My Cookies</li></ul>'
+}

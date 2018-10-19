@@ -1,118 +1,151 @@
 {% extends 'kiosk/base.html' %}	
 
+{% load widget_tweaks %}	
+
 {% block content %}
 	
-	<h3>Einzahlung / Auszahlung</h3>
+	<div class="page-header noMarginTop">
+		<h4>Einzahlungen & Auszahlungen</h4>
+	</div>
 
 
-	<div class="eingerueckt">
-
-		<div style="color: red">
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			W&#228;hle eine(n) Eink&#228;ufer(in) aus und es erscheint eine Eingabemaske zur Verbuchung einer Ein- oder Auszahlung.<br>
+			Klicke dazu den entsprechenden Modus in der Eingabemaske an. Ein Kommentar ist nicht n&#246;tig und kann leer gelassen werden. Mit einem Klick auf "Transaktion t&#228;tigen" wird die Eingabe verbucht.
 			<br>
+			<b>Tipp: </b>F&#252;r Auszahlungen ist manchmal ein Klick auf "Kontostand einblenden" hilfreich.
+		</div>
+	</div>
+
+
+	{% if errorMsg != '' and errorMsg != None %}
+		<p class="alert alert-danger">
 			{{errorMsg}}
-			<br><br>
-		</div>
+		</p>
+	{% endif %}
 
-		<div class="dropdown">
-			<button class="dropbtn">Person w&#228;hlen</button>
-			<div class="dropdown-content">
-				{% for item in allUsers %}
-					<a href="#" onclick="goOnWithUser({{item.id}},'{{item.username}}')">
+	{% if successMsg != '' and successMsg != None %}
+		<p class="alert alert-success">
+			{{successMsg}}
+		</p>
+	{% endif %}
+
+
+	<div class="dropdown">
+
+		<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			Eine Person ausw&#228;hlen
+			<span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
+			{% for item in allUsers %}
+				<li><a onclick="goOnWithUser({{item.id}},'{{item.username}}')">
 						{{item.username}} ({{item.first_name}} {{item.last_name}})
-					</a>
-				{% endfor %}
-			</div>
-		</div>
+					</a></li>
+			{% endfor %}
+		</ul>
+	</div>	
 
-		<script>
-			var tmp_user;
-			function goOnWithUser(userID,username) {
-				//$("div#divEingabeform").hide();
-				$("div#divEingabeform").show(200);
-				$("input#idUser").val(userID);
-				$("div#user").html(username);
-				$('button[name="KontostandAnzeige"]').html('Kontostand einblenden');
-				tmp_user = userID;
-			}
-		</script>
 
-		<script type="text/javascript">
-			function showKontostand() {
-				$(document).ready(
-					$.ajax({
-						type: "GET",
-						url: "{% url 'einzahlung_page' %}",
-						data: {'userID': tmp_user, 'getUserKontostand': true},
-						success: function(data){
-									$('button[name="KontostandAnzeige"]').html('Kontostand: '+ data);
-									setTimeout(
-										function(){
-											$('button[name="KontostandAnzeige"]').html('Kontostand einblenden');
-										}
-									,1000);
-								}
-					})
-				);
-			}
-		</script>	
+	<div id="divEingabeform" class="panel panel-default" style="display: none;">
 
 		<br>
 
-		<div id="divEingabeform" style="padding-left: 8vw;">
-			<br>
+		<div class="bigLink indented inline" id="user"></div>
+		&nbsp;&nbsp;
+		<button name="KontostandAnzeige" onclick="showKontostand()" class="btn btn-sm btn-outline-info">Kontostand einblenden</button>
+		
+		<br><br>
 
-			<div class="formDiv" id="user"></div>
-			&nbsp;&nbsp;<button name="KontostandAnzeige" onclick="showKontostand()" class="btn btn-sm btn-outline-info">Kontostand einblenden</button>
-				<br><br>
+		<form method="post" class="indented">
+            {% csrf_token %}
 
-			<form method="POST" class="">{% csrf_token %}
-				<input type="text" name="idUser" id="idUser" style="display: none" readonly>
 
-				<fieldset>
-					<input type="radio" name="typ" value="Einzahlung" id="Einzahlung">
-					<label for="Einzahlung">Einzahlung</label>
-					<input type="radio" name="typ" value="Auszahlung" id="Auszahlung">
-					<label for="Auszahlung">Auszahlung</label>
-				</fieldset>
+            {% render_field form.idUser style+="display: none;" %}
 
-				<table style="max-width:80%; border-spacing: 5px;text-align: left;">
-					<tr>
-						<td style="min-width: 110px"><label>Betrag 
-							<div style="display:inline;font-weight: normal;font-size:75%">
-								(xx.yy &#8364;)
-							</div></label>
-						</td>
-						<td><input type="text" name="betrag" 
-							id="betrag" class="form-control" 
-							style="width: 70px;display: inline;">
-						</td>
-					</tr>
-					<tr>
-						<td><label>Kommentar</label>
-						</td>
-						<td><textarea name="kommentar" rows="5" cols="150" wrap="soft"
-							id="kommentar" class="form-control" maxlength="500" 
-							style=""></textarea>
-						</td>
-					</tr>
-				</table>
+            <div class="form-group">
+                {{ form.typ.label_tag }}
+                {{ form.typ }}
+                <br>
+                {% if form.typ.errors %}
+                    <p class="alert alert-danger">{{ form.typ.errors.as_text }}</p>
+                {% endif %}
+                {% if form.typ.help_text %}
+                    <p class="alert alert-info">{{ form.typ.help_text|safe }}</p>
+                {% endif %}
+            </div>
 
-				<br>
-				<button type="submit" class="btn">Transaktion t&#228;tigen</button>
-			</form>	
+            <div class="form-group">
+                {{ form.betrag.label_tag }}
+                {{ form.betrag | attr:"class:form-control" | attr:"placeholder:x,yz €" }}
+                <br>
+                {% if form.betrag.errors %}
+                    <p class="alert alert-danger">{{ form.betrag.errors.as_text }}</p>
+                {% endif %}
+                {% if form.betrag.help_text %}
+                    <p class="alert alert-info">{{ form.betrag.help_text|safe }}</p>
+                {% endif %}
+            </div>
 
-			<script type="text/javascript">
-				$(document).ready(function(){
-					$("div#divEingabeform").hide();
-				});
-			</script>
+            <div class="form-group">
+                {{ form.kommentar.label_tag }}
+                {{ form.kommentar | attr:"class:form-control" | attr:"rows:5"}}
+                <br>
+                {% if form.kommentar.errors %}
+                    <p class="alert alert-danger">{{ form.kommentar.errors.as_text }}</p>
+                {% endif %}
+                {% if form.kommentar.help_text %}
+                    <p class="alert alert-info">{{ form.kommentar.help_text|safe }}</p>
+                {% endif %}
+            </div>
 
-		</div>
+            
+            <input type="submit" class="btn btn-primary" value="Transaktion t&#228;tigen" />  
+        </form>
 
 	</div>
 
+	<br>
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
 
+
+{% endblock %}
+
+{% block javascript %}
+
+	<script type="text/javascript">
+
+		var tmp_user;
+		function goOnWithUser(userID,username) {
+			$("div#divEingabeform").show(400);
+			$('input[name="idUser"]').val(userID);
+			$("div#user").html(username);
+			tmp_user = userID;
+		}
+	
+		function showKontostand() {
+			$(document).ready(
+				$.ajax({
+					type: "GET",
+					url: "{% url 'einzahlung_page' %}",
+					data: {'userID': tmp_user, 'getUserKontostand': true},
+					success: function(data){
+						$('button[name="KontostandAnzeige"]').html('Kontostand: '+ data);
+						setTimeout(
+							function(){
+								$('button[name="KontostandAnzeige"]').html('Kontostand einblenden');
+							}
+						,1000);
+					}
+				})
+			);
+		}
+
+	</script>	
 
 {% endblock %}

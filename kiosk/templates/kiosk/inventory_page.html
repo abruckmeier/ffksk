@@ -3,42 +3,56 @@
 
 {% block content %}
 	
-	<h4> Inventur durchf&#252;hren: </h4>
-	<br>
-	<div class="eingerueckt">
-
-		<form method="POST">{% csrf_token %}
-			<table class="konto">
-				<tr class="konto">
-					<th class="konto" style="width:50px;text-align: center;">Beachten?</th>
-					<th class="konto" style="min-width:50px;text-align: center;">Item</th>
-					<th class="konto" style="width:100px;text-align: center;"># Soll</th>
-					<th class="konto" style="width:100px;text-align: center;"># Ist</th>
-				</tr>
-				{% for item in inventoryList %}
-				<tr class="konto">
-					<td class="konto" style="text-align: center;">
-						<input type="checkbox" id="{{item.checkbutton_id_name}}" name="{{item.checkbutton_id_name}}" value="yes" checked>
-					</td>
-					<td class="konto" style="text-align: right;">{{item.produkt_name}}</td>
-					<td class="konto" style="text-align: center;">{{item.anzahl}}</td>
-					<td class="konto" style="text-align: center;">
-						<input type="text" name="{{item.count_id_name}}" id="{{item.count_id_name}}" value="{{item.anzahl}}" style="width: 50px;">					
-					</td>
-				</tr>
-				{% endfor %}
-			</table>
-			<br><br>
-			<button type="submit" class="btn" style="font-weight: bold;font-size: 100%;">
-				Inventur abschicken
-			</button>
-
-		</form>
-
+	<div class="page-header noMarginTop">
+		<h4>Inventur durchf&#252;hren</h4>
 	</div>
 
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Z&#228;hle alle Produkte im Kiosk und trage die jeweilige Anzahl beim Produkt in die Spalte "# Ist". Der Wert darf gr&#246;&#223;er oder kleiner sein als der Wert in Spalte "# Soll". Du kannst auch nur eine Teil-Inventur machen und nur bestimmte Artikel z&#228;hlen.
+			<br>
+			<b>Bitte beachte: </b>Bevor du mit der Inventur beginnst, lade bitte die Seite neu, so dass du den aktuellen "# Soll"-Stand hast.
+			<br>
+			Sollte ein Produkt im Kiosk vorhanden sein, aber das Produkt ist nicht hier aufgelistet, dann f&#252;hre eine <a href="{% url 'rueckbuchungen_user_page' userID=4 %}">R&#252;ckbuchung des Produkts vom Benutzer "Kiosk-Dieb"</a> durch.
+			<!-- Be careful here! This link is only valid when "Kiosk-Dieb" is installed on ID 4 in the database!-->
+		</div>
+	</div>
+
+	<form method="POST">{% csrf_token %}
+		<table class="table table-striped smallText autoSize">
+			<tr>
+				<th>Beachten?</th>
+				<th>Produkt</th>
+				<th># Soll</th>
+				<th># Ist</th>
+			</tr>
+			{% for item in inventoryList %}
+			<tr">
+				<td>
+					<input type="checkbox" id="{{item.checkbutton_id_name}}" name="{{item.checkbutton_id_name}}" value="yes" checked>
+				</td>
+				<td>{{item.produkt_name}}</td>
+				<td>{{item.anzahl}}</td>
+				<td>
+					<input type="text" name="{{item.count_id_name}}" id="{{item.count_id_name}}" value="{{item.anzahl}}" style="width: 50px;">					
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+
+		<button type="submit" class="btn btn-primary" style="font-weight: bold;font-size: 100%;">
+			Inventur abschicken
+		</button>
+
+	</form>
+
+
+	<br>
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
 
 
 	

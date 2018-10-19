@@ -1,4 +1,5 @@
 select
+	a.kaeufer_id as kaeufer_id,
 	b.id as produkt_id,
 	b.produktName as produkt_name,
 	count(*) as anzahl_gekauft

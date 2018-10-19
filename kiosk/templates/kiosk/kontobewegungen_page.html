@@ -2,46 +2,53 @@
 
 {% block content %}
 	
-	<h4> Meine Kontobewegungen: </h4>
-	<br>
-	<div class="eingerueckt">
+	<div class="page-header noMarginTop">
+		<h4>Meine Kontobewegungen</h4>
+	</div>
+	
+
+	<div>
+
+		<div class="panel panel-default panel-body smallText justified">
+			<div class="bigLink">Kontostand: {{kontostand | floatformat:2}} &#8364;</div>
+		</div>
 
 		{% if prevpage >= 1 %}
-			<a href="{% url 'kontobewegungen_page_next' s=prevpage %}">j&#252;nger</a>
+			<a href="{% url 'kontobewegungen_page_next' s=prevpage %}"><span class="bigCaretUp"></span></a>
+			<br>
 		{% else %}
 			<br>
 		{% endif %}
+		<br>
 
-		<table class="konto">
-			<tr class="konto">
-				<th class="konto" style="width:30px;text-align: center;">#</th>
-				<th class="konto" style="width:50px;text-align: right;">&#8364;</th>
-				<th class="konto" style="min-width:100px;;text-align: center;">Time</th>
-				<th class="konto">Comment</th>
+		<table class="table table-striped smallText autoSize">
+			<tr>
+				<th>#</th>
+				<th>Betrag</th>
+				<th>Zeit</th>
+				<th>Kommentar</th>
 			</tr>
+
 			{% for item in kontobewegungen %}
-			<tr class="konto">
-				<td class="konto" style="text-align: center;">{{item.AutoTrans_ID}}</td>				
-				<td class="konto" style="text-align: right;"><b>{{item.betrag | floatformat:2}}</b></td>
-				<td class="konto" style="text-align: center;">{{item.datum}}</td>
-				<td class="konto">{{item.kommentar}}</td>
-			</tr>
+				<tr>
+					<td>{{item.AutoTrans_ID}}</td>				
+					<td class="bold">{{item.betrag | floatformat:2}} &#8364;</td>
+					<td>{{item.datum | date:"d.m.Y H:i"}}</td>
+					<td>{{item.kommentar}}</td>
+				</tr>
 			{% endfor %}
 		</table>
 
 		{% if nextpage <= maxpage %}
-		<a href="{% url 'kontobewegungen_page_next' s=nextpage %}">&#228;lter</a>
+			<a href="{% url 'kontobewegungen_page_next' s=nextpage %}"><span class="bigCaret"></span></a>
 		{% else %}
 			<br>
 		{% endif %}
 
-		<br><br>
-		Stand: <b> {{kontostand | floatformat:2}} &#8364; </b>
-
 	</div>
 
 	<hr>
-	<a href="{% url 'home_page' %}">zur&#252;ck</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a>
 
 
 	

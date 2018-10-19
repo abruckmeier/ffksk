@@ -1,38 +1,47 @@
 {% extends 'kiosk/base.html' %}	
 
+{% load widget_tweaks %}
+
 {% block content %}
 
-    <h4>Login</h4>
-    <br>
-
-    <div class="eingerueckt">
-	
-    	{% if form.errors %}
-            <p>Your username and password didn't match. Please try again.</p>
-        {% endif %}
-
-        <form method="post" action="{% url 'login' %}">
-        {% csrf_token %}
-            <table style="width: 70%;border-spacing: 10px;text-align: left;">
-            <tr>
-                <td>{{ form.username.label_tag }}</td>
-                <td>{{ form.username }}</td>
-            </tr>
-            <tr>
-                <td>{{ form.password.label_tag }}</td>
-                <td>{{ form.password }}</td>
-            </tr>
-            </table>
-
-            <input type="submit" class="btn" value="Login" />
-            <input type="hidden" name="next" value="{{ next }}" />
-        </form>
-
-        <p>Ich habe mein Passwort vergessen. <a href="{% url 'password_reset' %}">Zurücksetzen.</a></p>
-
+    <div class="page-header noMarginTop">
+        <h4>Login</h4>
     </div>
 
+    {% if form.errors %}
+        <p class="alert alert-danger">
+            Dein Benutzername und Passwort stimmen nicht &#252;berein. Versuche es noch einmal.
+        </p>
+    {% endif %}
+
+
+
+    <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+        <div class="form-group">
+            {{ form.username.label_tag }}
+            {{ form.username | add_class:"form-control" }}
+            <p class="help-block">Dies ist meistens dein Slack-Name.</p>
+        </div>
+        <div class="form-group">
+            {{ form.password.label_tag }}
+            {{ form.password | add_class:"form-control" }}
+        </div>
+        
+
+        <input type="submit" class="btn btn-primary" value="Login" />
+        <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+
+    <br>
+
+
+    <p>Ich habe mein Passwort vergessen. <a class="bigLink" href="{% url 'password_reset' %}">Zur&#252;cksetzen.</a></p>
+    <p>Ich besitze noch kein Konto. <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Registrieren.</a></p>
+
+
+
     <hr>
-    <a href="{% url 'start_page' %}">zur&#252;ck</a><br>
+    <a class="bigLink" href="{% url 'start_page' %}">zur&#252;ck</a>
 
 {% endblock %}

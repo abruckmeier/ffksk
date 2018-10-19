@@ -1,0 +1,17 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+
+    <div class="page-header noMarginTop">
+        <h4>Datum der Kontodeaktivieren <small>Erfolg!</small></h4>
+    </div>
+
+    <p class="alert alert-success">
+    	Das Datum der Deaktivierung deines Kontos wurde erfolgreich auf {{ newDate }} eingestellt.
+    </p>
+
+
+    <hr>
+    <a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+{% endblock %}
