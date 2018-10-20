@@ -35,18 +35,19 @@
 	</head>
 	<body>
 
-		
-		<div class="container-fluid divTopIcon">
-			<img src="{% static 'img/icon.gif' %}" height="90px" />
-		</div>
+		{% if not excludeTopIcon %}
+			<div class="container-fluid divTopIcon">
+				<img src="{% static 'img/icon.gif' %}" height="90px" />
+			</div>
+		{% endif %}
+
+
 
 		<div class="container-fluid divTopHeading">
 			<a class="aTopHeading" href="{% url 'start_page' %}">
 				<h2 class="bold">Kiosk</h2>
 			</a>
 		</div>
-
-
 
 
 

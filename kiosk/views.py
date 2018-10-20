@@ -92,7 +92,9 @@ def start_page(request):
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
 		'admins': admins, 'accountants': accountants, 
 		'chart_DaylyVkValue': Chart_UmsatzHistorie(), 
-		'news': news,})
+		'news': news,
+		'excludeTopIcon': True,
+		})
 
 
 @login_required

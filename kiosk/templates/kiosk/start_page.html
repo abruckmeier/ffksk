@@ -1,4 +1,5 @@
 {% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
 
 {% block content %}
 
@@ -13,19 +14,26 @@
 		</h4>
 	</div>
 
-	<div class="justified">
-		<p>
-			Diese Plattform unterst&#252;tzt die FfE'ler beim Betreiben und Verwalten des gemeinschaftlichen Kiosks im Lagerraum neben der K&#252;che.
-			Jeder Mitarbeitende und Studierende ist herzlich eingeladen, beizutreten und den Kiosk zu nutzen.
-		</p>
-		<p>
-			Alle wichtigen Informationen zum Kiosk findest du unter <a class="bigLink" href="{% url 'anleitung_page' %}">Info & Erste Schritte.</a>
-		</p>
-		<p>
-			Du m&#246;chtest beitreten? Erstelle unter <a class="bigLink" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a> dein Nutzerkonto.
-		</p>
-	</div>
+	<div class="row">
 
+		<div class="col-xs-12 col-sm-8 col-lg-7 justified margingPadding justified">
+			Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten in kleine Arbeitspakete aufteilen. 
+			<!--Der Kiosk wirtschaftet gemeinwohlorientiert: Produkte werden möglichst zu üblichen Supermarktpreisen verkauft. Die Besorgung von Waren wird bei Sparangeboten durchgeführt.
+			Von den Gewinnen werden durchgeführte Tätigkeiten für den Kiosk entlohnt, verbleibende Überschüsse werden jährlich gespendet.-->
+			<br>
+			Jeder FfE'ler ist herzlich eingeladen, dem Kiosk beizutreten, zu nutzen und zu unterstützen!
+			<br>
+			<br>
+			<a class="btn btn-primary" href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
+			&nbsp;
+			<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+		</div>
+
+		<div class="col-xs-10 col-sm-4 col-lg-5">
+			<img src="{% static 'img/icon.gif' %}" style="max-width: 100%; max-height: 100%; max-height: 150px;" />
+		</div>
+
+	</div>
 
 
 	<div class="page-header">
