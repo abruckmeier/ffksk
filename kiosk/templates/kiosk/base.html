@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <html>
 	<head>
-		<title>FfE-Kiosk</title>
+		<title>Kiosk</title>
 
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
@@ -35,9 +35,14 @@
 	</head>
 	<body>
 
+		
+		<div class="container-fluid divTopIcon">
+			<img src="{% static 'img/icon.gif' %}" height="90px" />
+		</div>
+
 		<div class="container-fluid divTopHeading">
 			<a class="aTopHeading" href="{% url 'start_page' %}">
-				<h2 class="bold">FfE-Kiosk</h2>
+				<h2 class="bold">Kiosk</h2>
 			</a>
 		</div>
 
