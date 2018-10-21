@@ -169,6 +169,10 @@ table.autoSize {
 /* -------------------------------------- */
 /* Class Styles */
 
+.styleColor{
+    color: #96858f;
+}
+
 .bold {
     font-weight: bold;
 }

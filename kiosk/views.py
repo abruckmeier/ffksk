@@ -1039,6 +1039,18 @@ def anleitung(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
+def regelwerk(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/regelwerk_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
 @login_required
 @permission_required('profil.do_verwaltung',raise_exception=True)
 def rueckbuchung(request):

@@ -28,6 +28,7 @@ urlpatterns = [
 	url(r'^menu/produktKommentare/$', views.produktKommentare, name = 'produkt_kommentare_page'),
 	url(r'^menu/produktKommentieren/(?P<s>\d+)/$', views.produktKommentieren, name='produkt_kommentieren_page'),
 	url(r'^menu/anleitung/$', views.anleitung, name = 'anleitung_page'),
+	url(r'^menu/regelwerk/$', views.regelwerk, name = 'regelwerk_page'),
 	url(r'^menu/rueckbuchung/$', views.rueckbuchung, name = 'rueckbuchungen_page'),
 	url(r'^menu/rueckbuchung/(?P<userID>\d+)/$', views.rueckbuchung_user, name = 'rueckbuchungen_user_page'),
 	url(r'^menu/slackComTest/$', views.slackComTest, name = 'slackComTest_page'),
