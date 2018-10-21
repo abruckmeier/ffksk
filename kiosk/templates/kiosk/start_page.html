@@ -76,12 +76,12 @@
 
 	{% if not user.is_authenticated %}
 
-		<div class="panel panel-default">
+		<div class="smallPadding">
 			Hier geht es zum
 			<a class="bigLink" href="{% url 'login' %}">Login.</a>
 		</div>
 
-		<div class="panel panel-default">
+		<div class="smallPadding">
 			Hier geht es zur
 			<a class="bigLink" href="{% url 'neuerNutzer_page' %}">Registrierung</a>
 			f&#252;r neue Nutzer.
@@ -90,20 +90,20 @@
 	{% else %}
 
 		{% if perms.profil.perm_kauf %}
-			<div class="panel panel-default">
+			<div class="smallPadding">
 				Ein Produkt
 				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
 			</div>
 		{% endif %}
 
 		{% if perms.profil.do_einkauf %}
-			<div class="panel panel-default">
+			<div class="smallPadding">
 				Eine 
 				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
 			</div>
 		{% endif %}
 
-		<div class="panel panel-default">
+		<div class="smallPadding">
 			Hier geht es zum
 			<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
 		</div>
