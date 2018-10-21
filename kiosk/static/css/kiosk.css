@@ -214,6 +214,11 @@ table.autoSize {
 .padding {
     padding: 2vw;
 }
+
+.smallPadding {
+    padding: 5px;
+}
+
 .marginPadding {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -222,7 +227,7 @@ table.autoSize {
 }
 
 .sideMenu {
-    background-color: #f8f8f8;
+    /*background-color: #fff;*/
     border: 1px solid #f1f1f1;
     border-radius: 5px;
     padding: 1vw;
