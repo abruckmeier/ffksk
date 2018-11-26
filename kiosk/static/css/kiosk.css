@@ -194,6 +194,10 @@ table.autoSize {
     font-size: 115%;
 }
 
+.bigger {
+    font-size: 105%;
+}
+
 .code {
     padding: 5px;
     padding-left: 5vw;

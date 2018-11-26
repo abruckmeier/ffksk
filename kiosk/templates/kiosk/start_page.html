@@ -15,21 +15,40 @@
 	</div>
 
 	<div class="row">
-		<div class="col-xs-10 col-sm-5 col-lg-5">
-			<img src="{% static 'img/only-icon.gif' %}" style="opacity: 0.7; max-width: 100%; max-height: 100%; max-height: 110px;" />
-		</div>
-
 		<div class="col-xs-12 col-sm-7 col-lg-7 margingPadding justified">
-			Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten in kleine Arbeitspakete aufteilen. 
-			<!--Der Kiosk wirtschaftet gemeinwohlorientiert: Produkte werden möglichst zu üblichen Supermarktpreisen verkauft. Die Besorgung von Waren wird bei Sparangeboten durchgeführt.
-			Von den Gewinnen werden durchgeführte Tätigkeiten für den Kiosk entlohnt, verbleibende Überschüsse werden jährlich gespendet.-->
-			<br>
-			Jeder FfE'ler ist herzlich eingeladen, dem Kiosk beizutreten, zu nutzen und zu unterstützen!
-			<br>
-			<br>
-			<a class="btn btn-primary" href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
-			&nbsp;
-			<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+			<div class="panel panel-default">
+				<div class="panel-body justified bigger" style="background: white;">
+				<p>
+				Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten in kleine Arbeitspakete aufteilen. 
+				<br>
+				Jeder FfE'ler ist herzlich eingeladen, dem Kiosk beizutreten, zu nutzen und zu unterstützen!
+				</p>
+				<p>
+				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Infos</a>
+				&nbsp;
+				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Erste Schritte</a>
+				&nbsp;
+				<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+				</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-xs-10 col-sm-5 col-lg-5">
+			<div class="panel panel-default">
+				<div class="panel-body justified bigger" style="background: white;">
+					<b>Tritt unseren Slack-Channels bei!</b>
+					<table>
+						<tr>
+							<td>
+								<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
+							</td>
+							<td>
+								<a class="btn btn-default" href="#">Mehr Infos</a>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
 		</div>
 	</div>
 
