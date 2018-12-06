@@ -23,8 +23,7 @@
 	</div>
 
 
-	{% if not formset %}
-	<!-- Das klappt noch nicht -->
+	{% if formset.initial_form_count == 0 %}
 		<table class="table table-striped smallText">
 			<tr><th>keine K&#228;ufe bisher</th></tr>
 		</table>
