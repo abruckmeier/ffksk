@@ -1039,6 +1039,30 @@ def anleitung(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
+def ersteSchritte(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/ersteschritte_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+def slackInfos(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/slackinfo_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
 def regelwerk(request):
 
 	# Hole den Kioskinhalt

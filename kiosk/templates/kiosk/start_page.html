@@ -15,7 +15,7 @@
 	</div>
 
 	<div class="row">
-		<div class="col-xs-12 col-sm-7 col-lg-7 margingPadding justified">
+		<div class="col-xs-12 col-sm-12 col-lg-7 margingPadding justified">
 			<div class="panel panel-default">
 				<div class="panel-body justified bigger" style="background: white;">
 				<p>
@@ -24,16 +24,20 @@
 				Jeder FfE'ler ist herzlich eingeladen, dem Kiosk beizutreten, zu nutzen und zu unterstützen!
 				</p>
 				<p>
-				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Infos</a>
+				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Mehr Infos</a>
 				&nbsp;
-				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Erste Schritte</a>
-				&nbsp;
+				<a class="btn btn-default" href="{% url 'ersteschritte_page' %}">Erste Schritte</a>
+				<br><br>
 				<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+				&nbsp;
+				<a class="btn btn-default" href="{% url 'login' %}">Login</a>
+				
+				
 				</p>
 				</div>
 			</div>
 		</div>
-		<div class="col-xs-10 col-sm-5 col-lg-5">
+		<div class="col-xs-10 col-sm-10 col-lg-5">
 			<div class="panel panel-default">
 				<div class="panel-body justified bigger" style="background: white;">
 					<b>Tritt unseren Slack-Channels bei!</b>
@@ -43,7 +47,7 @@
 								<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
 							</td>
 							<td>
-								<a class="btn btn-default" href="#">Mehr Infos</a>
+								<a class="btn btn-default" href="{% url 'slackinfo_page' %}">Mehr Infos</a>
 							</td>
 						</tr>
 					</table>
