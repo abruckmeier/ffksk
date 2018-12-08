@@ -27,7 +27,7 @@
 			<br>
 			Du solltest nach Registrierung per Slack-Nachricht dazu aufgefordert werden, deinen Kiosk-Account zu verifizieren. Folge einfach den Anweisungen in der Nachricht.
 			<br>
-			Sollte etwas nicht klappen, kontaktiere einen <a class="bold" href="#">Administrator.</a>
+			Sollte etwas nicht klappen, kontaktiere einen <a class="bigLink" href="{% url 'start_page' %}">Administrator.</a>
 		</div>
 		<div class="col-xs-12 col-sm-2 col-lg-1 justified">
 		</div>
@@ -40,7 +40,7 @@
 			<span class="bigLink styleColor">2. Einzahlung</span>
 			<br>
 			Gehe zu einem Verwalter und bezahle bei diesem Geld ein. Der Betrag wird dann auf dein Konto verbucht. Als Bestätigung erhälst du eine Slack-Nachricht.
-			Deinen Kontostand und weitere wichtige Informationen und Einstellungen kannst du in deinem <a class="bold" href="#">persönlichen Bereich</a> einsehen.
+			Deinen Kontostand und weitere wichtige Informationen und Einstellungen kannst du in deinem <a class="bold" href="{% url 'home_page' %}">persönlichen Bereich</a> einsehen.
 		</div>
 	</div>
 
@@ -48,13 +48,13 @@
 		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
 			<span class="bigLink styleColor">3. Einkaufen im Kiosk</span>
 			<br>
-			Zum Kaufen, <a href="#">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink"><a href="#">per Slack verbuchen.</a></span> Gib dazu einfach den <i>Slash-Befehl</i>
+			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">per Slack verbuchen.</span> Gib dazu einfach den <i>Slash-Befehl</i>
 			<p class="panel panel-default code">
 				/kiosk buy
 			</p>
 			ein. Der Slack-Bot gibt dir dann weitere Hilfestellung.
 			<br>
-			Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte einen <a href="#">Administrator</a>. Dieser k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.			
+			Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte einen <a class="bigLink" href="{% url 'home_page' %}">Administrator</a>. Dieser k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.			
 		</div>
 		<div class="col-xs-12 col-sm-2 col-lg-1 justified">
 		</div>
@@ -67,13 +67,13 @@
 			<span class="bigLink styleColor">4. Mithelfen</span>
 			<br>
 			Du bist herzlich eingeladen, <i>Eink&#228;ufer</i> zu werden und gegen Provision Besorgungen f&#252;r das Kiosk durchzuf&#252;hren. 
-			Das Kiosk-System &#252;berpr&#252;ft automatisch, welche Produkte demn&#228;chst zu Neige gehen und generiert <a class="bold" href="#">Einkaufslisten</a>. 
+			Das Kiosk-System &#252;berpr&#252;ft automatisch, welche Produkte demn&#228;chst zu Neige gehen und generiert <a class="bold" href="{% url 'offeneEkListe_page' %}">Einkaufslisten</a>. 
 			Au&#223;erdem werden vom Kiosk-Bot Benachrichtigungen über neue Einkaufslisten in den <span class="bold">#kiosk_bot</span>-Channel auf Slack gepostet.
 			<br> 
 			M&#246;chtest du eines oder mehrere dieser Einkaufslisten abarbeiten, dann gehe folgendermaßen vor:
 			<ul>
 			<li>
-			Pinne zunächst unter <a class="bold" href="#">Besorgungen ank&#252;ndigen</a> diese Einkaufslisten in deine <a class="bold" href="#">persönliche Einkaufsliste.</a>. 
+			Pinne zunächst unter <a class="bold" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a> diese Einkaufslisten in deine <a class="bold" href="{% url 'meine_einkaufe_page' %}">persönliche Einkaufsliste.</a>. 
 			Dort kannst du deine Listen verwalten. 
 			Die gepinnten Einkaufslisten verbleiben <span class="boldLink">l&#228;ngstens sieben Tage</span> dort, so lange hast du Zeit, diese  Besorgungen durchzuf&#252;hren. 
 			Danach wird das Einkaufspaket wieder f&#252;r alle Eink&#228;ufer zum Einkauf freigegeben. 
@@ -93,7 +93,7 @@
 			Die H&#246;he der Provision ist die H&#228;lfte des Betrags, welcher nach dem Einkauf vom verf&#252;gbaren Budgets der Einkaufsliste bleibt.
 			</li>
 			<li>
-			Bei Auswahl eines Produkts unter <a href="#">Besorgungen ank&#252;ndigen</a> wird ein Kommentar mit Informationen und Tipps zum Einkauf angezeigt. Unter <a href="#">Produkte kommentieren</a> kann selbst ein Hinweis f&#252;r alle anderen Eink&#228;ufer zum Kauf eines Produktes gegeben werden. Wichtige, weiterzugebende Informationen sind zum Beipsiel: L&#228;den mit g&#252;nstigen Preisen und Angeboten, wo und wann dieses Produkt am besten gekauft werden kann, Vorteilspackungen, ...
+			Bei Auswahl eines Produkts unter <a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a> wird ein Kommentar mit Informationen und Tipps zum Einkauf angezeigt. Unter <a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a> kann selbst ein Hinweis f&#252;r alle anderen Eink&#228;ufer zum Kauf eines Produktes gegeben werden. Wichtige, weiterzugebende Informationen sind zum Beipsiel: L&#228;den mit g&#252;nstigen Preisen und Angeboten, wo und wann dieses Produkt am besten gekauft werden kann, Vorteilspackungen, ...
 			</li>
 			</ul>
 		</div>

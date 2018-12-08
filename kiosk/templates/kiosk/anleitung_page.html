@@ -33,10 +33,10 @@
 		<div class="col-xs-12 col-sm-7 col-lg-6 justified smallPadding">
 			<span class="bigLink styleColor">Spende für einen guten Zweck durch Nutzung des Kiosks</span>
 			<br>
-			Durch deinen Einkauf im Kiosk <span class="bigLink">unterstützt du die <a href="#">Tätigkeiten von Pater Gerhard in Mandeni:</a></span>
+			Durch deinen Einkauf im Kiosk <span class="bigLink">unterstützt du die <a href="http://www.bsg.org.za/startseite.html">Tätigkeiten von Pater Gerhard in Mandeni:</a></span>
 			Erwirtschaftete Profite und Spenden werden jährlich für seine Entwicklungsarbeit gespendet.
 			<br>
-			Zum Kaufen, <a href="#">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink"><a href="#">per Slack verbuchen.</a></span>
+			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">per Slack verbuchen.</span>
 		</div>
 		<div class="col-xs-12 col-sm-5 col-lg-6 justified smallPadding">
 			<img src="{% static 'img/principle-buy.png' %}" style="opacity: 0.7; max-width: 100%; max-height: 100%; max-height: 300px;" />
@@ -51,9 +51,9 @@
 		<div class="col-xs-12 col-sm-7 col-lg-6 justified smallPadding">
 			<span class="bigLink styleColor">Unterstütze den Kiosk durch deine Mithilfe</span>
 			<br>
-			Schnappe dir eine vom Kiosk generierte <span class="bigLink"><a href="#">Einkaufsliste</a></span> und gehe damit einkaufen.
+			Schnappe dir eine vom Kiosk generierte <span class="bigLink"><a href="{% url 'meine_einkaufe_page' %}">Einkaufsliste</a></span> und gehe damit einkaufen.
 			Kaufe nach Möglichkeit zu <span class="bigLink">Angebots-/ und Sparpreisen</span> ein und lagere deine Einkäufe im Kiosk ein. Mit der <span class="bigLink">Vorlage des Kassenzettels bei einem Verwalter</span> wird dir der Betrag rückerstattet.
-			Außerdem bekommst du eine <span class="bigLink"><a href="#">Entlohnung,</a></span> anteilig am reduzierten Warenwert.
+			Außerdem bekommst du eine <span class="bigLink"><a href="{% url 'ersteschritte_page' %}">Entlohnung,</a></span> anteilig am reduzierten Warenwert.
 		</div>
 	</div>
 
@@ -62,10 +62,10 @@
 		<div class="col-xs-12 col-sm-7 col-lg-6 justified smallPadding">
 			<span class="bigLink styleColor">Verwalte deinen Kiosk-Account</span>
 			<br>
-			Geld zur <span class="bigLink">Aufstockung deines Kiosk-Guthabens</span> kannst du bei einem Verwalter einbezahlen. Dieser verbucht es auf dein Konto. Deinen Kontostand kannst du in deinem <a class="bold" href="#">persönlichen Bereich</a> einsehen.
+			Geld zur <span class="bigLink">Aufstockung deines Kiosk-Guthabens</span> kannst du bei einem Verwalter einbezahlen. Dieser verbucht es auf dein Konto. Deinen Kontostand kannst du in deinem <a class="bold" href="{% url 'home_page' %}">persönlichen Bereich</a> einsehen.
 			<br>
-			Halte deinen Account aktuell: Bei der Registrierung hast du dein <a class="bold" href="#">Austrittsdatum</a> hinterlegt. Nach diesem Datum dein Account inaktiv. Rechtzeitig vor Ende wird dir per Slack mitgeteilt, dein restliches Guthaben auszahlen zu lassen.
-			Wenn sich dein <span class="bigLink">Beschäftigungsverhältnis verlängert,</span> denke daran, dieses Datum in den Einstellungen deines <a class="bold" href="#"> persönlichen Bereichs</a> anzupassen.
+			Halte deinen Account aktuell: Bei der Registrierung hast du dein <a class="bold" href="{% url 'angestellt_bis_change' %}">Austrittsdatum</a> hinterlegt. Nach diesem Datum dein Account inaktiv. Rechtzeitig vor Ende wird dir per Slack mitgeteilt, dein restliches Guthaben auszahlen zu lassen.
+			Wenn sich dein <span class="bigLink">Beschäftigungsverhältnis verlängert,</span> denke daran, dieses Datum in den Einstellungen deines <a class="bold" href="{% url 'home_page' %}"> persönlichen Bereichs</a> anzupassen.
 		</div>
 		<div class="col-xs-12 col-sm-5 col-lg-6 justified">
 			<img src="{% static 'img/principle-einzahlung.png' %}" style="opacity: 0.7; max-width: 100%; max-height: 100%; max-height: 300px;" />
