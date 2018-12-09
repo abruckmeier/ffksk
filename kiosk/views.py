@@ -211,7 +211,7 @@ def kauf_page(request):
 	if request.method == "POST":
 
 		wannaBuyItem = request.POST.get("produktName")
-		retVal = Kiosk.buyItem(wannaBuyItem,request.user)
+		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web')
 		buySuccess = retVal['success']
 
 		retVal['msg'] = retVal['msg'][-1]

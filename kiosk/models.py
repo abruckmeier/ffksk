@@ -280,7 +280,7 @@ class Kiosk(models.Model):
 
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
-	def buyItem(wannaBuyItem,user):
+	def buyItem(wannaBuyItem,user,gekauft_per='ubk'):
 		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0}
 
 		# First, look in Kiosk.
@@ -333,7 +333,7 @@ class Kiosk(models.Model):
 			bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
 			einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
 			verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis,
-			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices)
+			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices, gekauft_per=gekauft_per)
 
 		# Produkt in Tabell 'Kiosk' loeschen
 		Kiosk.objects.get(kiosk_ID=item.pk).delete()
@@ -368,6 +368,9 @@ class Gekauft(models.Model):
 		KioskUser,on_delete=models.CASCADE,related_name='gekauft_kaeufer')
 	# Verkaufspreis ist eigentlich nicht noetig, ergibt sich aus Relationen, die Dokumentationstabellen sollen aber sicherheitshalber diese Info speichern (zum Schutz vor Loesuchungen in anderen Tabellen).
 	verkaufspreis = models.IntegerField(validators=[MinValueValidator(0)])
+
+	kaufarten = (('slack','slack'),('web','web'),('ubk','unbekannt'),('dieb','dieb'))
+	gekauft_per = models.CharField(max_length=6,default='ubk',choices=kaufarten)
 
 	def __str__(self):
 		price = '%.2f' % (self.verkaufspreis/100)
@@ -674,7 +677,7 @@ class ZuVielBezahlt(models.Model):
 					buyItem = item["produkt_name"]
 
 					for x in range(0,diff):
-						retVal = Kiosk.buyItem(buyItem,user)
+						retVal = Kiosk.buyItem(buyItem,user,gekauft_per='dieb')
 
 					report.append({'id': item["id"], 
 						'produkt_name': item["produkt_name"], 
