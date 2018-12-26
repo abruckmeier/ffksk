@@ -896,6 +896,9 @@ def statistics(request):
 	kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
 	kioskBankValue = kioskBankValue.stand / 100.0
 
+	gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
+	gespendet = gespendet.stand / 100.0
+
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
 	bargeld = - bargeld.stand / 100.0
 	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
@@ -918,7 +921,7 @@ def statistics(request):
 	bargeld_Dieb = - bargeld_Dieb.stand / 100.0
 
 	# Gewinn & Verlust
-	theoAlloverProfit = vkValueAll - ekValueAll
+	theoAlloverProfit = vkValueAll - ekValueAll - gespendet
 	theoProfit = vkValueKiosk + kioskBankValue
 	buyersProvision = theoAlloverProfit - theoProfit
 
@@ -962,7 +965,7 @@ def statistics(request):
 		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit, 
 		'theoProfit': theoProfit, 'buyersProvision': buyersProvision, 
 		'adminsProvision': adminsProvision, 'profitHandback': profitHandback, 
-		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit}) 
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet, }) 
 
 
 
