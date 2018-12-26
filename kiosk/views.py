@@ -921,9 +921,9 @@ def statistics(request):
 	bargeld_Dieb = - bargeld_Dieb.stand / 100.0
 
 	# Gewinn & Verlust
-	theoAlloverProfit = vkValueAll - ekValueAll - gespendet
+	theoAlloverProfit = vkValueAll - ekValueAll
 	theoProfit = vkValueKiosk + kioskBankValue
-	buyersProvision = theoAlloverProfit - theoProfit
+	buyersProvision = theoAlloverProfit - theoProfit - gespendet
 
 	adminsProvision = 0
 	profitHandback = 0

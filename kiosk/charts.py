@@ -165,16 +165,16 @@ class Chart_Profits(Chart):
 		bargeld_Dieb = Kontostand.objects.get(nutzer__username='Bargeld_Dieb')
 		bargeld_Dieb = - bargeld_Dieb.stand / 100.0
 
-		theoAlloverProfit = vkValueAll - ekValueAll - gespendet
+		theoAlloverProfit = vkValueAll - ekValueAll
 		theoProfit = vkValueKiosk + kioskBankValue
-		buyersProvision = theoAlloverProfit - theoProfit
+		buyersProvision = round(theoAlloverProfit - theoProfit - gespendet,2)
 		adminsProvision = 0
 		profitHandback = 0
 		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
 		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
 		for item in unBezahlt:
 			if item['what'] == 'Dieb': stolenValue = item['preis']
-		expProfit = theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback
+		expProfit = round(theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback,2)
 
 		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit, gespendet]
 
