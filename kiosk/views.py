@@ -6,8 +6,10 @@ from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Pro
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
+
+from slackclient import SlackClient
 
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
 from django.contrib.auth.decorators import login_required, permission_required
@@ -602,6 +604,46 @@ def neuerNutzer_page(request):
 
 	if request.method == "POST":
 
+		if request.POST.get('what')=='testSlackName':
+			slackName = request.POST.get('slackName')
+
+			# Try to find the given Slack-User in the user list on slack
+			slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+			users = []
+			next_cursor = ''
+			nextIteration = True
+
+			while nextIteration:
+				sc = SlackClient(slack_token)
+				ulist = sc.api_call(
+					"users.list",
+					limit=100,
+					cursor=next_cursor,
+				)
+
+				if ulist.get('ok')==False:
+					# No successful return of the members list
+					error = True
+					nextIteration = False
+				else:
+					users.extend( [ {'id':x.get('id'), 'name':x.get('name'), 'real_name':x.get('real_name')} for x in ulist.get('members',[]) ] )
+					next_cursor = ulist.get('response_metadata',{}).get('next_cursor','')
+					if next_cursor=='':
+						error = False
+						nextIteration = False
+				
+			if not error:
+				matched = [ x for x in users if x['id']==slackName or x['name']==slackName ]
+				if len(matched)==1:
+					retVal = '<div class="alert alert-success alert-small">ok</div>'
+				else:
+					retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
+			else:
+				retVal = '<div class="alert alert-danger alert-small">Fehler beim Zugriff auf Slack.</div>'
+
+			return JsonResponse({'data': retVal})
+
+		# Do the normal registration
 		res = UserErstellenForm(request.POST)
 
 		if res.is_valid():		
@@ -614,10 +656,6 @@ def neuerNutzer_page(request):
 
 			u = res.save()
 			u.refresh_from_db()
-
-			#u = KioskUser.objects.create_user(**res.cleaned_data)
-			u.slackName = u.username.lower()
-			u.save()
 
 			# Generate Confirmation Email
 			user = u.username

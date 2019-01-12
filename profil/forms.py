@@ -107,6 +107,13 @@ class UserErstellenForm(UserCreationForm):
 
 		return email
 
+	def clean_slackName(self):
+		slackName = self.cleaned_data['slackName']
+		if KioskUser.objects.filter(slackName=slackName).exists():
+			raise ValidationError(_('Slack-Name existiert bereits'), code='invalid')
+
+		return slackName
+
 	def clean_dsgvo_accepted(self):
 		dsgvo_accepted = self.cleaned_data['dsgvo_accepted']
 		if not dsgvo_accepted is True:
@@ -116,16 +123,18 @@ class UserErstellenForm(UserCreationForm):
 
 	class Meta:
 		model = KioskUser
-		fields = ('username','first_name','last_name','email','aktivBis','password1','password2', 'dsgvo_accepted')
+		fields = ('username', 'slackName','first_name','last_name','email','aktivBis','password1','password2', 'dsgvo_accepted')
 		widgets = {
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		labels = {
+            'slackName': _('Slack-Name'),
 			'aktivBis': _('Angestellt bis'),
             'dsgvo_accepted': _('Akzeptieren der Regelungen im Kiosk und der Datenverwendung'),
 		}
 		help_texts = {
-			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
+			'username': _('<small>W'+chr(228)+'hle einen Nutzernamen, mit dem du dich einloggen m'+chr(246)+'chtest.</small>'),
+            'slackName': _('<small>Gib deinen Namen auf Slack an (ohne @). Falls du, ein Leerzeichen im Slack-Namen hast, dann musst du unter "Profile & Account" deine "Member ID" angeben (U....).</small>'),
 			'email': _('<small>Die E-Mail-Adresse muss die @ffe.de-Domain besitzen.</small>'),
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
             'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/regelwerk/">g'+chr(252)+'ltigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
