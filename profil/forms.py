@@ -10,6 +10,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 
+from django.db.models import Q
+
 from  .models import KioskUser
 from . import models
 
@@ -19,7 +21,7 @@ from . import models
 # This form is used in the template to enter the slack name to send a message to the user with a reset link to generate a new password. This form finds the user and sends the url.
 class SlackResetForm(forms.Form):
     
-    slackName = forms.CharField(label="Slack-Name", max_length=40)
+    slackName = forms.CharField(label="Slack-Name oder E-Mail-Adresse", max_length=40)
 
 
     def send_slackMessage(self, subject_template_name, email_template_name, context, from_email, to_user, html_email_template_name=None):
@@ -44,10 +46,11 @@ class SlackResetForm(forms.Form):
         that prevent inactive users and users with unusable passwords from
         resetting their password.
         """
-        active_users = models.KioskUser._default_manager.filter(**{
-            'slackName__iexact': slackName,
-            'is_active': True,
-        })
+        active_users = models.KioskUser._default_manager.filter(
+            Q(slackName__iexact=slackName, is_active=True)
+            |
+            Q(email__iexact=slackName, is_active=True)
+        )
         return (u for u in active_users if u.has_usable_password())
 
     def save(self, domain_override=None, subject_template_name='registration/password_reset_subject.html', email_template_name='registration/password_reset_message.html', use_https=False, token_generator=default_token_generator, from_email=None, request=None, html_email_template_name=None, extra_email_context=None):
