@@ -241,10 +241,8 @@ def kauf_page(request):
 			msg = 'Dein Kontostand ist zu niedrig. Bitte wieder beim Admin einzahlen.'
 			allowed = False
 
-		# Kiosk Content for Buying
-		kioskItems = readFromDatabase('getKioskContentToBuy')
-		# Delete values that are zero
-		kioskItems = [x for x in kioskItems if x['ges_available']>0]
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
 		
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
