@@ -23,8 +23,7 @@
 	</div>
 
 
-	{% if not formset %}
-	<!-- Das klappt noch nicht -->
+	{% if formset.initial_form_count == 0 %}
 		<table class="table table-striped smallText">
 			<tr><th>keine K&#228;ufe bisher</th></tr>
 		</table>
@@ -51,7 +50,7 @@
 							{{form.produkt_id | attr:"style:display:none;"}}
 						</td>
 						<td>
-							{{form.anzahl_gekauft.value}}
+							<!--form.anzahl_gekauft.value-->	
 
 							<!-- Non-displayed but important fields -->
 							{{form.anzahl_gekauft | attr:"style:display:none;"}}

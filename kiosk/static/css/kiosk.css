@@ -28,7 +28,6 @@ table.autoSize {
 }
 
 
-
 /* -------------------------------------- */
 /* Divs and fundamental style */
 /* 
@@ -40,6 +39,15 @@ table.autoSize {
 
 /*@media (max-width: @screen-xs-max) { ... } */
 /*@media (max-width: 479px) { ... } */
+    .divTopIcon {
+        display: inline-block;
+        position: absolute;
+        padding-top: 2vh;
+        padding-left: 2vw;
+        z-index: 1;
+        opacity: 0.4;
+    }
+
     .divTopHeading {
         display: inline-block;
         position: absolute;
@@ -53,6 +61,7 @@ table.autoSize {
         padding-bottom: 7px;
         color: #428bca;
         margin: 0;
+        z-index: 2;
     }
 
     .divTopMenu {
@@ -61,11 +70,12 @@ table.autoSize {
         top: 22px;
         left:80vw;
         margin: 0;
-        z-index: 99;
+        z-index: 10;
     }
 
     .divTopMenuBigScreen {
         display: none;
+        z-index: 3;
     }
 
     .divMain {
@@ -73,10 +83,12 @@ table.autoSize {
         top:70px;
         padding-left: 3vw;
         padding-right: 3vw;
+        z-index: 4;
     }
 
     .divRightSide {
         display: none;
+        z-index: 0;
     }
 /*}*/
 
@@ -140,11 +152,11 @@ table.autoSize {
 
 /* Not dependent on screen-size */
 .aTopHeading {
-    color: #428bca;
+    /*color: #428bca;*/
     text-decoration: none;
 }
 .aTopHeading:hover {
-    color: #428bca;
+    /*color: #428bca;*/
     text-decoration: none;
 }
 
@@ -156,6 +168,10 @@ table.autoSize {
 
 /* -------------------------------------- */
 /* Class Styles */
+
+.styleColor{
+    color: #96858f;
+}
 
 .bold {
     font-weight: bold;
@@ -176,6 +192,10 @@ table.autoSize {
 .bigLink {
     font-weight: bold;
     font-size: 115%;
+}
+
+.bigger {
+    font-size: 105%;
 }
 
 .code {
@@ -214,6 +234,11 @@ table.autoSize {
 .padding {
     padding: 2vw;
 }
+
+.smallPadding {
+    padding: 5px;
+}
+
 .marginPadding {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -222,7 +247,7 @@ table.autoSize {
 }
 
 .sideMenu {
-    background-color: #f8f8f8;
+    /*background-color: #fff;*/
     border: 1px solid #f1f1f1;
     border-radius: 5px;
     padding: 1vw;

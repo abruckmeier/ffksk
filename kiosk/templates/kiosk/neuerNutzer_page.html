@@ -1,5 +1,6 @@
 {% extends 'kiosk/base.html' %}	
 
+{% load staticfiles %}
 {% load widget_tweaks %}	
 
 {% block content %}
@@ -14,7 +15,7 @@
 			Info
 		</div>
 		<div class="panel-body justified">
-			Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Best&#228;tige au&#223;erdem die <a class="bold" href="{% url 'anleitung_page' %}">g&#252;ltigen Regeln im Kiosk</a> und die <a class="bold" href="{% url 'anleitung_page' %}">Hinweise zur Datenverwendung</a>.
+			Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Best&#228;tige au&#223;erdem die <a class="bold" href="{% url 'regelwerk_page' %}">g&#252;ltigen Regeln im Kiosk</a> und die <a class="bold" href="{% url 'anleitung_page' %}">Hinweise zur Datenverwendung</a>.
 		</div>
 	</div>
 	<br>
@@ -36,14 +37,39 @@
 		{% endif %}
 	{% endif %}
 
+	<style type="text/css">
+		.slackName {
+			display: inline-block;
+			/*min-width: 100px;*/
+			width: initial;
+		}
+		.alert-small {
+			padding-bottom: 7px;
+			padding-top:5px;
+		}
+	</style>
+
 
     <form method="post">
-        {% csrf_token %}
+        {% csrf_token %}	
 
         {% for field in form %}
             <div class="form-group">
-                {{ field.label_tag }}
-                {{ field | add_class:"form-control" }}
+                {% if field.name == 'slackName' %}
+                	{{ field.label_tag }}
+                	<br>
+                	{{ field | add_class:"form-control slackName" }}
+                	&nbsp;
+                	<a name="buttonVerbindungTesten" class="btn btn-default slackName">Verbindung testen</a>
+                	&nbsp;
+                	<div name="VerbindungTestenErgebnis" class="slackName">
+                	</div>
+                
+                {% else %}
+                	{{ field.label_tag }}
+                	{{ field | add_class:"form-control" }}
+                {% endif %}
+
                 <br>
                 {% if field.errors %}
                 	<p class="alert alert-danger">{{ field.errors.as_text }}</p>
@@ -76,6 +102,38 @@
 				});
 			}
 		);
+	</script>
+
+	<!-- Initialisation for the ajax post requests -->
+	<script type="text/javascript" src="{% static 'js/ajax_csrf_prepare.js' %}"></script>
+
+	<!-- Function to post a connection try to a Slack account to the server -->
+	<script type="text/javascript">
+
+		function postSlackAccountCheck() {
+			var slackName = $("input#id_slackName").val();
+			
+			$.ajax({
+				type: 'POST',
+				url: "{% url 'neuerNutzer_page' %}",
+				data: {'what': 'testSlackName','slackName': slackName},
+				dataType: 'json',
+				error: function(jqXHR, textStatus, errorThrown){
+							$("div#loaderPower").css('display','none');
+							var msg = 'Es gab einen Fehler mit Fehlercode '+jqXHR.status+': "'+errorThrown+'".'
+							$("div[name='VerbindungTestenErgebnis']").html(msg);
+				},
+				success: function(data){
+							$("div[name='VerbindungTestenErgebnis']").html(data['data']);
+						}
+			});
+		}
+		$(document).ready(
+			function(){
+				$("a[name='buttonVerbindungTesten']").click(postSlackAccountCheck);
+			}
+		);
+
 	</script>
 
 {% endblock %}

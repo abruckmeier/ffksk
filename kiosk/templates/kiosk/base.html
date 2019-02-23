@@ -10,8 +10,8 @@
 		<script type="text/javascript" src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 
 		<!-- Bootstrap -->
-		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap3.3.7/css/bootstrap.min.css' %}">
-		<script type="text/javascript" src="{% static 'bootstrap3.3.7/js/bootstrap.min.js' %}"></script>
+		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+		<script type="text/javascript" src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
 
 		<!-- Bootstrap DatePicker -->
 		<link rel="stylesheet" type="text/css" href="{% static 'bootstrap-datepicker-1.6.4/css/bootstrap-datepicker3.min.css' %}">
@@ -35,6 +35,17 @@
 	</head>
 	<body>
 
+		<div class="container-fluid divTopIcon">
+			{% if not excludeTopIcon %}
+				<img src="{% static 'img/only-icon.gif' %}" height="90px" />
+			{% else %}
+				<img src="{% static 'img/only-icon.gif' %}" height="90px" />
+			<!--<img src="{% static 'img/only-icon.gif' %}" height="90px" style="filter: blur(2px); opacity: 0.3;" />-->
+			{% endif %}
+		</div>
+
+
+
 		<div class="container-fluid divTopHeading">
 			<a class="aTopHeading" href="{% url 'start_page' %}">
 				<h2 class="bold">FfE-Kiosk</h2>
@@ -43,13 +54,11 @@
 
 
 
-
-
 		<div class="container-fluid divTopMenu">
 		
 			<div class="dropdown">
 
-				<button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<button class="btn btn-default dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<span class="glyphicon glyphicon-list"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right ulTopMenuWidth" aria-labelledby="dropdownHead">
@@ -118,8 +127,15 @@
 
 			<div class="smallText">
 				<div style="font-style: italic;">&#9400; FfE-Kiosk Mitwirkende</div>
+
 				Dies ist ein Open-Source Projekt. Wirke mit unter <a href="https://github.com/AndiBr/ffksk">https://github.com/AndiBr/ffksk</a>!
+
+				<div>
+					Quelle des Icons:  
+					<a href="https://www.freeiconspng.com/img/12850">Ahk&#226;m (freeiconspng.com)</a>.
+				</div>
 				<br /><br />
+
 				<a href="{% url 'anleitung_page' %}">Info & Erste Schritte</a>
 				<br />
 				<a href="{% url 'kontakt_page' %}">Kontakt</a>

@@ -6,8 +6,10 @@ from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Pro
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
+
+from slackclient import SlackClient
 
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
 from django.contrib.auth.decorators import login_required, permission_required
@@ -92,7 +94,9 @@ def start_page(request):
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter, 
 		'admins': admins, 'accountants': accountants, 
 		'chart_DaylyVkValue': Chart_UmsatzHistorie(), 
-		'news': news,})
+		'news': news,
+		'excludeTopIcon': True,
+		})
 
 
 @login_required
@@ -209,7 +213,7 @@ def kauf_page(request):
 	if request.method == "POST":
 
 		wannaBuyItem = request.POST.get("produktName")
-		retVal = Kiosk.buyItem(wannaBuyItem,request.user)
+		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web')
 		buySuccess = retVal['success']
 
 		retVal['msg'] = retVal['msg'][-1]
@@ -600,6 +604,46 @@ def neuerNutzer_page(request):
 
 	if request.method == "POST":
 
+		if request.POST.get('what')=='testSlackName':
+			slackName = request.POST.get('slackName')
+
+			# Try to find the given Slack-User in the user list on slack
+			slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+			users = []
+			next_cursor = ''
+			nextIteration = True
+
+			while nextIteration:
+				sc = SlackClient(slack_token)
+				ulist = sc.api_call(
+					"users.list",
+					limit=100,
+					cursor=next_cursor,
+				)
+
+				if ulist.get('ok')==False:
+					# No successful return of the members list
+					error = True
+					nextIteration = False
+				else:
+					users.extend( [ {'id':x.get('id'), 'name':x.get('name'), 'real_name':x.get('real_name')} for x in ulist.get('members',[]) ] )
+					next_cursor = ulist.get('response_metadata',{}).get('next_cursor','')
+					if next_cursor=='':
+						error = False
+						nextIteration = False
+				
+			if not error:
+				matched = [ x for x in users if x['id']==slackName or x['name']==slackName ]
+				if len(matched)==1:
+					retVal = '<div class="alert alert-success alert-small">ok</div>'
+				else:
+					retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
+			else:
+				retVal = '<div class="alert alert-danger alert-small">Fehler beim Zugriff auf Slack.</div>'
+
+			return JsonResponse({'data': retVal})
+
+		# Do the normal registration
 		res = UserErstellenForm(request.POST)
 
 		if res.is_valid():		
@@ -612,10 +656,6 @@ def neuerNutzer_page(request):
 
 			u = res.save()
 			u.refresh_from_db()
-
-			#u = KioskUser.objects.create_user(**res.cleaned_data)
-			u.slackName = u.username.lower()
-			u.save()
 
 			# Generate Confirmation Email
 			user = u.username
@@ -894,6 +934,9 @@ def statistics(request):
 	kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
 	kioskBankValue = kioskBankValue.stand / 100.0
 
+	gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
+	gespendet = gespendet.stand / 100.0
+
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
 	bargeld = - bargeld.stand / 100.0
 	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
@@ -918,7 +961,7 @@ def statistics(request):
 	# Gewinn & Verlust
 	theoAlloverProfit = vkValueAll - ekValueAll
 	theoProfit = vkValueKiosk + kioskBankValue
-	buyersProvision = theoAlloverProfit - theoProfit
+	buyersProvision = theoAlloverProfit - theoProfit - gespendet
 
 	adminsProvision = 0
 	profitHandback = 0
@@ -960,7 +1003,7 @@ def statistics(request):
 		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit, 
 		'theoProfit': theoProfit, 'buyersProvision': buyersProvision, 
 		'adminsProvision': adminsProvision, 'profitHandback': profitHandback, 
-		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit}) 
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet, }) 
 
 
 
@@ -1034,6 +1077,42 @@ def anleitung(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/anleitung_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+def ersteSchritte(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/ersteschritte_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+def slackInfos(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/slackinfo_page.html', 
+		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+
+
+def regelwerk(request):
+
+	# Hole den Kioskinhalt
+	kioskItems = Kiosk.getKioskContent()
+
+	# Einkaufsliste abfragen
+	einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+	return render(request, 'kiosk/regelwerk_page.html', 
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 

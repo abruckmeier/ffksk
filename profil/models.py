@@ -23,7 +23,7 @@ class KioskUser(AbstractUser):
 	permissions = (('User','Standardnutzer'),
 		('Buyer','Eink'+chr(228)+'ufer'),('Accountant','Verwalter'),('Admin','Admin'))
 	
-	slackName = models.CharField(max_length=40)
+	slackName = models.CharField(max_length=40, unique=True)
 	aktivBis = models.DateField()
 	instruierterKaeufer = models.BooleanField(default=False)
 	rechte = models.CharField(max_length=15,default='User',choices=permissions)
