@@ -4,7 +4,7 @@ from django.conf import settings
 
 from slackclient import SlackClient
 
-from .models import Produktpalette
+from .models import Produktpalette, Kontostand
 from profil.models import KioskUser
 
 from .queries import readFromDatabase
@@ -46,7 +46,8 @@ def receiveSlackCommands(request):
 def process_kiosk(message):
 
 	# Check if the user has an account in the kiosk
-	if not KioskUser.objects.filter(slackName=message.get('user_name'), visible=True):
+	user = KioskUser.objects.filter(slackName=message.get('user_name'), visible=True)
+	if not user:
 		attach = getCancelAttachementForResponse()
 		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', attach)
 
@@ -73,8 +74,12 @@ def process_kiosk(message):
 		process_kiosk_buy(message, commandText, command[0])
 
 	# Find the command 'help'
-	elif not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == [] or len(commandText)==1:
+	elif not [x for x in commandText if x in ['Hilfe','hilfe','help','Help','hilf','Hilf']] == []:
 		kiosk_help(message)
+
+	# Return the balance
+	elif [x for x in commandText if x in ['Guthaben', 'guthaben', 'konto', 'Konto', 'kontostand', 'Kontostand', 'account', 'Account', 'Balance', 'balance']] != []:
+		kiosk_balance(message, user)
 
 	# No known kiosk-command found. Tell the user
 	else:
@@ -99,7 +104,7 @@ def process_kiosk_buy(message, commandText, command):
 		rawItemToBuy = commandText[0]
 		numBuy = 1
 	else:
-		# In case of two more command items, check for the one that is a number. The other is the kios item
+		# In case of two more command items, check for the one that is a number. The other is the kiosk item
 		numBuy = None
 		
 		try: numBuy = int(commandText[0])
@@ -201,6 +206,11 @@ def kiosk_buy_help(message, msg=''):
 	msg = msg+chr(10)+'*Kiosk Kaufen Hilfe*'+chr(10)+'Nach dem `/kiosk Kaufen`-Befehl musst du ein Stichwort schreiben, was du kaufen m'+chr(246)+'chtest. Optional kannst du als Zahl noch die Menge zu kaufender Produkte anf'+chr(252)+'gen. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen 2 Pizza```'+chr(10)+'```/kiosk Kaufen Pesto```'+chr(10)+'```/kiosk Kaufen saure```'+chr(10)+'```/kiosk Kaufen "Saure Zunge" 5```'+chr(10)+'Falls ich mir nicht sicher bin, was genau du kaufen m'+chr(246)+'chtest oder es '+chr(228)+'hnliche Produkte gibt, gebe ich dir eine Auswahl zum Anklicken und Best'+chr(228)+'tigen.'
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 	return
+
+def kiosk_balance(message, user):
+	konto = Kontostand.objects.get(nutzer=user)
+	msg= '*Dein Kontostand:* '+'%.2f' % (konto.stand/100) + ' ' + chr(8364) + '.'
+	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 
 def getCancelAttachementForResponse():
 	attach = {
