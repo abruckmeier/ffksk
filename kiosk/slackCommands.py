@@ -198,7 +198,7 @@ def process_kiosk_buy(message, commandText, command):
 
 # Send back general '/kiosk' help
 def kiosk_help(message, msg=''):
-	msg = msg+chr(10)+'*Kiosk Hilfe*'+chr(10)+'Nach dem `/kiosk`-Befehl musst du ein Stichwort schreiben, was du tun m'+chr(246)+'chtest. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen```'+chr(10)+'Dort bekommst du jeweils weitere Informationen.'+chr(10)+'(Alle Befehle: `Hilfe`, `Kaufen`, `Spenden`)'
+	msg = msg+chr(10)+'*Kiosk Hilfe*'+chr(10)+'Nach dem `/kiosk`-Befehl musst du ein Stichwort schreiben, was du tun m'+chr(246)+'chtest. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen```'+chr(10)+'Dort bekommst du jeweils weitere Informationen.'+chr(10)+'(Alle Befehle: `Hilfe`, `Kaufen`, `Guthaben`)'
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 	return
 
