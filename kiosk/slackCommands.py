@@ -220,7 +220,7 @@ def kiosk_produkte(message):
 	kioskItems = Kiosk.getKioskContent()
 	msg = '*Im Kiosk:*\n'
 	for k in kioskItems:
-		msg += str(k['anzahl'])+' x \t'+str(k.['produktName'])
+		msg += str(k['anzahl'])+' x \t'+str(k['produktName'])
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 
 def getCancelAttachementForResponse():
