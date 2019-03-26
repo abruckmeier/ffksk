@@ -4,7 +4,7 @@ from django.conf import settings
 
 from slackclient import SlackClient
 
-from .models import Produktpalette, Kontostand
+from .models import Produktpalette, Kontostand, Kiosk
 from profil.models import KioskUser
 
 from .queries import readFromDatabase
@@ -80,6 +80,10 @@ def process_kiosk(message):
 	# Return the balance
 	elif [x for x in commandText if x in ['Guthaben', 'guthaben', 'konto', 'Konto', 'kontostand', 'Kontostand', 'account', 'Account', 'Balance', 'balance']] != []:
 		kiosk_balance(message, user)
+
+	# Return all items in the Kiosk
+	elif [x for x in commandText if x.lower() in ['produkt','produkte','item','items','kiosk','inhalt','content','inhalt']] != []:
+		kiosk_produkte(message)
 
 	# No known kiosk-command found. Tell the user
 	else:
@@ -198,7 +202,7 @@ def process_kiosk_buy(message, commandText, command):
 
 # Send back general '/kiosk' help
 def kiosk_help(message, msg=''):
-	msg = msg+chr(10)+'*Kiosk Hilfe*'+chr(10)+'Nach dem `/kiosk`-Befehl musst du ein Stichwort schreiben, was du tun m'+chr(246)+'chtest. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen```'+chr(10)+'Dort bekommst du jeweils weitere Informationen.'+chr(10)+'(Alle Befehle: `Hilfe`, `Kaufen`, `Guthaben`)'
+	msg = msg+chr(10)+'*Kiosk Hilfe*'+chr(10)+'Nach dem `/kiosk`-Befehl musst du ein Stichwort schreiben, was du tun m'+chr(246)+'chtest. Zum Beispiel:'+chr(10)+'```/kiosk Kaufen```'+chr(10)+'Dort bekommst du jeweils weitere Informationen.'+chr(10)+'(Alle Befehle: `Hilfe`, `Kaufen`, `Guthaben`, `Produkte`)'
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 	return
 
@@ -210,6 +214,13 @@ def kiosk_buy_help(message, msg=''):
 def kiosk_balance(message, user):
 	konto = Kontostand.objects.get(nutzer=user)
 	msg= '*Dein Kontostand:* '+'%.2f' % (konto.stand/100) + ' ' + chr(8364) + '.'
+	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
+
+def kiosk_produkte(message):
+	kioskItems = Kiosk.getKioskContent()
+	msg = '*Im Kiosk:*\n'
+	for k in kioskItems:
+		msg += str(k.anzahl)+' x \t'+str(k.produktName)
 	slack_sendMessageToResponseUrl(message.get('response_url'), msg, getOkAttachementForResponse())
 
 def getCancelAttachementForResponse():
