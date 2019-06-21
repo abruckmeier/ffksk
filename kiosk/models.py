@@ -84,16 +84,22 @@ class ProduktVerkaufspreise(models.Model):
 	produktpalette = models.ForeignKey(
 		Produktpalette, on_delete=models.CASCADE)
 	verkaufspreis = models.IntegerField(validators=[MinValueValidator(0)])
+	preisAufstockung = models.IntegerField(validators=[MinValueValidator(0)])
 	gueltigAb = models.DateTimeField(default=timezone.now)
 
 	def __str__(self):
 		price = '%.2f' % (self.verkaufspreis/100)
+		aufstockung = '%.2f' % (self.preisAufstockung/100)
 		return(self.produktpalette.produktName + ", " +
-			str(price) + " "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
+			str(price) + "(+"+str(aufstockung)+") "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
 
 	def getActPrices(produkt_id):
 		verkaufspreis = readFromDatabase('getActPrices',[produkt_id])
 		return(verkaufspreis[0])
+
+	def getPreisAufstockung(produkt_id):
+		aufstockung = readFromDatabase('getPreisAufstockung',[produkt_id])
+		return(aufstockung[0])
 
 
 class Einkaufsliste(models.Model):
@@ -281,8 +287,8 @@ class Kiosk(models.Model):
 
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
-	def buyItem(wannaBuyItem,user,gekauft_per='ubk'):
-		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0}
+	def buyItem(wannaBuyItem,user,gekauft_per='ubk', buyAndDonate=False):
+		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0, 'hasDonated': False, 'donation': 0}
 
 		# First, look in Kiosk.
 		try:
@@ -312,22 +318,31 @@ class Kiosk(models.Model):
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
 		actPrices = ProduktVerkaufspreise.getActPrices(item.produktpalette.id)
 		actPrices = actPrices.get('verkaufspreis')
+		donation = ProduktVerkaufspreise.getPreisAufstockung(item.produktpalette.id)
+		donation = donation.get('preisAufstockung')		
 
 		# Check if user is allowed to buy something and has enough money
 		allowedConusmers = readFromDatabase('getUsersToConsume')
 		if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
-			msg = 'You are not allowed to buy a product.'
+			msg = 'Du bist nicht berechtigt, Produkte zu kaufen.'
 			print(msg)
 			retVals['msg'].append(msg)
 			return retVals
 
 		if not user.username=='Dieb':
 			konto = Kontostand.objects.get(nutzer = user)
-			if konto.stand - actPrices < 0:
-				msg = 'Your account is too low.'
-				print(msg)
-				retVals['msg'].append(msg)
-				return retVals
+			if buyAndDonate:
+				if konto.stand - actPrices - donation < 0:
+					msg = 'Dein Kontostand ist zu niedrig, um dieses Produkt zu kaufen und eine Spende zu geben.'
+					print(msg)
+					retVals['msg'].append(msg)
+					return retVals
+			else:
+				if konto.stand - actPrices < 0:
+					msg = 'Dein Kontostand ist zu niedrig, um dieses Produkt zu kaufen.'
+					print(msg)
+					retVals['msg'].append(msg)
+					return retVals
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
@@ -336,7 +351,7 @@ class Kiosk(models.Model):
 			verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis,
 			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices, gekauft_per=gekauft_per)
 
-		# Produkt in Tabell 'Kiosk' loeschen
+		# Produkt in Tabelle 'Kiosk' loeschen
 		Kiosk.objects.get(kiosk_ID=item.pk).delete()
 
 		# Automatische Geldtransaktion vom User zur Bank
@@ -344,11 +359,22 @@ class Kiosk(models.Model):
 		GeldTransaktionen.doTransaction(g.kaeufer,userBank,g.verkaufspreis,g.gekauftUm,
 			"Kauf " + g.produktpalette.produktName)# + " um " + str(g.gekauftUm.astimezone(tz.tzlocal())))
 
+		if buyAndDonate and donation>0:
+			userSpendenkonto = KioskUser.objects.get(username='Spendenkonto')
+			GeldTransaktionen.doTransaction(
+				g.kaeufer,
+				userSpendenkonto,
+				donation,
+				g.gekauftUm,
+				"Spende durch Aufstockung von " + g.produktpalette.produktName)
+
 		g.save()
 		
 		retVals['success'] = True
 		retVals['msg'].append('OK')
 		retVals['price'] = actPrices/100.0
+		retVals['hasDonated'] = buyAndDonate and donation>0
+		retVals['donation'] = donation/100.0
 		return retVals
 
 

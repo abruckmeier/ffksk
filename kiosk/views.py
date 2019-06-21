@@ -212,8 +212,13 @@ def home_page(request):
 def kauf_page(request):
 	if request.method == "POST":
 
+		if 'buyAndDonate' in request.POST.keys():
+			buyAndDonate = True
+		else:
+			buyAndDonate = False
+
 		wannaBuyItem = request.POST.get("produktName")
-		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web')
+		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web', buyAndDonate=buyAndDonate)
 		buySuccess = retVal['success']
 
 		retVal['msg'] = retVal['msg'][-1]
@@ -276,7 +281,8 @@ def gekauft_page(request):
 
 	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
 			, 'einkaufsliste': einkaufsliste, 'product': buy_data['product'], 
-			'price': buy_data['price'], 'account': account, })
+			'price': buy_data['price'], 'account': account, 
+			'hasDonated': buy_data['hasDonated'], 'donation': buy_data['donation']})
 
 
 @login_required
