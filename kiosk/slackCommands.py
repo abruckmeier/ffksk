@@ -53,6 +53,8 @@ def process_kiosk(message):
 
 		# Weiter gehts bei slackMessages.receiveSlackCommands, wo die Antwort weiterverarbeitet wird.
 		return
+	else:
+		user = user[0]
 
 	# Filter the the command from spaces, but first bring together commands in quotation marks
 	commandText = message.get('text')
@@ -147,38 +149,52 @@ def process_kiosk_buy(message, commandText, command):
 	# If no match was made, give back the complete list
 	if itemAccordance is None:
 		itemToBuy = Produktpalette.objects.filter(imVerkauf=True).order_by('produktName')
-
-	# Create list of products plus price for selection
-	txts = []
-	for v in itemToBuy:
-		prices = readFromDatabase('getProductNameAndPriceById',[v.id])
-		txt = str(numBuy) + 'x ' + str(v.produktName) + ' | ' + '%.2f' % (prices[0]['verkaufspreis']/100.0*numBuy) + ' ' + chr(8364)
-		txts.append({'text': txt, 'value': str(v.id)+'#'+str(numBuy)})
-
-	# Prepare the selection and the button
-	actionSelection = {'name': 'product_list','text': 'Auswahl ...', 'type': 'select', 'options': txts}
-	actionButton = {'name': 'ConfirmOneItem', 'text': txts[0]['text'],'type': 'button','value': txts[0]['value']}
+	
 
 	# Send messages to respond
-	if itemAccordance is None:
-		# There is no accordance -> Give the complete products to select
-		text = 'Was m'+chr(246)+'chtest Du kaufen? Ich konnte dich nicht verstehen und gebe dir die komplette Produktpalette zur Auswahl.'
-		action = actionSelection
-
-	elif itemAccordance==1 or len(itemToBuy)==1:
+	if itemAccordance==1 or len(itemToBuy)==1:
 		# One item has been found. Just ask to confirm
-		text = 'Du m'+chr(246)+'chtest folgendes kaufen?'
-		action = actionButton
+		prices = readFromDatabase('getProductNameAndPriceById',[itemToBuy[0].id])
+		txt = str(numBuy) + 'x ' + str(itemToBuy[0].produktName) + ' | ' + '%.2f' % (prices[0]['verkaufspreis']/100.0*numBuy) + ' ' + chr(8364) + ' ( +' + '%.2f' % (prices[0]['preisAufstockung']/100.0*numBuy) + ' ' + chr(8364) + ' Spende)'
+		value = str(itemToBuy[0].id)+'#'+str(numBuy)
 
-	elif itemAccordance<1:
-		# There is a selection of possible products. Ask to select from them
-		text = 'Was genau m'+chr(246)+'chtest Du kaufen? Deine Eingabe hat folgende Ergebnisse geliefert:'
-		action = actionSelection
+		callback_id = 'kiosk_buy'
+		text = 'Deine Auswahl: _' + txt + '_'
+		action = {'name': 'ConfirmOneItem', 'text': 'Nur Kaufen', 'type': 'button', 'style': 'default', 'value': value}
+		action2 = {'name': 'ConfirmOneItemAndDonate', 'text': 'Kaufen & Spenden', 'type': 'button', 'style': 'primary', 'value': value}
 
 	else:
-		# Fehler darf nicht passieren -> Error-Message
-		text = 'Uuups. Da ist etwas schief gelaufen. Wende dich bitte an den Administrator.'
-		action = None
+		# Create list of products plus price for selection
+		txts = []
+		for v in itemToBuy:
+			prices = readFromDatabase('getProductNameAndPriceById',[v.id])
+			txt = str(numBuy) + 'x ' + str(v.produktName)
+			txts.append({
+				'text': txt, 
+				'value': str(v.id)+'#'+str(numBuy)
+			})
+
+		callback_id = 'kiosk_buy_preselection'
+		# Prepare the selection and the button
+		actionSelection = {'name': 'product_list','text': 'Auswahl ...', 'type': 'select', 'options': txts}
+
+		if itemAccordance is None:
+			# There is no accordance -> Give the complete products to select
+			text = 'Was m'+chr(246)+'chtest Du kaufen? Ich konnte dich nicht verstehen und gebe dir die komplette Produktpalette zur Auswahl.'
+			action = actionSelection
+			action2 = None
+
+		elif itemAccordance<1:
+			# There is a selection of possible products. Ask to select from them
+			text = 'Was genau m'+chr(246)+'chtest Du kaufen? Deine Eingabe hat folgende Ergebnisse geliefert:'
+			action = actionSelection
+			action2 = None
+
+		else:
+			# Fehler darf nicht passieren -> Error-Message
+			text = 'Uuups. Da ist etwas schief gelaufen. Wende dich bitte an den Administrator.'
+			action = None
+			action2 = None
 
 
 	# Send the message
@@ -186,10 +202,11 @@ def process_kiosk_buy(message, commandText, command):
 		'attachments': [
 			{
 				'text': text,
-				'callback_id': 'kiosk_buy',
+				'callback_id': callback_id,
 				'attachment_type': 'default',
 				'actions': [
 					action,
+					action2,
 					{'name': 'Cancel', 'text': 'Abbrechen','type': 'button','value':'cancel','style':'danger'},
 				]
 			}
