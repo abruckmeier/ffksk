@@ -33,7 +33,7 @@
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
-				{% for item in kioskItems %}
+				{% for item in kioskItemsToBuy %}
 					<li><a onclick="toSelection('{{item.produktName}}','{{item.verkaufspreis | floatformat:2}}','{{item.aufstockungspreis | floatformat:2}}')">{{item.produktName}}: {{item.verkaufspreis | floatformat:2}} &#8364;</a></li>
 				{% endfor %}
 			</ul>

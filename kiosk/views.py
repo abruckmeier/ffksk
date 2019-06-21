@@ -247,15 +247,17 @@ def kauf_page(request):
 			allowed = False
 
 		# Kiosk Content for Buying
-		kioskItems = readFromDatabase('getKioskContentToBuy')
+		kioskItemsToBuy = readFromDatabase('getKioskContentToBuy')
 		# Delete values that are zero
-		kioskItems = [x for x in kioskItems if x['ges_available']>0]
+		kioskItemsToBuy = [x for x in kioskItemsToBuy if x['ges_available']>0]
 		
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
 
 		return render(request, 'kiosk/kauf_page.html', 
-			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems
+			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems, 'kioskItemsToBuy': kioskItemsToBuy
 			, 'einkaufsliste': einkaufsliste, 'msg': msg, 'allowed': allowed})
 
 
