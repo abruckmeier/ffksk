@@ -2,6 +2,7 @@ select
   b.produktpalette_id,
   b.validSince,
   a.verkaufspreis/100.0 as verkaufspreis,
+  (a.verkaufspreis + a."preisAufstockung")/100.0 as aufstockungspreis,
   c."produktName",
   d.anzahl,
   e.num_stolen,

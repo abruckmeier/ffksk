@@ -212,8 +212,13 @@ def home_page(request):
 def kauf_page(request):
 	if request.method == "POST":
 
+		if 'buyAndDonate' in request.POST.keys():
+			buyAndDonate = True
+		else:
+			buyAndDonate = False
+
 		wannaBuyItem = request.POST.get("produktName")
-		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web')
+		retVal = Kiosk.buyItem(wannaBuyItem,request.user,gekauft_per='web', buyAndDonate=buyAndDonate)
 		buySuccess = retVal['success']
 
 		retVal['msg'] = retVal['msg'][-1]
@@ -242,15 +247,17 @@ def kauf_page(request):
 			allowed = False
 
 		# Kiosk Content for Buying
-		kioskItems = readFromDatabase('getKioskContentToBuy')
+		kioskItemsToBuy = readFromDatabase('getKioskContentToBuy')
 		# Delete values that are zero
-		kioskItems = [x for x in kioskItems if x['ges_available']>0]
+		kioskItemsToBuy = [x for x in kioskItemsToBuy if x['ges_available']>0]
 		
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
+		# Hole den Kioskinhalt
+		kioskItems = Kiosk.getKioskContent()
 
 		return render(request, 'kiosk/kauf_page.html', 
-			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems
+			{'currentUser': currentUser, 'kontostand': kontostand, 'kioskItems': kioskItems, 'kioskItemsToBuy': kioskItemsToBuy
 			, 'einkaufsliste': einkaufsliste, 'msg': msg, 'allowed': allowed})
 
 
@@ -276,7 +283,8 @@ def gekauft_page(request):
 
 	return render(request,'kiosk/gekauft_page.html',{'kioskItems': kioskItems
 			, 'einkaufsliste': einkaufsliste, 'product': buy_data['product'], 
-			'price': buy_data['price'], 'account': account, })
+			'price': buy_data['price'], 'account': account, 
+			'hasDonated': buy_data['hasDonated'], 'donation': buy_data['donation']})
 
 
 @login_required
