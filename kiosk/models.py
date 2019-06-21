@@ -49,6 +49,7 @@ class Kontakt_Nachricht(models.Model):
 class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)
 	imVerkauf = models.BooleanField()
+	inAufstockung = models.BooleanField(default=True)
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
 	#kommentar = models.TextField(max_length=512,blank=True)
