@@ -29,4 +29,5 @@ join (
   ) d
   using("produktName")
 where c.imVerkauf is 1
+  and d.anzahl > 0
 order by c."produktName" asc
