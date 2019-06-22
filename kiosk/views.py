@@ -844,7 +844,6 @@ def inventory(request):
 
 	# Processing the response of the inventory form
 	if request.method == "POST":
-
 		report = ZuVielBezahlt.makeInventory(request, currentUser, inventoryList)
 
 		# Calculate the overall loss within this inventory
@@ -859,6 +858,24 @@ def inventory(request):
 			if item['verlust'] == False:
 				tooMuch = tooMuch + item["anzahl"] * item["verkaufspreis_ct"]
 		tooMuch = tooMuch / 100
+
+		# Send notifications to Slack-Channel
+		if request.POST.get('sendMessage', False) and request.POST.get('sendMessage','')=='sendMessage':
+
+			txt = '@channel\n' + 'Seit der letzten Inventur wurden Produkte im Wert von *' + '%.2f' % loss + chr(8364) + '* nicht bezahlt:\n'
+			sendMsg = False
+
+			for r in report:
+				if r['verlust'] is True:
+					sendMsg = True
+					txt += '\t' + str(r['anzahl']) + 'x ' + r['produkt_name'] + '\n'
+			txt += '\n _Bitte nachbezahlen! Danke._'
+
+			if sendMsg:
+				print('here')
+				slackSettings = getattr(settings,'SLACK_SETTINGS')
+				slack_SendMsg(txt, channel=True)
+
 		
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
