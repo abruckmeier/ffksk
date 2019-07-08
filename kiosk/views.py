@@ -23,6 +23,7 @@ from django.contrib.auth import login, authenticate
 import re
 
 from django.db import transaction
+from django.db.models import Sum
 
 from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_SendMsg
 
@@ -193,6 +194,13 @@ def home_page(request):
 	currentUser = request.user
 	kontostand = Kontostand.objects.get(nutzer__username=request.user).stand / 100.0
 
+	# Calculate the own donated money
+	gespendet = GeldTransaktionen.objects.filter(
+		vonnutzer=request.user,
+		zunutzer=KioskUser.objects.get(username='Spendenkonto'),
+	).aggregate(Sum('betrag'))
+	gespendet = gespendet['betrag__sum'] / 100.0
+
 	# Hole die eigene Liste, welche einzukaufen ist
 	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
 
@@ -204,7 +212,9 @@ def home_page(request):
 
 	return render(request, 'kiosk/home_page.html', 
 		{'currentUser': currentUser, 'kontostand': kontostand, 'persEinkaufsliste': persEinkaufsliste,
-		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'gespendet': gespendet,
+		})
 
 
 @login_required
@@ -872,7 +882,6 @@ def inventory(request):
 			txt += '\n _Bitte nachbezahlen! Danke._'
 
 			if sendMsg:
-				print('here')
 				slackSettings = getattr(settings,'SLACK_SETTINGS')
 				slack_SendMsg(txt, channel=True)
 
