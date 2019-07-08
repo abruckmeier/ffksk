@@ -19,7 +19,16 @@
 				</div>
 				<div id="collapse_1" class="panel-collapse collapse in">
 					<div class="panel-body justified">
-						<div class="bigLink">{{kontostand | floatformat:2}} &#8364;</div>
+						<div>
+							<span class="bigLink">
+								{{kontostand | floatformat:2}} &#8364;
+							</span>
+							&nbsp; &nbsp;
+							&nbsp; &nbsp;
+							<span>
+								<b>Gespendet: {{gespendet | floatformat:2}} &#8364;</b>
+							</span>
+						</div>
 						<br>
 						<a class="btn btn-info" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
 					</div>
