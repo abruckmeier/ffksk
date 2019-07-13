@@ -199,7 +199,10 @@ def home_page(request):
 		vonnutzer=request.user,
 		zunutzer=KioskUser.objects.get(username='Spendenkonto'),
 	).aggregate(Sum('betrag'))
-	gespendet = gespendet['betrag__sum'] / 100.0
+	if gespendet['betrag__sum']:
+		gespendet = gespendet['betrag__sum'] / 100.0
+	else:
+		gespendet = 0
 
 	# Hole die eigene Liste, welche einzukaufen ist
 	persEinkaufsliste = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(currentUser.id)
@@ -884,7 +887,7 @@ def inventory(request):
 			if sendMsg:
 				#print('here')
 				#slackSettings = getattr(settings,'SLACK_SETTINGS')
-				slack_SendMsg(txt, channelName='kiosk')
+				slack_SendMsg(txt, channelName='#kiosk')
 
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
