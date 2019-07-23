@@ -885,9 +885,8 @@ def inventory(request):
 			txt += '\n _Bitte nachbezahlen! Danke._'
 
 			if sendMsg:
-				#print('here')
-				#slackSettings = getattr(settings,'SLACK_SETTINGS')
-				slack_SendMsg(txt, channelName='#kiosk')
+				slackSettings = getattr(settings,'SLACK_SETTINGS')
+				slack_SendMsg(txt, channelName=slackSettings['inventoryChannelName'])
 
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
