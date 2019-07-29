@@ -12,6 +12,7 @@ django.setup()
 # Import the Modules
 from django.conf import settings
 from datetime import datetime, timedelta
+import pytz
 from shutil import copyfile
 from slackclient import SlackClient
 
@@ -32,7 +33,7 @@ def electBestContributors():
         secBestBuyers = []
         for item in data[1:]:
             secBestBuyers.append(item['first_name'] + ' ' + item['last_name'])
-        secBestBuyers = 'und '.join(secBestBuyers)
+        secBestBuyers = ' und '.join(secBestBuyers)
 
         bestBuyers = data[0]['first_name'] + ' ' + data[0]['last_name']
         if not secBestBuyers=='':
@@ -47,7 +48,7 @@ def electBestContributors():
         secBestAdmins = []
         for item in data[1:]:
             secBestAdmins.append(item['first_name'] + ' ' + item['last_name'])
-        secBestAdmins = 'und '.join(secBestAdmins)
+        secBestAdmins = ' und '.join(secBestAdmins)
 
         bestAdmins = data[0]['first_name'] + ' ' + data[0]['last_name']
         if not secBestAdmins=='':
@@ -146,6 +147,42 @@ def weeklyBackup(nowDate):
     }
 
 
+# 
+def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
+
+    # Unix Epoche of timestamp half a year before
+    dt = (nowDate - timedelta(days=182) - datetime(1970,1,1,tzinfo=pytz.utc)).total_seconds()
+
+    # Get information and stop if not activated
+    backupSettings = getattr(settings,'BACKUP')
+    if not backupSettings['active']:
+        print('Backup not activated in settings. Stop.')
+        return 'Backup not activated in settings.'
+
+    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+    sc = SlackClient(slack_token)
+
+    for botID in backupSettings['kioskbotChannel']:
+        conversation = sc.api_call(
+            'conversations.history', 
+            channel=botID,
+        )
+        
+        if not conversation.get('ok', False):
+            print('deleteOldWeeklyBackupsFromSlackAdmin: For botID {}, no messages found.'.format(botID))
+
+        to_delete_msgs = [ msg.get('ts','') for msg in conversation.get('messages',[]) if float(msg.get('ts')) < dt  ]
+
+        print('Deletion of following {} messages:'.format(str(len(to_delete_msgs))))
+        for ts in to_delete_msgs:
+            ret = sc.api_call(
+                'chat.delete',
+                channel=botID,
+                ts = ts,
+            )
+            print(ret)
+
+
 # Delete products in personal shopping list older than 7 days
 def deleteTooOldProductsInShoppingList(nowDate):
 
@@ -242,6 +279,7 @@ def blockUserAfterActiveTime(nowDate):
 if __name__ == '__main__':
     
     nowDate = datetime.utcnow()
+    nowDate = pytz.utc.localize(nowDate)
     
     # Elect best buyers and administrators on Friday
     if nowDate.weekday()==4:
@@ -280,11 +318,13 @@ if __name__ == '__main__':
 
 
     # Conduct a weekly Backup of the database: Send via Slack to the Admins
+    # Furthermore, delete old weekly backups from the conversation
     if nowDate.weekday()==3:
         print('It''s Thursday. Do the weekly backup.')
         try:
+            deleteOldWeeklyBackupsFromSlackAdmin(nowDate)
             ret = weeklyBackup(nowDate)
-            msg = 'Weekly Backup of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
+            msg = 'Weekly backup and deletion of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
 
             # Send message to all admins
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
@@ -298,10 +338,10 @@ if __name__ == '__main__':
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
             try:
                 for u in data:
-                    slack_SendMsg('The weekly backup of the Database failed!', user=u)
+                    slack_SendMsg('The weekly backup and deletion of the Database failed!', user=u)
                 print('Weekly Backup failed. Slack Message sent.')
             except:
-                print('Failing to send Slack Message with Fail Notice of database weekly backup.')
+                print('Failing to send Slack Message with Fail Notice of database weekly backup and deletion.')
 
 
 
