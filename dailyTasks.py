@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import pytz
 from shutil import copyfile
 from slackclient import SlackClient
+import time
 
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
@@ -181,6 +182,7 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
                 ts = ts,
             )
             print(ret)
+            time.sleep(2)
 
 
 # Delete products in personal shopping list older than 7 days
