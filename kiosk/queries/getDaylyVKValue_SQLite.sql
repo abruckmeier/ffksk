@@ -25,3 +25,4 @@ from (
 	group by datum
 	order by gekauftUm asc
 ) a
+where datum > datetime(datetime('now'), '-2 months')

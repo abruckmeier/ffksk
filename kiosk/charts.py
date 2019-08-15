@@ -157,27 +157,35 @@ class Chart_Profits(Chart):
 		ekValueAll = ekValueAll[0]['value']
 		kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
 		kioskBankValue = kioskBankValue.stand / 100.0
+
+		gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
+		gespendet = gespendet.stand / 100.0
+
+		# Bargeld "gestohlen"
+		bargeld_Dieb = Kontostand.objects.get(nutzer__username='Bargeld_Dieb')
+		bargeld_Dieb = - bargeld_Dieb.stand / 100.0
+
 		theoAlloverProfit = vkValueAll - ekValueAll
 		theoProfit = vkValueKiosk + kioskBankValue
-		buyersProvision = round(theoAlloverProfit - theoProfit,2)
+		buyersProvision = round(theoAlloverProfit - theoProfit - gespendet,2)
 		adminsProvision = 0
 		profitHandback = 0
 		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
 		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
 		for item in unBezahlt:
 			if item['what'] == 'Dieb': stolenValue = item['preis']
-		expProfit = round(theoProfit - stolenValue - adminsProvision - profitHandback,2)
+		expProfit = round(theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback,2)
 
-		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit]
+		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit, gespendet]
 
 		return [DataSet(
 			data = data,
-			backgroundColor = [rgba(0,0,255,0.2), rgba(0,0,255,0.4), rgba(0,0,255,0.6), rgba(0,0,255,0.8), rgba(0,255,0,0.6)]
+			backgroundColor = [rgba(0,0,255,0.2), rgba(0,0,255,0.4), rgba(0,0,255,0.6), rgba(0,0,255,0.8), rgba(0,255,0,0.6), rgba(255,255,0,0.5)]
 		)]
 
 	def get_labels(self, **kwargs):
-		return( ['Provision der Eink&#228;fer in &#8364;', 'Provision f&#252;r Admin und Verwalter', 
-			'Gewinnaussch&#252;ttung', 'gestohlener Geldwert','erwarteter Gewinn'] )
+		return( ['Provision der Eink'+chr(228)+'ufer in '+chr(8364), 'Provision f'+chr(252)+'r Admin und Verwalter', 
+			'Gewinnaussch'+chr(252)+'ttung', 'gestohlener Geldwert','erwarteter Gewinn', 'Gespendet'] )
 
 
 class Chart_ProductsWin(Chart):

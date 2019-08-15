@@ -7,7 +7,11 @@
 	</div>
 
 	<div class="panel panel-default">
-		Es wurde 1x "{{product}}" für {{price | floatformat:2}} &#8364; verbucht.
+		Es wurde 1x "{{product}}" f&#252;r {{price | floatformat:2}} &#8364; verbucht.
+		{% if hasDonated %}
+			<br>
+			Eine Spende von {{donation | floatformat:2}} &#8364; wurde verbucht und wird zum Jahresende überwiesen.
+		{% endif %}
 		<br><br>
 		Dein Kontostand ist nun {{account | floatformat:2}} &#8364;.
 	</div>

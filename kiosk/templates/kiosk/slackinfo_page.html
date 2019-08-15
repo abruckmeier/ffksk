@@ -1,0 +1,32 @@
+{% extends 'kiosk/base.html' %}	
+{% load staticfiles %}
+
+{% block content %}
+
+	<div class="page-header noMarginTop">
+		<h4>Informationen zur Slack-Integration</h4>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-3 col-sm-2 col-lg-2 margingPadding justified">
+			<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
+		</div>
+		<div class="col-xs-9 col-sm-10 col-lg-10 margingPadding justified">
+			In der Gruppe der FfE gibt es zwei Channels, in denen du alle wichtigen Informationen zum Kiosk bekommst.
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
+				<h4>#kiosk</h4>
+				Generelle Informationen zu Neuerungen und besonderen Angeboten, wichtige Mitteilungen, ...
+		</div>
+		<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
+				<h4>#kiosk_bot</h4>
+    			Der Kiosk-Slackbot informiert über frisch angelieferte Produkte im Kiosk und neue Produkte in der offenen Einkaufsliste. Außerdem werden die fleißigsten Einkäufer und Verwalter wöchentlich gekürt.
+    	</div>
+	</div>
+	
+	<br>
+	<a class="" onclick="javascript:history.go(-1);">zur&#252;ck</a>
+
+{% endblock %}

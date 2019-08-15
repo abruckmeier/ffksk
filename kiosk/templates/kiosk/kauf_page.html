@@ -11,7 +11,9 @@
 			Info
 		</div>
 		<div class="panel-body justified smallText">
-			Klicke auf "Produktauswahl" und wähle dein einzukaufendes Produkt. Es erscheint der Produktpreis und der "Kaufen"-Button zum Abschluss des Kaufs.
+			Klicke auf "Produktauswahl" und w&#228;hle dein einzukaufendes Produkt. Es erscheint der Produktpreis und zwei verschiedene "Kaufen"-Buttons zum Abschluss des Kaufs.
+			<br>
+			Mit der Option zum Aufstocken des Geldbetrags wird das zusätzliche Geld direkt in den Spendentopf für Pater Gerhard gelegt.
 		</div>
 	</div>
 
@@ -31,8 +33,8 @@
 				<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
-				{% for item in kioskItems %}
-					<li><a onclick="toSelection('{{item.produktName}}','{{item.verkaufspreis | floatformat:2}}')">{{item.produktName}}: {{item.verkaufspreis | floatformat:2}} &#8364;</a></li>
+				{% for item in kioskItemsToBuy %}
+					<li><a onclick="toSelection('{{item.produktName}}','{{item.verkaufspreis | floatformat:2}}','{{item.aufstockungspreis | floatformat:2}}')">{{item.produktName}}: {{item.verkaufspreis | floatformat:2}} &#8364;</a></li>
 				{% endfor %}
 			</ul>
 		</div>	
@@ -54,8 +56,12 @@
 				<input type="text" name="produktName" id="produktName" style="display: none" readonly>
 				<input type="text" name="verkaufspreis" id="verkaufspreis" style="display: none" readonly>
 				
-				<button type="submit" class="btn btn-primary" style="font-weight: bold;">
+				<button name="buy" type="submit" class="btn btn-primary" style="font-weight: bold;">
 					Kaufen
+				</button>
+				&nbsp;
+				<button name="buyAndDonate" type="submit" class="btn btn-warning" style="font-weight: bold;">
+					Kaufen und Betrag aufstocken (<span id="aufstockung"></span> €)
 				</button>
 			</form>	
 
@@ -70,12 +76,13 @@
 {% block javascript %}
 
 	<script type="text/javascript">
-		function toSelection(inputItem,inputPrice) {
+		function toSelection(inputItem,inputPrice,aufstockungspreis) {
 			$("div#divSelectionContainer").show(400);
 		    $("div#produktName").html(inputItem);
 		    $("div#verkaufspreis").html(inputPrice); 
 		    $("input#produktName").val(inputItem);
 		    $("input#verkaufspreis").val(inputPrice);
+		    $("#aufstockung").html(aufstockungspreis);
 		}
 	</script>
 

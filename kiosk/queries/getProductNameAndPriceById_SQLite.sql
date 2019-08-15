@@ -1,7 +1,8 @@
 select
   c.id,
   c.produktName,
-  a.verkaufspreis
+  a.verkaufspreis,
+  a."preisAufstockung"
 from kiosk_produktverkaufspreise a
 join (
     select

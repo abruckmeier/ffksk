@@ -14,3 +14,4 @@ from (
 	group by month_start
 	order by month_start asc
 ) a
+where month_start > datetime(datetime('now'), '-2 year')

@@ -10,6 +10,8 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.template.loader import render_to_string
 
+from django.db.models import Q
+
 from  .models import KioskUser
 from . import models
 
@@ -19,7 +21,7 @@ from . import models
 # This form is used in the template to enter the slack name to send a message to the user with a reset link to generate a new password. This form finds the user and sends the url.
 class SlackResetForm(forms.Form):
     
-    slackName = forms.CharField(label="Slack-Name", max_length=40)
+    slackName = forms.CharField(label="Slack-Name oder E-Mail-Adresse", max_length=40)
 
 
     def send_slackMessage(self, subject_template_name, email_template_name, context, from_email, to_user, html_email_template_name=None):
@@ -44,10 +46,11 @@ class SlackResetForm(forms.Form):
         that prevent inactive users and users with unusable passwords from
         resetting their password.
         """
-        active_users = models.KioskUser._default_manager.filter(**{
-            'slackName__iexact': slackName,
-            'is_active': True,
-        })
+        active_users = models.KioskUser._default_manager.filter(
+            Q(slackName__iexact=slackName, is_active=True)
+            |
+            Q(email__iexact=slackName, is_active=True)
+        )
         return (u for u in active_users if u.has_usable_password())
 
     def save(self, domain_override=None, subject_template_name='registration/password_reset_subject.html', email_template_name='registration/password_reset_message.html', use_https=False, token_generator=default_token_generator, from_email=None, request=None, html_email_template_name=None, extra_email_context=None):
@@ -107,6 +110,13 @@ class UserErstellenForm(UserCreationForm):
 
 		return email
 
+	def clean_slackName(self):
+		slackName = self.cleaned_data['slackName']
+		if KioskUser.objects.filter(slackName=slackName).exists():
+			raise ValidationError(_('Slack-Name existiert bereits'), code='invalid')
+
+		return slackName
+
 	def clean_dsgvo_accepted(self):
 		dsgvo_accepted = self.cleaned_data['dsgvo_accepted']
 		if not dsgvo_accepted is True:
@@ -116,19 +126,21 @@ class UserErstellenForm(UserCreationForm):
 
 	class Meta:
 		model = KioskUser
-		fields = ('username','first_name','last_name','email','aktivBis','password1','password2', 'dsgvo_accepted')
+		fields = ('username', 'slackName','first_name','last_name','email','aktivBis','password1','password2', 'dsgvo_accepted')
 		widgets = {
 			'aktivBis': forms.DateInput(attrs={'class':'datepicker'}),
 		}
 		labels = {
+            'slackName': _('Slack-Name'),
 			'aktivBis': _('Angestellt bis'),
             'dsgvo_accepted': _('Akzeptieren der Regelungen im Kiosk und der Datenverwendung'),
 		}
 		help_texts = {
-			'username': _('<small>Dein Username im FfE-Kiosk muss deinem Slack-Namen entsprechen. (ohne @)</small>'),
+			'username': _('<small>W'+chr(228)+'hle einen Nutzernamen, mit dem du dich einloggen m'+chr(246)+'chtest.</small>'),
+            'slackName': _('<small>Gib deinen Namen auf Slack an (ohne @). Falls du, ein Leerzeichen im Slack-Namen hast, dann musst du unter "Profile & Account" deine "Member ID" angeben (U....).</small>'),
 			'email': _('<small>Die E-Mail-Adresse muss die @ffe.de-Domain besitzen.</small>'),
 			'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
-            'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/anleitung/">gültigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
+            'dsgvo_accepted': _('Mit dem Setzen des Hakens akzeptierst du die <a class="bold" href="/menu/regelwerk/">g'+chr(252)+'ltigen Regeln im Kiosk</a> und die <a class="bold" href="/datenschutzerklaerung/">Hinweise zur Datenverwendung</a>.')
 		}
 
 

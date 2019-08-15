@@ -2,14 +2,14 @@ select
 	b.produktpalette_id,
 	b.name,
 	b.anzahl,
-	s.anzahl as stolen_anzahl,
-	s.anzahl*1.0 / (s.anzahl + b.anzahl) * 100 as spec_stolen_anzahl,
-	b.ek + s.ek as ek,
+	coalesce(s.anzahl,0) as stolen_anzahl,
+	coalesce(s.anzahl*1.0 / (s.anzahl + b.anzahl) * 100 ,0) as spec_stolen_anzahl,
+	b.ek + coalesce(s.ek,0) as ek,
 	b.vk as vk,
-	b.vk - (b.ek + s.ek) as gewinn,
-	(b.vk - (b.ek + s.ek))/b.anzahl as spec_gewinn,
-	s.vk - s.ek as entg_gewinn,
-	(s.vk - s.ek)/b.anzahl as spec_entg_gewinn
+	b.vk - (b.ek + coalesce(s.ek,0) ) as gewinn,
+	(b.vk - (b.ek + coalesce(s.ek,0) ))/b.anzahl as spec_gewinn,
+	coalesce(s.vk - s.ek,0) as entg_gewinn,
+	coalesce((s.vk - s.ek),0) /b.anzahl as spec_entg_gewinn
 from (
 	select
 		a.produktpalette_id,
@@ -26,7 +26,7 @@ from (
 	where c.username <> "Dieb"
 	group by produktpalette_id
 ) b
-join (
+left join (
 	select
 		a.produktpalette_id,
 		b.produktName as name,

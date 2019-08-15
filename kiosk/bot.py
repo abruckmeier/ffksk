@@ -9,28 +9,30 @@ from django.conf import settings
 from slackclient import SlackClient
 
 
-def slack_SendMsg(msg, user=None, channel=False, userName=None):
-	
+def slack_SendMsg(msg, user=None, channel=False, userName=None, channelName=None):
+
 	if channel==True:
 		slackSettings = getattr(settings,'SLACK_SETTINGS')
 		userAdress = '#'+slackSettings['channelToPost']
 	elif not userName is None:
 		userAdress = '@' + userName
+	elif channelName:
+	    userAdress = channelName
 	else:
-		userAdress = '@' + user.slackName	
+		userAdress = '@' + user.slackName
 		# Functional Users (bank, thief) do not need messages
 		if user.visible == False:
 			return
 
 	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-	
+
 	sc = SlackClient(slack_token)
 	sc.api_call(
 		"chat.postMessage",
 		link_names=True,
 		channel=userAdress,
 		text = msg,
-	)	
+	)
 	return
 
 # Eine Slack-Nachricht wird testweise an den persoenlichen Slackbot-Channel eines Nutzers gesendet
@@ -56,7 +58,7 @@ def slack_TestMsgToUser(user):
 	#print(sc.api_call("users.list",include_locale=True))
 	#print(sc.api_call("channels.list"))
 	#print(sc.api_call("conversations.info",channel="D7E1357DE"))
-	
+
 
 	return
 
@@ -94,7 +96,7 @@ def slack_PostWelcomeMessage(user):
 		accountants.append(item.first_name + ' ' + item.last_name)
 	accountants = ', '.join(accountants)
 
-	textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n\n' + 'Du bist jetzt Teil einer Community, die als Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des Kiosks musst du zun'+chr(228)+'chst etwas Guthaben auf dein Konto bei einem Verwalter ('+ accountants + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n' + 'Im #kiosk-Channel hier auf Slack bekommst du alle wichtigen Informationen zum FfE-Kiosk. Vor allem sende ich dort Benachrichtigungen, wenn neue Produkte angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n' + 'Apropos Einkaufsliste: Du kannst dich aktiv am Betrieb des Kiosks als Eink'+chr(228)+'ufer beteiligen. Nach Belieben kannst du Produkte von der Einkaufsliste f'+chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung f'+chr(252)+'r das Kiosk besorgen.'
+	textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n\n' + 'Du bist jetzt Teil einer Community, die als Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des Kiosks musst du zun'+chr(228)+'chst etwas Guthaben auf dein Konto bei einem Verwalter ('+ accountants + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n' + 'Im #kiosk-Channel hier auf Slack bekommst du alle wichtigen Informationen zum FfE-Kiosk. Vor allem sende ich im #kiosk_bot-Channel Benachrichtigungen, wenn neue Produkte angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n' + 'Apropos Einkaufsliste: Du kannst dich aktiv am Betrieb des Kiosks als Eink'+chr(228)+'ufer beteiligen. Nach Belieben kannst du Produkte von der Einkaufsliste f'+chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung f'+chr(252)+'r das Kiosk besorgen.'
 
 	userAdress = '@' + user.slackName
 
@@ -151,7 +153,7 @@ def slack_PostNewItemsInShoppingListToChannel(newItems):
 
 # Information an Nutzer mit >30 Euro oder <1 Euro um Geld ausbezahlen zu lassen oder Geld einzuzahlen.
 def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
-	
+
 	user = KioskUser.objects.get(id = userID)
 
 	# Functional Users (bank, thief) do not need messages
@@ -201,13 +203,15 @@ def checkKioskContentAndFillUp():
 
 	for item in kioskBilanz:
 		if item["summe"] <= item["schwelleMeldung"]:
-			
+
 			itemsPerRound = item["paketgroesseInListe"]
+			if itemsPerRound <= 0:
+			    continue
 			roundsFillUp = int(math.ceil((item["maxKapazitaet"] - item["summe"]) / itemsPerRound))
 
 			p = Produktpalette.objects.get(id=item["id"])
 			maxGroup = EinkaufslisteGroups.objects.all().aggregate(Max('gruppenID'))
-			maxGroup = maxGroup["gruppenID__max"] + 1			
+			maxGroup = maxGroup["gruppenID__max"] + 1
 
 			for i in range(0,roundsFillUp):
 				for j in range(0,itemsPerRound):
@@ -217,9 +221,9 @@ def checkKioskContentAndFillUp():
 					eg.save()
 
 					newItems.add(e.produktpalette.produktName)
-				
+
 				maxGroup = maxGroup + 1
-	
+
 	# Send message to the channel to inform about new Items in the shopping list
 	if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
 		try:

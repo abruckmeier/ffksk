@@ -12,11 +12,11 @@
 			Info
 		</div>
 		<div class="panel-body justified smallText">
-			Zähle alle Produkte im Kiosk und trage die jeweilige Anzahl beim Produkt in die Spalte "# Ist". Der Wert darf größer oder kleiner sein als der Wert in Spalte "# Soll". Du kannst auch nur eine Teil-Inventur machen und nur bestimmte Artikel zählen.
+			Z&#228;hle alle Produkte im Kiosk und trage die jeweilige Anzahl beim Produkt in die Spalte "# Ist". Der Wert darf gr&#246;&#223;er oder kleiner sein als der Wert in Spalte "# Soll". Du kannst auch nur eine Teil-Inventur machen und nur bestimmte Artikel z&#228;hlen.
 			<br>
 			<b>Bitte beachte: </b>Bevor du mit der Inventur beginnst, lade bitte die Seite neu, so dass du den aktuellen "# Soll"-Stand hast.
 			<br>
-			Sollte ein Produkt im Kiosk vorhanden sein, aber das Produkt ist nicht hier aufgelistet, dann führe eine <a href="{% url 'rueckbuchungen_user_page' userID=4 %}">Rückbuchung des Produkts vom Benutzer "Kiosk-Dieb"</a> durch.
+			Sollte ein Produkt im Kiosk vorhanden sein, aber das Produkt ist nicht hier aufgelistet, dann f&#252;hre eine <a href="{% url 'rueckbuchungen_user_page' userID=4 %}">R&#252;ckbuchung des Produkts vom Benutzer "Kiosk-Dieb"</a> durch.
 			<!-- Be careful here! This link is only valid when "Kiosk-Dieb" is installed on ID 4 in the database!-->
 		</div>
 	</div>
@@ -43,6 +43,13 @@
 			{% endfor %}
 		</table>
 
+		<br>
+		&nbsp;
+		<input type="checkbox" name="sendMessage" value="sendMessage" checked>
+		&nbsp; &nbsp; 
+		Unbezahlte Produkte im Slack-Channel posten.
+		<br><br>
+
 		<button type="submit" class="btn btn-primary" style="font-weight: bold;font-size: 100%;">
 			Inventur abschicken
 		</button>
@@ -52,7 +59,7 @@
 
 	<br>
 	<hr>
-	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum persönlichen Bereich</a><br>
+	<a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
 
 
 	

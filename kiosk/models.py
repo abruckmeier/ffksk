@@ -18,6 +18,21 @@ from django.db.models import Max
 
 # Create your models here.
 
+class Start_News(models.Model):
+	heading = models.CharField(max_length=256)
+	date = models.DateTimeField(default=timezone.now)
+	content = models.TextField(max_length=2048, blank=True)
+	created = models.DateTimeField(auto_now_add=True)
+	modified = models.DateTimeField(auto_now=True)
+	starred = models.BooleanField(default=False)
+	visible = models.BooleanField(default=True)
+
+	def __str__(self):
+		return(str(self.date) + ': ' + str(self.heading))
+
+
+
+
 class Kontakt_Nachricht(models.Model):
 	name = models.CharField(max_length=40)
 	email = models.EmailField('E-Mail-Adresse')
@@ -34,6 +49,7 @@ class Kontakt_Nachricht(models.Model):
 class Produktpalette(models.Model):
 	produktName = models.CharField(max_length=40)
 	imVerkauf = models.BooleanField()
+	inAufstockung = models.BooleanField(default=True)
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
 	#kommentar = models.TextField(max_length=512,blank=True)
@@ -68,16 +84,22 @@ class ProduktVerkaufspreise(models.Model):
 	produktpalette = models.ForeignKey(
 		Produktpalette, on_delete=models.CASCADE)
 	verkaufspreis = models.IntegerField(validators=[MinValueValidator(0)])
+	preisAufstockung = models.IntegerField(validators=[MinValueValidator(0)])
 	gueltigAb = models.DateTimeField(default=timezone.now)
 
 	def __str__(self):
 		price = '%.2f' % (self.verkaufspreis/100)
+		aufstockung = '%.2f' % (self.preisAufstockung/100)
 		return(self.produktpalette.produktName + ", " +
-			str(price) + " "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
+			str(price) + "(+"+str(aufstockung)+") "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
 
 	def getActPrices(produkt_id):
 		verkaufspreis = readFromDatabase('getActPrices',[produkt_id])
 		return(verkaufspreis[0])
+
+	def getPreisAufstockung(produkt_id):
+		aufstockung = readFromDatabase('getPreisAufstockung',[produkt_id])
+		return(aufstockung[0])
 
 
 class Einkaufsliste(models.Model):
@@ -172,14 +194,14 @@ class ZumEinkaufVorgemerkt(models.Model):
 
 		# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
 		if anzahlAngeliefert > anzahlElemente:
-			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" für '"+product.produktName+"'"
+			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" f"+chr(252)+"r '"+product.produktName+"'"
 			retVal['err'] = True
 
 		# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
 		minProduktMarge = finanz['minProduktMarge']
 
 		if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
-			retVal['msg'] = "Die Kosten für den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
+			retVal['msg'] = "Die Kosten f"+chr(252)+"r den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
 			retVal['err'] = True
 
 		if retVal['err'] == True:
@@ -230,7 +252,7 @@ class ZumEinkaufVorgemerkt(models.Model):
 
 			retVal['dct'] = {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName': product.produktName,'anzahlElemente':anzahlElemente}
 			retVal['angeliefert'] = angeliefert
-			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' Stück zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
+			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
 			retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
 			return retVal
 
@@ -265,8 +287,8 @@ class Kiosk(models.Model):
 
 	# Kauf eines Produkts auf 'kauf_page'
 	@transaction.atomic
-	def buyItem(wannaBuyItem,user):
-		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0}
+	def buyItem(wannaBuyItem,user,gekauft_per='ubk', buyAndDonate=False):
+		retVals = {'success': False, 'msg': [], 'product': wannaBuyItem, 'price': 0, 'hasDonated': False, 'donation': 0}
 
 		# First, look in Kiosk.
 		try:
@@ -296,31 +318,40 @@ class Kiosk(models.Model):
 		# Abfrage des aktuellen Verkaufspreis fuer das Objekt
 		actPrices = ProduktVerkaufspreise.getActPrices(item.produktpalette.id)
 		actPrices = actPrices.get('verkaufspreis')
+		donation = ProduktVerkaufspreise.getPreisAufstockung(item.produktpalette.id)
+		donation = donation.get('preisAufstockung')		
 
 		# Check if user is allowed to buy something and has enough money
 		allowedConusmers = readFromDatabase('getUsersToConsume')
 		if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
-			msg = 'You are not allowed to buy a product.'
+			msg = 'Du bist nicht berechtigt, Produkte zu kaufen.'
 			print(msg)
 			retVals['msg'].append(msg)
 			return retVals
 
 		if not user.username=='Dieb':
 			konto = Kontostand.objects.get(nutzer = user)
-			if konto.stand - actPrices < 0:
-				msg = 'Your account is too low.'
-				print(msg)
-				retVals['msg'].append(msg)
-				return retVals
+			if buyAndDonate:
+				if konto.stand - actPrices - donation < 0:
+					msg = 'Dein Kontostand ist zu niedrig, um dieses Produkt zu kaufen und eine Spende zu geben.'
+					print(msg)
+					retVals['msg'].append(msg)
+					return retVals
+			else:
+				if konto.stand - actPrices < 0:
+					msg = 'Dein Kontostand ist zu niedrig, um dieses Produkt zu kaufen.'
+					print(msg)
+					retVals['msg'].append(msg)
+					return retVals
 
 		# Ablage des Kaufs in Tabelle 'Gekauft'
 		g = Gekauft(kiosk_ID=item.kiosk_ID, produktpalette=item.produktpalette,
 			bedarfErstelltUm=item.bedarfErstelltUm, einkaufsvermerkUm=item.einkaufsvermerkUm,
 			einkaeufer=item.einkaeufer, geliefertUm=item.geliefertUm,
 			verwalterEinpflegen=item.verwalterEinpflegen, einkaufspreis=item.einkaufspreis,
-			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices)
+			gekauftUm = timezone.now(), kaeufer = user, verkaufspreis=actPrices, gekauft_per=gekauft_per)
 
-		# Produkt in Tabell 'Kiosk' loeschen
+		# Produkt in Tabelle 'Kiosk' loeschen
 		Kiosk.objects.get(kiosk_ID=item.pk).delete()
 
 		# Automatische Geldtransaktion vom User zur Bank
@@ -328,11 +359,22 @@ class Kiosk(models.Model):
 		GeldTransaktionen.doTransaction(g.kaeufer,userBank,g.verkaufspreis,g.gekauftUm,
 			"Kauf " + g.produktpalette.produktName)# + " um " + str(g.gekauftUm.astimezone(tz.tzlocal())))
 
+		if buyAndDonate and donation>0:
+			userSpendenkonto = KioskUser.objects.get(username='Spendenkonto')
+			GeldTransaktionen.doTransaction(
+				g.kaeufer,
+				userSpendenkonto,
+				donation,
+				g.gekauftUm,
+				"Spende durch Aufstockung von " + g.produktpalette.produktName)
+
 		g.save()
 		
 		retVals['success'] = True
 		retVals['msg'].append('OK')
 		retVals['price'] = actPrices/100.0
+		retVals['hasDonated'] = buyAndDonate and donation>0
+		retVals['donation'] = donation/100.0
 		return retVals
 
 
@@ -353,6 +395,9 @@ class Gekauft(models.Model):
 		KioskUser,on_delete=models.CASCADE,related_name='gekauft_kaeufer')
 	# Verkaufspreis ist eigentlich nicht noetig, ergibt sich aus Relationen, die Dokumentationstabellen sollen aber sicherheitshalber diese Info speichern (zum Schutz vor Loesuchungen in anderen Tabellen).
 	verkaufspreis = models.IntegerField(validators=[MinValueValidator(0)])
+
+	kaufarten = (('slack','slack'),('web','web'),('ubk','unbekannt'),('dieb','dieb'))
+	gekauft_per = models.CharField(max_length=6,default='ubk',choices=kaufarten)
 
 	def __str__(self):
 		price = '%.2f' % (self.verkaufspreis/100)
@@ -659,7 +704,7 @@ class ZuVielBezahlt(models.Model):
 					buyItem = item["produkt_name"]
 
 					for x in range(0,diff):
-						retVal = Kiosk.buyItem(buyItem,user)
+						retVal = Kiosk.buyItem(buyItem,user,gekauft_per='dieb')
 
 					report.append({'id': item["id"], 
 						'produkt_name': item["produkt_name"], 
