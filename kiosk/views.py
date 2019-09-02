@@ -973,6 +973,9 @@ def statistics(request):
 	gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
 	gespendet = gespendet.stand / 100.0
 
+	spendenkonto = Kontostand.objects.get(nutzer__username='Spendenkonto')
+	spendenkonto = spendenkonto.stand / 100.0
+
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
 	bargeld = - bargeld.stand / 100.0
 	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
@@ -1039,7 +1042,8 @@ def statistics(request):
 		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit,
 		'theoProfit': theoProfit, 'buyersProvision': buyersProvision,
 		'adminsProvision': adminsProvision, 'profitHandback': profitHandback,
-		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet, })
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet,
+		'spendenkonto':spendenkonto, })
 
 
 
