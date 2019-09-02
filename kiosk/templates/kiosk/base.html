@@ -30,8 +30,30 @@
 
   		{% block javascript %}{% endblock %}
 
-
-
+  		<!-- Use of Cookies Pop-Up -->
+  		<link rel="stylesheet" type="text/css" href="{% static 'css/cookieconsent.min.css' %}" />
+		<script type="text/javascript" src="{% static 'js/cookieconsent.min.js' %}" data-cfasync="false"></script>
+		<script>
+			$(document).ready(function(){
+				window.cookieconsent.initialise({
+				  "palette": {
+				    "popup": {
+				      "background": "#252e39"
+				    },
+				    "button": {
+				      "background": "transparent",
+				      "text": "#14a7d0",
+				      "border": "#14a7d0"
+				    }
+				  },
+				  "content": {
+				    "message": "Um unsere Webseite für Sie optimal zu gestalten verwenden wir Cookies. Durch die weitere Nutzung der Webseite stimmen Sie der Verwendung von Cookies zu. \nWeitere Informationen zu Cookies erhalten Sie in unserer Datenschutzerklärung.",
+				    "dismiss": "Einverstanden",
+				    "link": "Mehr zu Cookies"
+				  }
+				});
+			});
+		</script>
 	</head>
 	<body>
 
