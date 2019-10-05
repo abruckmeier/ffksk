@@ -3,7 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.models import AbstractUser, UserManager
 from datetime import date
 
-
+from datetime import date
 
 # Change the user manager for a case-insensitive login
 class KioskUserManager(UserManager):
@@ -24,7 +24,7 @@ class KioskUser(AbstractUser):
 		('Buyer','Eink'+chr(228)+'ufer'),('Accountant','Verwalter'),('Admin','Admin'))
 	
 	slackName = models.CharField(max_length=40, unique=True)
-	aktivBis = models.DateField()
+	aktivBis = models.DateField(default=date(1999,12,31))
 	instruierterKaeufer = models.BooleanField(default=False)
 	rechte = models.CharField(max_length=15,default='User',choices=permissions)
 	visible = models.BooleanField(default=True) # Bank, Dieb, usw. sollen nicht gesehn und nicht angewaehlt werden duerfen, z.B. bei Einkauf-Annahme
