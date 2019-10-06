@@ -33,6 +33,7 @@ from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
+from django.urls import reverse_lazy
 
 
 # Create your views here.
@@ -909,9 +910,14 @@ def inventory(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
+	dieb = KioskUser.objects.get(username='Dieb')
+	rueckbuchung_dieb_page = reverse_lazy('rueckbuchungen_user_page', args=[dieb.id])
+
 	return render(request, 'kiosk/inventory_page.html',
 		{'currentUser': currentUser, 'inventoryList': inventoryList,
-		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'rueckbuchung_dieb_page': rueckbuchung_dieb_page,
+		})
 
 
 @login_required

@@ -16,7 +16,7 @@
 			<br>
 			<b>Bitte beachte: </b>Bevor du mit der Inventur beginnst, lade bitte die Seite neu, so dass du den aktuellen "# Soll"-Stand hast.
 			<br>
-			Sollte ein Produkt im Kiosk vorhanden sein, aber das Produkt ist nicht hier aufgelistet, dann f&#252;hre eine <a href="{% url 'rueckbuchungen_user_page' userID=4 %}">R&#252;ckbuchung des Produkts vom Benutzer "Kiosk-Dieb"</a> durch.
+			Sollte ein Produkt im Kiosk vorhanden sein, aber das Produkt ist nicht hier aufgelistet, dann f&#252;hre eine <a href="{{ rueckbuchung_dieb_page }}">R&#252;ckbuchung des Produkts vom Benutzer "Kiosk-Dieb"</a> durch.
 			<!-- Be careful here! This link is only valid when "Kiosk-Dieb" is installed on ID 4 in the database!-->
 		</div>
 	</div>
