@@ -1006,15 +1006,15 @@ def statistics(request):
 	# Gewinn & Verlust
 	theoAlloverProfit = vkValueAll - ekValueAll
 	theoProfit = vkValueKiosk + kioskBankValue
-	buyersProvision = theoAlloverProfit - theoProfit - gespendet
+	buyersProvision = theoAlloverProfit - theoProfit - gespendet - spendenkonto
 
 	adminsProvision = 0
 	profitHandback = 0
 
 	expProfit = theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback
 
-	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue - bargeld_Dieb - bargeld_tresor
-	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk - bargeld_tresor)
+	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue - bargeld_Dieb - bargeld_tresor + gespendet + spendenkonto
+	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk - bargeld_tresor + gespendet + spendenkonto)
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
