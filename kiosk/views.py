@@ -682,7 +682,7 @@ def neuerNutzer_page(request):
 			# Generate Confirmation Email
 			user = u.username
 			current_site = get_current_site(request)
-			if request.is_secure: protocol = 'https'
+			if request.is_secure(): protocol = 'https'
 			else: protocol = 'http'
 			domain = current_site.domain
 			uid = force_text(urlsafe_base64_encode(force_bytes(u.pk)))
