@@ -11,6 +11,7 @@ django.setup()
 
 # Import the Modules
 from django.conf import settings
+from django.db.models import Q
 from datetime import datetime, timedelta
 import pytz
 from shutil import copyfile
@@ -20,7 +21,7 @@ import time
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
 from profil.models import KioskUser
-from kiosk.models import ZumEinkaufVorgemerkt
+from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
 
 
 # Elect best buyers and administrators
@@ -260,7 +261,7 @@ def blockUserAfterActiveTime(nowDate):
     t = nowDate + timedelta(days=1)
     users = KioskUser.objects.filter(aktivBis__lt=t, visible=True, is_active=True, activity_end_msg=1)
 
-    msg = 'Liebe*r Kiosknuzter*in,\nHeute endet dein Besch'+chr(228)+'ftiungsverh'+chr(228)+'ltnis an der FfE und somit auch deine Aktivit'+chr(228)+'t im FfE-Kiosk. Dein Account ist nun inaktiv gesetzt, du kannst also keine Eink'+chr(228)+'ufe mehr t'+chr(228)+'tigen.\nHattest du noch Guthaben auf deinem Konto? Dann lasse dir dies von einem Verwalter ausbezahlen.\n Du verl'+chr(228)+'sst die FfE noch gar nicht? Dann reaktiviere dein Konto unter https://ffekiosk.pythonanywhere.com/accounts/angestellt_bis_change/.\nIn einem Monat werden deine personenbezogenen Daten gel'+chr(246)+'scht, danach ist eine Reaktivierung nicht mehr m'+chr(246)+'glich.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
+    msg = 'Liebe*r Kiosknutzer*in,\nHeute endet dein Besch'+chr(228)+'ftiungsverh'+chr(228)+'ltnis an der FfE und somit auch deine Aktivit'+chr(228)+'t im FfE-Kiosk. Dein Account ist nun inaktiv gesetzt, du kannst also keine Eink'+chr(228)+'ufe mehr t'+chr(228)+'tigen.\nHattest du noch Guthaben auf deinem Konto? Dann lasse dir dies von einem Verwalter ausbezahlen.\n Du verl'+chr(228)+'sst die FfE noch gar nicht? Dann reaktiviere dein Konto unter https://ffekiosk.pythonanywhere.com/accounts/angestellt_bis_change/.\nIn einem Monat werden deine personenbezogenen Daten gel'+chr(246)+'scht, danach ist eine Reaktivierung nicht mehr m'+chr(246)+'glich.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
     for u in users:
 
@@ -277,11 +278,74 @@ def blockUserAfterActiveTime(nowDate):
         u.save()
     return
 
+
+
+# Message to inactive users before transferring money and deleting account
+def warnInactiveUsersBeforeDeletion(nowDate):
+    
+    t = nowDate - timedelta(days=28)
+    users = KioskUser.objects.filter(
+        aktivBis__lt= t,
+        visible= False,
+        is_active= False,
+        activity_end_msg= 2,
+    ).filter(
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+    )
+    
+    for u in users:
+        msg = f'Liebe*r Kiosknuter*in,\nDein Account wurde vor 28 Tagen inaktiv gesetzt. In sieben Tagen wird dein Account endgültig gelöscht{ "und dein verbleibendes Guthaben von "+str(u.kontostand.stand/100)+" "+chr(8364)+" geht als Spende an den Kiosk" if u.kontostand.stand>0 else "" }. Falls du dies nicht möchtest, trete bitte mit einem Administrator in Kontakt.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
+
+        slack_SendMsg(msg, user=u, force_send=True)
+
+        # Set status, that message has been sent
+        u.activity_end_msg = 3
+
+        u.save()
+
+
+
+# Transfer money of inactive user and pseudonymisation
+def deleteInactiveUser(nowDate):
+    
+    t = nowDate - timedelta(days=35)
+    users = KioskUser.objects.filter(
+        aktivBis__lt= t,
+        visible= False,
+        is_active= False,
+        activity_end_msg= 3,
+    ).filter(
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+    )
+
+
+    spendenkonto = KioskUser.objects.get(username='Spendenkonto')
+    
+    for u in users:
+        
+        GeldTransaktionen.doTransaction(vonnutzer=u, zunutzer=spendenkonto,
+            betrag=u.kontostand.stand, datum=nowDate, kommentar='Transfer of remaining money before deletion of account.')
+
+        u.username = f'deletedUser_{str(u.id)}'
+        u.first_name = 'deleted'
+        u.last_name = 'deleted'
+        u.email = f'deletedUser_{str(u.id)}@ffe.de'
+        u.slackName = f'deletedUser_{str(u.id)}'
+        u.activity_end_msg = 4
+        u.save()
+
+
+
+
+
+
+
 # Run the Script
 if __name__ == '__main__':
     
     nowDate = datetime.utcnow()
     nowDate = pytz.utc.localize(nowDate)
+
     
     # Elect best buyers and administrators on Friday
     if nowDate.weekday()==4:
@@ -414,9 +478,20 @@ if __name__ == '__main__':
 
 
     # Unpersonalise accounts one month after inactivity
+    print('Message to inactive users to warn for deletion of account + Deletion of account')
+    try:
+        warnInactiveUsersBeforeDeletion(nowDate)
+        deleteInactiveUser(nowDate)
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('Warning and deletion of inactive users, did not complete!', user=u)
+            print('Warning and deletion of inactive users failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of Warning and deletion of inactive users.')
 
-
-    # Weekly: Delete the old history of slackbot messages to the admins with the database save older than 1 year
     
 
     # Weekly: Check for inactive users and to be deleted ones, check for some constraints: Too high / too low account. Calculate integrity of account, and transactions, and...
