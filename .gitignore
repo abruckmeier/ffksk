@@ -5,3 +5,5 @@ ffeDataBase
 */*/migrations/*
 
 ffeKiosk/security_settings.py
+
+*.sqlite3

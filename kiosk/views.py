@@ -33,6 +33,7 @@ from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
+from django.urls import reverse_lazy
 
 
 # Create your views here.
@@ -681,7 +682,7 @@ def neuerNutzer_page(request):
 			# Generate Confirmation Email
 			user = u.username
 			current_site = get_current_site(request)
-			if request.is_secure: protocol = 'https'
+			if request.is_secure(): protocol = 'https'
 			else: protocol = 'http'
 			domain = current_site.domain
 			uid = force_text(urlsafe_base64_encode(force_bytes(u.pk)))
@@ -909,9 +910,14 @@ def inventory(request):
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
+	dieb = KioskUser.objects.get(username='Dieb')
+	rueckbuchung_dieb_page = reverse_lazy('rueckbuchungen_user_page', args=[dieb.id])
+
 	return render(request, 'kiosk/inventory_page.html',
 		{'currentUser': currentUser, 'inventoryList': inventoryList,
-		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
+		'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
+		'rueckbuchung_dieb_page': rueckbuchung_dieb_page,
+		})
 
 
 @login_required
@@ -973,6 +979,9 @@ def statistics(request):
 	gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
 	gespendet = gespendet.stand / 100.0
 
+	spendenkonto = Kontostand.objects.get(nutzer__username='Spendenkonto')
+	spendenkonto = spendenkonto.stand / 100.0
+
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
 	bargeld = - bargeld.stand / 100.0
 	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
@@ -997,15 +1006,15 @@ def statistics(request):
 	# Gewinn & Verlust
 	theoAlloverProfit = vkValueAll - ekValueAll
 	theoProfit = vkValueKiosk + kioskBankValue
-	buyersProvision = theoAlloverProfit - theoProfit - gespendet
+	buyersProvision = theoAlloverProfit - theoProfit - gespendet - spendenkonto
 
 	adminsProvision = 0
 	profitHandback = 0
 
 	expProfit = theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback
 
-	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue - bargeld_Dieb - bargeld_tresor
-	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk - bargeld_tresor)
+	bilanzCheck = usersMoneyValue - bargeld - stolenValue + kioskBankValue - bargeld_Dieb - bargeld_tresor + gespendet + spendenkonto
+	checkExpProfit = -(usersMoneyValue -bargeld - vkValueKiosk - bargeld_tresor + gespendet + spendenkonto)
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -1039,7 +1048,8 @@ def statistics(request):
 		'priceIncrease': priceIncrease, 'theoAlloverProfit': theoAlloverProfit,
 		'theoProfit': theoProfit, 'buyersProvision': buyersProvision,
 		'adminsProvision': adminsProvision, 'profitHandback': profitHandback,
-		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet, })
+		'expProfit': expProfit, 'bilanzCheck': bilanzCheck, 'checkExpProfit': checkExpProfit, 'gespendet': gespendet,
+		'spendenkonto':spendenkonto, })
 
 
 
