@@ -1,8 +1,10 @@
 */__*__/*
 */*/__*__/*
 ffeDataBase
-*/migrations/*
-*/*/migrations/*
+#*/migrations/*
+#*/*/migrations/*
+
+*.pyc
 
 ffeKiosk/security_settings.py
 

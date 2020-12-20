@@ -87,7 +87,7 @@ def dailyBackup(nowDate):
     # Get the origin of the to copy file
     baseDir = getattr(settings,'BASE_DIR')
     databaseName = getattr(settings,'DATABASE_NAME')
-    
+
     # Get the backup folder and create the day-specific file name of the backup file
     backupFolder = backupSettings['backupFolder']
     if not os.path.exists(backupFolder):
@@ -113,7 +113,7 @@ def weeklyBackup(nowDate):
     # Get the origin of the to attach file
     baseDir = getattr(settings,'BASE_DIR')
     databaseName = getattr(settings,'DATABASE_NAME')
-    
+
     # Get the backup folder
     backupFolder = backupSettings['backupFolder']
     if not os.path.exists(backupFolder):
@@ -132,11 +132,11 @@ def weeklyBackup(nowDate):
 
     for usr in backupSettings['sendWeeklyBackupToUsers']:
         sc.api_call(
-            'files.upload', 
-            channels='@'+usr, 
+            'files.upload',
+            channels='@'+usr,
             as_user=True,
             text='test',
-            filename=attDatabaseName, 
+            filename=attDatabaseName,
             file=open(os.path.join(baseDir,databaseName), 'rb'),
         )
 
@@ -144,12 +144,12 @@ def weeklyBackup(nowDate):
         slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
 
     return {
-        'weeklyStoredAtServer':str(os.path.join(backupFolder,attDatabaseName)), 
+        'weeklyStoredAtServer':str(os.path.join(backupFolder,attDatabaseName)),
         'weeklySentToUsers': ['@'+x for x in backupSettings['sendWeeklyBackupToUsers']],
     }
 
 
-# 
+#
 def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
 
     # Unix Epoche of timestamp half a year before
@@ -166,10 +166,10 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
 
     for botID in backupSettings['kioskbotChannel']:
         conversation = sc.api_call(
-            'conversations.history', 
+            'conversations.history',
             channel=botID,
         )
-        
+
         if not conversation.get('ok', False):
             print('deleteOldWeeklyBackupsFromSlackAdmin: For botID {}, no messages found.'.format(botID))
 
@@ -192,7 +192,7 @@ def deleteTooOldProductsInShoppingList(nowDate):
     # Get items older than seven days
     t = nowDate - timedelta(days=7)
     oldItems = ZumEinkaufVorgemerkt.objects.filter(einkaufsvermerkUm__lt=t)
-    
+
     # Notification of deletion to users
     userIDs = [o.einkaeufer_id for o in oldItems]
     userIDs = list(set(userIDs))
@@ -282,7 +282,7 @@ def blockUserAfterActiveTime(nowDate):
 
 # Message to inactive users before transferring money and deleting account
 def warnInactiveUsersBeforeDeletion(nowDate):
-    
+
     t = nowDate - timedelta(days=28)
     users = KioskUser.objects.filter(
         aktivBis__lt= t,
@@ -292,11 +292,11 @@ def warnInactiveUsersBeforeDeletion(nowDate):
     ).filter(
         ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
     )
-    
+
     for u in users:
         msg = f'Liebe*r Kiosknuter*in,\nDein Account wurde vor 28 Tagen inaktiv gesetzt. In sieben Tagen wird dein Account endgültig gelöscht{ "und dein verbleibendes Guthaben von "+str(u.kontostand.stand/100)+" "+chr(8364)+" geht als Spende an den Kiosk" if u.kontostand.stand>0 else "" }. Falls du dies nicht möchtest, trete bitte mit einem Administrator in Kontakt.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
-        slack_SendMsg(msg, user=u, force_send=True)
+        slack_SendMsg(msg, user=u, force_send=True);print(u)
 
         # Set status, that message has been sent
         u.activity_end_msg = 3
@@ -307,7 +307,7 @@ def warnInactiveUsersBeforeDeletion(nowDate):
 
 # Transfer money of inactive user and pseudonymisation
 def deleteInactiveUser(nowDate):
-    
+
     t = nowDate - timedelta(days=35)
     users = KioskUser.objects.filter(
         aktivBis__lt= t,
@@ -319,11 +319,11 @@ def deleteInactiveUser(nowDate):
     )
 
 
-    spendenkonto = KioskUser.objects.get(username='Spendenkonto')
-    
+    bank = KioskUser.objects.get(username='Bank')
+
     for u in users:
-        
-        GeldTransaktionen.doTransaction(vonnutzer=u, zunutzer=spendenkonto,
+
+        GeldTransaktionen.doTransaction(vonnutzer=u, zunutzer=bank,
             betrag=u.kontostand.stand, datum=nowDate, kommentar='Transfer of remaining money before deletion of account.')
 
         u.username = f'deletedUser_{str(u.id)}'
@@ -342,11 +342,11 @@ def deleteInactiveUser(nowDate):
 
 # Run the Script
 if __name__ == '__main__':
-    
+
     nowDate = datetime.utcnow()
     nowDate = pytz.utc.localize(nowDate)
 
-    
+
     # Elect best buyers and administrators on Friday
     if nowDate.weekday()==4:
         print('It''s Friday. Elect best buyers and administrators.')
@@ -356,7 +356,7 @@ if __name__ == '__main__':
         except:
             print('Error on posting the best buyers and administrators.')
 
- 
+
 
     # Conduct the daily rotating Save of the Database
     print('Do the daily backup of the database.')
@@ -426,7 +426,7 @@ if __name__ == '__main__':
         except:
             print('Failing to send Slack Message with Fail Notice of Daily deletion of products in the shopping list, older than 7 days.')
 
-    
+
 
     # Give a warning message to buyers with products in personal shopping list older than 4 days
     print('Do the daily warning of products in the shopping list, older than 4 days.')
@@ -442,7 +442,7 @@ if __name__ == '__main__':
             print('Daily warning of products in the shopping list, older than 4 days failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of Daily warning of products in the shopping list, older than 4 days.')
-    
+
 
 
     # Check, if Users are going to be blocked, give notice to them
@@ -492,6 +492,6 @@ if __name__ == '__main__':
         except:
             print('Failing to send Slack Message with Fail Notice of Warning and deletion of inactive users.')
 
-    
+
 
     # Weekly: Check for inactive users and to be deleted ones, check for some constraints: Too high / too low account. Calculate integrity of account, and transactions, and...
