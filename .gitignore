@@ -9,3 +9,5 @@ ffeDataBase
 ffeKiosk/security_settings.py
 
 *.sqlite3
+
+.idea/*
