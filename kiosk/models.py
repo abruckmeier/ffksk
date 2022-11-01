@@ -101,6 +101,10 @@ class ProduktVerkaufspreise(models.Model):
 		aufstockung = readFromDatabase('getPreisAufstockung',[produkt_id])
 		return(aufstockung[0])
 
+	class Meta:
+		verbose_name = 'Produkt-Verkaufspreis'
+		verbose_name_plural = 'Produkt-Verkaufspreise'
+
 
 class Einkaufsliste(models.Model):
 	kiosk_ID = models.AutoField(primary_key=True)
