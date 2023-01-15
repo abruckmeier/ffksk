@@ -20,14 +20,15 @@
 		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
 			<span class="bigLink styleColor">1. Registrierung</span>
 			<br>
-			Zuerst benötigst du einen Slack-Account und musst in die Gruppe der FfE aufgenommen sein.<br>
+			Zuerst benötigst du einen Slack-Account und musst in die Slack-Gruppe der FfE aufgenommen sein.<br>
 			Gehe auf die <a class="bold" href="{% url 'neuerNutzer_page' %}">Registrierungsseite</a> und trage deine persönlichen Daten ein.
-			Dein Benutzername soll dabei deinem Namen auf Slack entsprechen, damit wird dein Kiosk-Account mit Slack verknüpft.
+			Teste, ob durch deine Eingaben dein Slack-Account angesprochen werden kann, um zukünftig Meldungen zu bekommen
+			und um per Slack bezahlen zu können.
 			Gib das Datum deines Austritts ebenso an. Nach diesem Datum wird dein Account inaktiv. Rechtzeitig vor Ende wird dir per Slack mitgeteilt, dein restliches Guthaben auszahlen zu lassen.
 			<br>
 			Du solltest nach Registrierung per Slack-Nachricht dazu aufgefordert werden, deinen Kiosk-Account zu verifizieren. Folge einfach den Anweisungen in der Nachricht.
 			<br>
-			Sollte etwas nicht klappen, kontaktiere einen <a class="bigLink" href="{% url 'start_page' %}">Administrator.</a>
+			Sollte etwas nicht klappen, kontaktiere einen <a class="bigLink" href="{% url 'start_page' %}#administratoren">Administrator.</a>
 		</div>
 		<div class="col-xs-12 col-sm-2 col-lg-1 justified">
 		</div>
@@ -39,7 +40,13 @@
 		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
 			<span class="bigLink styleColor">2. Einzahlung</span>
 			<br>
-			Gehe zu einem Verwalter und bezahle bei diesem Geld ein. Der Betrag wird dann auf dein Konto verbucht. Als Bestätigung erhälst du eine Slack-Nachricht.
+			Zahle bei einer <a href="{% url 'start_page' %}#verwalter">Verwalter:in</a>
+			oder <a href="{% url 'start_page' %}#administratoren">Administrator:in</a> Geld ein.
+			Du kannst entweder vor Ort in bar einzahlen oder eine Pay-Pal Überweisung tätigen.
+			(Details <a href="{% url 'start_page' %}#anleitung_einzahlung">hier</a>)
+			Achte auch dazu auf gepinnte Nachrichten im <a href="{% url 'start_page' %}#anleitung_slack_channels">#kiosk-Slack Channel.</a>
+			<br />
+			Der Betrag wird dann auf dein Konto verbucht. Als Bestätigung erhälst du eine Slack-Nachricht.
 			Deinen Kontostand und weitere wichtige Informationen und Einstellungen kannst du in deinem <a class="bold" href="{% url 'home_page' %}">persönlichen Bereich</a> einsehen.
 		</div>
 	</div>
@@ -48,13 +55,14 @@
 		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
 			<span class="bigLink styleColor">3. Einkaufen im Kiosk</span>
 			<br>
-			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">per Slack verbuchen.</span> Gib dazu einfach den <i>Slash-Befehl</i>
+			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">
+			<a href="{% url 'start_page' %}#anleitung_einzahlung">per Slack verbuchen.</a></span> Gib dazu einfach den <i>Slash-Befehl</i>
 			<p class="panel panel-default code">
 				/kiosk buy
 			</p>
 			ein. Der Slack-Bot gibt dir dann weitere Hilfestellung.
 			<br>
-			Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte einen <a class="bigLink" href="{% url 'home_page' %}">Administrator</a>. Dieser k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.			
+			Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte einen <a class="bigLink" href="{% url 'start_page' %}#administratoren">Administrator</a>. Dieser k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.
 		</div>
 		<div class="col-xs-12 col-sm-2 col-lg-1 justified">
 		</div>
@@ -66,7 +74,7 @@
 		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
 			<span class="bigLink styleColor">4. Mithelfen</span>
 			<br>
-			Du bist herzlich eingeladen, <i>Eink&#228;ufer</i> zu werden und gegen Provision Besorgungen f&#252;r das Kiosk durchzuf&#252;hren. 
+			Du bist herzlich eingeladen, <i>Eink&#228;ufer</i> zu werden und gegen Provision Besorgungen f&#252;r den Kiosk durchzuf&#252;hren.
 			Das Kiosk-System &#252;berpr&#252;ft automatisch, welche Produkte demn&#228;chst zu Neige gehen und generiert <a class="bold" href="{% url 'offeneEkListe_page' %}">Einkaufslisten</a>. 
 			Au&#223;erdem werden vom Kiosk-Bot Benachrichtigungen über neue Einkaufslisten in den <span class="bold">#kiosk_bot</span>-Channel auf Slack gepostet.
 			<br> 
@@ -76,7 +84,7 @@
 			Pinne zunächst unter <a class="bold" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a> diese Einkaufslisten in deine <a class="bold" href="{% url 'meine_einkaufe_page' %}">persönliche Einkaufsliste.</a>. 
 			Dort kannst du deine Listen verwalten. 
 			Die gepinnten Einkaufslisten verbleiben <span class="boldLink">l&#228;ngstens sieben Tage</span> dort, so lange hast du Zeit, diese  Besorgungen durchzuf&#252;hren. 
-			Danach wird das Einkaufspaket wieder f&#252;r alle Eink&#228;ufer zum Einkauf freigegeben. 
+			Danach wird das Einkaufspaket wieder f&#252;r alle Eink&#228;ufer:innen zum Einkauf freigegeben.
 			</li>
 			<li>
 			Gehe Einkaufen!
@@ -87,22 +95,42 @@
 			<b>Der Kaufbeleg wird f&#252;r die sp&#228;tere Verrechnung ben&#246;tigt</b>, also denke beim Einkauf daran!
 			</li>
 			<li>
-			Ordne die eingekaufte Ware in den Kiosk ein und gib den Kaufbeleg bei einem <a href="#">Verwalter</a> ab. 
-			Dieser verbucht die Ware als besorgt und erstattet dir die Einkaufskosten plus die Provision f&#252;r den Einkauf auf dein Konto.
+			Ordne die eingekaufte Ware in den Kiosk ein und gib den Kaufbeleg bei einer <a href="{% url 'start_page' %}#verwalter">Verwalter:in</a> ab.
+			Diese:r verbucht die Ware als besorgt und erstattet dir die Einkaufskosten plus die Provision f&#252;r den Einkauf auf dein Konto.
 			<br>
 			Die H&#246;he der Provision ist die H&#228;lfte des Betrags, welcher nach dem Einkauf vom verf&#252;gbaren Budgets der Einkaufsliste bleibt.
 			</li>
 			<li>
-			Bei Auswahl eines Produkts unter <a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a> wird ein Kommentar mit Informationen und Tipps zum Einkauf angezeigt. Unter <a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a> kann selbst ein Hinweis f&#252;r alle anderen Eink&#228;ufer zum Kauf eines Produktes gegeben werden. Wichtige, weiterzugebende Informationen sind zum Beipsiel: L&#228;den mit g&#252;nstigen Preisen und Angeboten, wo und wann dieses Produkt am besten gekauft werden kann, Vorteilspackungen, ...
+			Bei Auswahl eines Produkts unter <a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a> wird ein Kommentar mit Informationen und Tipps zum Einkauf angezeigt. Unter <a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a> kann selbst ein Hinweis f&#252;r alle anderen Eink&#228;ufer:innen zum Kauf eines Produktes gegeben werden. Wichtige, weiterzugebende Informationen sind zum Beipsiel: L&#228;den mit g&#252;nstigen Preisen und Angeboten, wo und wann dieses Produkt am besten gekauft werden kann, Vorteilspackungen, ...
 			</li>
 			</ul>
 		</div>
 	</div>
 
+	<div class="row smallPadding">
+		<div class="col-xs-12 col-sm-10 col-lg-11 justified smallPadding">
+			<span class="bigLink styleColor">5. Verwalten und Gestalten</span>
+			<br>
+			Du hast <b>Ideen für neue Ware</b> oder wie wir Dinge anders machen können? Gerne her damit!
+			Wir sind offen für Anregungen und neue Ideen und freuen uns, diese umsetzen zu können.
+			<br />
+			Sprich dazu einfach eine Verwalter:in oder Administrator:in an.
+			<br />
+			Möchtest du neben dem Durchführen von Besorgungen andere Tätigkeiten für den Kiosk durchführen?
+			<b>Wir freuen uns über Hilfe als Verwalter:in</b> bei Ein- und Auszahlungen, Annahme und Verbuchung neuer Ware
+			oder der Durchführung der Inventur.
+			Auch in der Administration kann bei der Nutzerverwaltung unterstützt werden.
+			<br />
+			<b>Dringend gesucht sind Programmierer:innen,</b> die das Kiosksystem erneuern und neue Features einbauen.
+			Auch gern gesehen sind <b>gestalterische Ideen,</b> egal ob vor Ort im Kiosk oder digital auf der Webseite.
+			Komm gerne auf uns zu!
+		</div>
+		<div class="col-xs-12 col-sm-2 col-lg-1 justified">
+		</div>
+	</div>
+
 	<br>
 	<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
-	<br><br>
-	<a class="bigLink" href="{% url 'ersteschritte_page' %}">Erste Schritte</a>
 
 	<br><br>
 	<a class="" onclick="javascript:history.go(-1);">zur&#252;ck</a>

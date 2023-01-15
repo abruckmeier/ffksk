@@ -68,7 +68,7 @@ def start_page(request):
 		accountants.append(item.first_name + ' ' + item.last_name)
 	accountants = ', '.join(accountants)
 
-
+	'''
 	# Get the news: starred + latest 3
 	newsStarred = Start_News.objects.filter(visible=True,starred=True).order_by('-date')
 	news = Start_News.objects.filter(visible=True,starred=False).order_by('-date')[:3]
@@ -83,7 +83,7 @@ def start_page(request):
 		#news[k]['created'] = pytz.timezone('UTC').localize(v['created'])
 		# Add enumerator
 		news[k]['html_id'] = 'collapse_'+str(k)
-
+	'''
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -95,8 +95,8 @@ def start_page(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter,
 		'admins': admins, 'accountants': accountants,
-		'chart_DaylyVkValue': Chart_UmsatzHistorie(),
-		'news': news,
+		# 'chart_DaylyVkValue': Chart_UmsatzHistorie(),
+		# 'news': news,
 		'excludeTopIcon': True,
 		})
 
@@ -1135,18 +1135,6 @@ def ersteSchritte(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/ersteschritte_page.html',
-		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
-
-
-def slackInfos(request):
-
-	# Hole den Kioskinhalt
-	kioskItems = Kiosk.getKioskContent()
-
-	# Einkaufsliste abfragen
-	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-	return render(request, 'kiosk/slackinfo_page.html',
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 

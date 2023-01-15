@@ -15,42 +15,25 @@
 	</div>
 
 	<div class="row">
-		<div class="col-xs-12 col-sm-12 col-lg-7 margingPadding justified">
+		<div class="col margingPadding">
 			<div class="panel panel-default">
-				<div class="panel-body justified bigger" style="background: white;">
+				<div class="panel-body bigger" style="background: white;">
 				<p>
-				Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten in kleine Arbeitspakete aufteilen. 
-				<br>
-				Jeder FfE'ler ist herzlich eingeladen, dem Kiosk beizutreten, zu nutzen und zu unterstützen!
+					Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten
+					in kleine Arbeitspakete aufteilen. Jede:r kann damit einen kleinen Beitrag leisten, den Betrieb
+					aufrechtzuerhalten.
+					Eventuelle Profite und Verluste werden solidarisch geteilt
+					<br>
+					Jede FfE'ler:in ist herzlich eingeladen, dem Kiosk beizutreten, den Kiosk zu nutzen und zu unterstützen!
 				</p>
-				<p>
-				<a class="btn btn-default" href="{% url 'anleitung_page' %}">Mehr Infos</a>
-				&nbsp;
-				<a class="btn btn-default" href="{% url 'ersteschritte_page' %}">Erste Schritte</a>
-				<br><br>
-				<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
-				&nbsp;
-				<a class="btn btn-default" href="{% url 'login' %}">Login</a>
-				
-				
+				<p class="mt-5">
+					<a class="btn btn-default" href="{% url 'anleitung_page' %}">Mehr Infos</a>
+
+					<br><br>
+					<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+					&nbsp;
+					<a class="btn btn-info" href="{% url 'login' %}">Login</a>
 				</p>
-				</div>
-			</div>
-		</div>
-		<div class="col-xs-10 col-sm-10 col-lg-5">
-			<div class="panel panel-default">
-				<div class="panel-body justified bigger" style="background: white;">
-					<b>Tritt unseren Slack-Channels bei!</b>
-					<table>
-						<tr>
-							<td>
-								<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
-							</td>
-							<td>
-								<a class="btn btn-default" href="{% url 'slackinfo_page' %}">Mehr Infos</a>
-							</td>
-						</tr>
-					</table>
 				</div>
 			</div>
 		</div>
@@ -58,85 +41,80 @@
 
 
 	<div class="page-header">
-		<h4>Neuigkeiten</h4>
+		<h4>Quick-Links</h4>
 	</div>
 
-
-	<div class="panel-group" id="accordion">
-		{% for n in news %}
-
-			<div class="panel panel-default">
-
-				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#{{n.html_id}}">
-					<h5 class="panel-title smallText bold">
-						<a class="accordion-toggle">
-							({{ n.date | date:"d.m.Y" }}) {{ n.heading | safe }}
-						</a>
-					</h5>
-				</div>
-
-				{% if n.html_id == "collapse_0" %}
-					<div id="{{n.html_id}}" class="panel-collapse collapse in">
-				{% else %}
-					<div id="{{n.html_id}}" class="panel-collapse collapse">
-				{% endif %}
-					<div class="panel-body smallText justified">
-						{{ n.content | safe }}
-					</div>
-				</div>
-
-			</div>
-
-		{% endfor %}
-	</div>
-
-
-
-
-	<div class="page-header">
-		<h4>Quick-Links & Navigation</h4>
-	</div>
-
-	{% if not user.is_authenticated %}
-
-		<div class="smallPadding">
-			Hier geht es zum
-			<a class="bigLink" href="{% url 'login' %}">Login.</a>
-		</div>
-
-		<div class="smallPadding">
-			Hier geht es zur
-			<a class="bigLink" href="{% url 'neuerNutzer_page' %}">Registrierung</a>
-			f&#252;r neue Nutzer.
-		</div>
-
-	{% else %}
-
-		{% if perms.profil.perm_kauf %}
 			<div class="smallPadding">
 				Ein Produkt
 				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
 			</div>
-		{% endif %}
 
-		{% if perms.profil.do_einkauf %}
 			<div class="smallPadding">
 				Eine 
 				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
 			</div>
-		{% endif %}
 
 		<div class="smallPadding">
 			Hier geht es zum
 			<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
 		</div>
 
-	{% endif %}
+
+	<div class="page-header">
+		<h4>Anleitungen</h4>
+	</div>
+
+
+	<div id="#anleitung_einzahlung" class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Geld einzahlen
+			</div>
+			<div class="panel-body justified smallText">
+				tbd...
+			</div>
+	</div>
+
+
+	<div id="anleitung_slack_kauf" class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Kauf via Slack
+			</div>
+			<div class="panel-body justified smallText">
+				tbd ...
+			</div>
+	</div>
+
+
+	<div id="anleitung_slack_channels" class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Tritt unseren Slack-Channels bei!
+			</div>
+			<div class="panel-body justified smallText">
+				<div class="row">
+					<div class="col-xs-3 col-sm-2 col-lg-2 margingPadding justified">
+						<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
+					</div>
+					<div class="col-xs-9 col-sm-10 col-lg-10 margingPadding justified">
+						In der Gruppe der FfE gibt es zwei Channels, in denen du alle wichtigen Informationen zum Kiosk bekommst.
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
+							<h4>#kiosk</h4>
+							Generelle Informationen zu Neuerungen und besonderen Angeboten, wichtige Mitteilungen, ...
+					</div>
+					<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
+							<h4>#kiosk_bot</h4>
+								Der Kiosk-Slackbot informiert über frisch angelieferte Produkte im Kiosk und neue Produkte in der offenen Einkaufsliste. Außerdem werden die fleißigsten Einkäufer und Verwalter wöchentlich gekürt.
+						</div>
+				</div>
+			</div>
+		</div>
 
 
 	{% if user.is_authenticated and perms.profil.perm_kauf %}
 		<div class="page-header">
-			<h4>Am Rande ...</h4>
+			<h4>Weitere Informationen</h4>
 		</div>
 
 		<div class="panel panel-default">
@@ -144,14 +122,14 @@
 				Verantwortliche Personen
 			</div>
 			<div class="panel-body justified smallText">
-				<h5>Verwalter:</h5> 
+				<h5 id="#verwalter">Verwalter:innen:</h5>
 				<b>{{accountants}}</b>
 				<br>
 				<i>Zust&#228;ndig f&#252;r Einzahlungen/Auszahlungen, R&#252;ckbuchungen von Eink&#228;ufen und Annahme von Eink&#228;ufen</i>
 
 				<br><br>
 
-				<h5>Administratoren:</h5> 
+				<h5 id="#administratoren">Administrator:innen:</h5>
 				<b>{{admins}}</b>
 				<br>
 				<i>Zust&#228;ndig f&#252;r Account-Verwaltung, technische Probleme, Verbesserungsvorschl&#228;ge, ...</i>
@@ -164,26 +142,13 @@
 				Verdiente Personen
 			</div>
 			<div class="panel-body justified smallText">
-				<b>Eink&#228;ufer der Woche: </b>{{bestBuyers}}
+				<b>Eink&#228;ufer:in der Woche: </b>{{bestBuyers}}
 				<br>
-				<b>Verwalter der Woche: </b>{{bestVerwalter}}
+				<b>Verwalter:in der Woche: </b>{{bestVerwalter}}
 				<br>
 				Dankesch&#246;n daf&#252;r!!!
 			</div>
 		</div>
-
-
-		<div class="panel panel-default">
-			<div class="panel-heading bold smallText">
-				Statistik: Unbezahlt im Kiosk
-			</div>
-			<div class="panel-body justified smallText">
-				<div style="max-width: 500px;">
-					{{ chart_DaylyVkValue.as_html }}
-				</div>	
-			</div>
-		</div>
-	
 		
 	{% endif %}
 
