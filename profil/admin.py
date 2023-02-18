@@ -14,6 +14,8 @@ class MyUserChangeForm(UserChangeForm):
 # Modified UserAdmin with additional fieldsets to adjust in the admin area
 # Also modify the view for non-Superuser staff -> restricted rights
 class KioskUserAdmin(UserAdmin):
+	list_display = ('username', 'email', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible',)
+	list_filter = ('is_active', 'is_staff', 'is_superuser', 'visible', 'is_verified', 'aktivBis', 'instruierterKaeufer', 'rechte', 'activity_end_msg', 'dsgvo_accepted',)
 	
 	# New User Form in Admin area
 	add_fieldsets = (
