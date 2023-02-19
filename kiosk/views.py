@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect, reverse
+from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft, Kontakt_Nachricht, Start_News
@@ -32,7 +32,7 @@ from .charts import *
 from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.urls import reverse_lazy
 
 
@@ -685,7 +685,7 @@ def neuerNutzer_page(request):
 			if request.is_secure(): protocol = 'https'
 			else: protocol = 'http'
 			domain = current_site.domain
-			uid = force_text(urlsafe_base64_encode(force_bytes(u.pk)))
+			uid = force_str(urlsafe_base64_encode(force_bytes(u.pk)))
 			token = account_activation_token.make_token(u)
 			url = reverse('account_activate', kwargs={'uidb64': uid, 'token': token})
 			#url = reverse('account_activate')+uid+'/'+token+'/'

@@ -12,7 +12,7 @@ from .models import KioskUser
 from .forms import AktivBisChangeForm
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from profil.tokens import account_activation_token
 from kiosk.bot import slack_PostWelcomeMessage
 
@@ -124,7 +124,7 @@ class AccountActivate(View):
 
 		# Check, if the address is valid
 		try:
-			uid = force_text(urlsafe_base64_decode(uidb64))
+			uid = force_str(urlsafe_base64_decode(uidb64))
 			user = KioskUser.objects.get(pk=uid)
 
 		except(TypeError, ValueError, OverflowError, KioskUser.DoesNotExist):

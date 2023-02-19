@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+django-jchart = "*"
+django-widget-tweaks = "*"
+psycopg2-binary = "*"
+python-dateutil = "*"
+requests = "*"
+slackclient = "~=1.3"
+six = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
