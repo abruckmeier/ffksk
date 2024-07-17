@@ -16,6 +16,7 @@ class MyUserChangeForm(UserChangeForm):
 class KioskUserAdmin(UserAdmin):
 	list_display = ('username', 'email', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible',)
 	list_filter = ('is_active', 'is_staff', 'is_superuser', 'visible', 'is_verified', 'aktivBis', 'instruierterKaeufer', 'rechte', 'activity_end_msg', 'dsgvo_accepted',)
+	search_fields = ('username', 'email', 'slackName', 'paypal_name')
 	
 	# New User Form in Admin area
 	add_fieldsets = (
@@ -29,7 +30,7 @@ class KioskUserAdmin(UserAdmin):
 
 	# Add Verification and Approvement variables for view and modification
 	superuser_fieldsets = UserAdmin.fieldsets + (
-		(_('Slack'), {'fields': ('slackName',),}),
+		(_('Interconnections'), {'fields': ('slackName', 'paypal_name',),}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
 		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
 	)
@@ -40,6 +41,7 @@ class KioskUserAdmin(UserAdmin):
 		(_('Personal Info'), {'fields': ('first_name', 'last_name', 'email','slackName')}),
 		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
+		(_('Interconnections'), {'fields': ('slackName', 'paypal_name',), }),
 		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
 	)
 
