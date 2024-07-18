@@ -46,3 +46,9 @@ DATENSCHUTZ = { # As html code!
 	'responsibility': 'Person Name',
 	'cookies': '<ul><li>List of</li><li>My Cookies</li></ul>'
 }
+
+## PayPal (E-Mail) Integration
+IMAP_HOST = 'outlook.office365.com'
+IMAP_USERNAME = 'mail@server.domain'
+IMAP_PASSWORD = 'pwd'
+IMAP_SEARCH_FROM_EMAIL = 'service@paypal.de'
