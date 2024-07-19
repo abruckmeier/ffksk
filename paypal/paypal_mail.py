@@ -5,6 +5,9 @@ import re
 from django.conf import settings
 from datetime import datetime, timedelta, date
 import locale
+from paypal.models import Mail
+from profil.models import KioskUser
+from kiosk.models import GeldTransaktionen
 
 
 class DownloadedMail(TypedDict):
@@ -106,6 +109,46 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     )
 
 
+def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
+    """Store the mails in the database without further processing and return objects"""
+    mail_objects = []
+    for _mail in extracted_mails:
+        mail_objects.append(Mail(
+            message_id=_mail.get('downloaded_mail').get('message_id'),
+            envelope_str=str(_mail.get('downloaded_mail').get('envelope')),
+            data=_mail.get('downloaded_mail').get('data'),
+            extraction_was_successful=_mail.get('extraction_was_successful'),
+            user_str=_mail.get('user'),
+            transaction_code=_mail.get('transaction_code'),
+            transaction_date=_mail.get('transaction_date'),
+            amount=_mail.get('amount'),
+        ))
+    return Mail.objects.bulk_create(mail_objects)
+
+
+def assign_user_and_conduct_transaction(obj: Mail) -> None:
+    """"""
+    assigned_user: KioskUser | None = KioskUser.objects.filter(
+        paypal_name__iexact=obj.user_str
+    ).first()
+    if not assigned_user:
+        return None
+    obj.user = assigned_user
+    obj.assignment_was_successful = True
+
+    transaction = GeldTransaktionen(
+        vonnutzer=KioskUser.objects.get(username='Bargeld'),
+        zunutzer=assigned_user,
+        betrag=obj.amount,
+        kommentar=f'Automatisch generierte Einzahlung nach PayPal-Überweisung. PayPal-Transaktions-Code: {obj.transaction_code}',
+    )
+    transaction.save()
+    obj.geld_transaktion = transaction
+    obj.save()
+
+    return None
+
+
 if __name__ == '__main__':
     # Get the timestamp of the last mail, received. Gather mails from this timestamp up to now
     ts_since = datetime.now() - timedelta(days=7)
@@ -117,5 +160,7 @@ if __name__ == '__main__':
     extracted_mails: List[ExtractedMail] = [extract_details_from_mail(_mail) for _mail in mails]
 
     # Store the mails in the database
+    objs = store_mails_in_db(extracted_mails)
 
     # Check if users can be assigned. Conduct transactions or give notice to admin on failure for mails
+

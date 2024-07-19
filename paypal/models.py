@@ -9,9 +9,15 @@ class Mail(models.Model):
     message_id = models.IntegerField(unique=True, help_text='ID from Outlook')
     envelope_str = models.TextField(unique=True, help_text='Envelope string from Outlook')
     data = models.TextField(help_text='Mail data')
-    extraction_was_successful = models.BooleanField(help_text='Mail extraction was successful, if all values '
-                                                              'could be extracted')
-    assignment_was_successful = models.BooleanField(help_text='Mail assignment to a user was successful')
+    extraction_was_successful = models.BooleanField(
+        default=False,
+        help_text='Mail extraction was successful, if all values '
+                                                              'could be extracted'
+    )
+    assignment_was_successful = models.BooleanField(
+        default=False,
+        help_text='Mail assignment to a user was successful'
+    )
     user_str = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted user')
     transaction_code = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted transaction code')
     transaction_date = models.DateField(help_text='Extracted transaction date', blank=True, null=True)
