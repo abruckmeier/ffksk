@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'jchart',
     'django.contrib.humanize',
+    'paypal.apps.PaypalConfig',
     'kiosk.apps.KioskConfig',
     'profil.apps.ProfilConfig',
     'ffeKiosk',
