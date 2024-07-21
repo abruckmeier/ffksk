@@ -116,6 +116,7 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
         mail_objects.append(Mail(
             message_id=_mail.get('downloaded_mail').get('message_id'),
             envelope_str=str(_mail.get('downloaded_mail').get('envelope')),
+            mail_ts=_mail.get('downloaded_mail').get('envelope').date,
             data=_mail.get('downloaded_mail').get('data'),
             extraction_was_successful=_mail.get('extraction_was_successful'),
             user_str=_mail.get('user'),

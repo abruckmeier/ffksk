@@ -8,6 +8,7 @@ class Mail(models.Model):
 
     message_id = models.IntegerField(unique=True, help_text='ID from Outlook')
     envelope_str = models.TextField(unique=True, help_text='Envelope string from Outlook')
+    mail_ts = models.DateTimeField(help_text='Mail received (envelope)')
     data = models.TextField(help_text='Mail data')
     extraction_was_successful = models.BooleanField(
         default=False,
