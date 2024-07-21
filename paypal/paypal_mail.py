@@ -28,6 +28,14 @@ class ExtractedMail(TypedDict):
     amount: int | None  # in Eurocent values
 
 
+class MailAssignmentResponse(TypedDict):
+    """Response from assignment of user and conduction of transaction,
+    with details on the success."""
+    mail_obj: Mail
+    success: bool
+    reason: str
+
+
 def get_recent_mails(ts_since: datetime) -> List[DownloadedMail]:
     """Get mails from PayPal since the given timestamp and return list of downloaded mails for further processing."""
 
@@ -127,13 +135,32 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
     return Mail.objects.bulk_create(mail_objects)
 
 
-def assign_user_and_conduct_transaction(obj: Mail) -> None:
-    """"""
+@transaction.atomic
+def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
+    """Given the extracted values from the mail, the name is assigned to
+    a user and the transaction is conducted."""
+
+    response = MailAssignmentResponse(
+        mail_obj=obj,
+        success=False,
+        reason='',
+    )
+
+    # Return, if assignment already successfully conducted
+    if not obj.extraction_was_successful:
+        response['reason'] = 'Extraction was not marked as successful'
+        return response
+    if obj.assignment_was_successful:
+        response['reason'] = 'Mail has already been assigned.'
+        return response
+
     assigned_user: KioskUser | None = KioskUser.objects.filter(
         paypal_name__iexact=obj.user_str
     ).first()
     if not assigned_user:
-        return None
+        response['reason'] = 'No user could be matched to the given name'
+        return response
+
     obj.user = assigned_user
     obj.assignment_was_successful = True
 
@@ -141,13 +168,16 @@ def assign_user_and_conduct_transaction(obj: Mail) -> None:
         vonnutzer=KioskUser.objects.get(username='Bargeld'),
         zunutzer=assigned_user,
         betrag=obj.amount,
-        kommentar=f'Automatisch generierte Einzahlung nach PayPal-Überweisung. PayPal-Transaktions-Code: {obj.transaction_code}',
+        kommentar=f'Automatisch generierte Einzahlung nach PayPal-Überweisung.'
+                  f' PayPal-Transaktions-Code: {obj.transaction_code}',
     )
     transaction.save()
     obj.geld_transaktion = transaction
     obj.save()
 
-    return None
+    response['reason'] = 'Successfully assigned to user and transaction conducted'
+    response['success'] = True
+    return response
 
 
 if __name__ == '__main__':
@@ -164,4 +194,7 @@ if __name__ == '__main__':
     objs = store_mails_in_db(extracted_mails)
 
     # Check if users can be assigned. Conduct transactions or give notice to admin on failure for mails
+    responses: List[MailAssignmentResponse] = [
+        assign_user_and_conduct_transaction(_obj) for _obj in objs
+    ]
 
