@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import logging
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 
 
 # Besorgen der sensitiven Einstellungen von security_settings.py
@@ -149,5 +151,56 @@ FINANZ = {
 
 VIEWS = {
     'itemsInKontobewegungen': 10,
+}
+
+# Logging
+
+
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        s = super().format(record)
+        if '\n' in s:
+            s = s.replace('\n', '\n........')
+        return s
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            '()': CustomFormatter,
+            'format': '{levelname} | {asctime} | {module} | {message}',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+        'django_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGS_DIR, 'django.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf8',
+        },
+        'paypal_mail_file': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOGS_DIR, 'paypal_mail.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf8',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'django_file'],
+            'level': 'WARNING',
+        },
+        'paypal.paypal_mail': {
+            'handlers': ['console', 'paypal_mail_file'],
+            'level': 'INFO',
+        },
+    },
 }
 
