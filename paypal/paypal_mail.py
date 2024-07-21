@@ -94,7 +94,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         amount = amount[0]
         try:
             locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
-            amount = int(locale.atof(amount[0]) * 100)
+            amount = int(locale.atof(amount) * 100)
         except Exception:
             extraction_was_successful = False
             amount = None
