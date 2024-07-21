@@ -1,3 +1,4 @@
+from django.db.models import Q
 from imapclient import IMAPClient
 from imapclient.response_types import Envelope
 from typing import List, TypedDict
@@ -8,6 +9,10 @@ import locale
 from paypal.models import Mail
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
+from django.db import transaction
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DownloadedMail(TypedDict):
@@ -124,6 +129,7 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
         mail_objects.append(Mail(
             message_id=_mail.get('downloaded_mail').get('message_id'),
             envelope_str=str(_mail.get('downloaded_mail').get('envelope')),
+            # @todo: Add timezone information to mail_ts
             mail_ts=_mail.get('downloaded_mail').get('envelope').date,
             data=_mail.get('downloaded_mail').get('data'),
             extraction_was_successful=_mail.get('extraction_was_successful'),
@@ -180,21 +186,84 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     return response
 
 
-if __name__ == '__main__':
-    # Get the timestamp of the last mail, received. Gather mails from this timestamp up to now
-    ts_since = datetime.now() - timedelta(days=7)
+def routine() -> str:
+    """From the last received mail on, search for new mails from PayPal.
+    Store the mails in the database, extract relevant values.
+    Assign the user to the PayPal transaction and create a Kiosk transaction.
+    The routine returns relevant responses."""
+
+    warn_msg = ''
+    logger.info('Starting the routine.')
+    # Find the last mail in database and set the timestamp to filter for in the mails
+    #   We expect mails to be downloaded more than once and do not consider them later
+    last_mail = Mail.objects.all().order_by('-mail_ts').first()
+    if not last_mail:
+        ts_since = datetime.now() - timedelta(days=365)
+    else:
+        ts_since = last_mail.mail_ts
+    logger.info(f'Last Mail: {last_mail.id} with timestamp {ts_since}')
 
     # Get the recent mails from the server
-    mails: List[DownloadedMail] = get_recent_mails(ts_since=ts_since)
+    logger.info(f'Starting to download mails from server with paypal sender...')
+    try:
+        mails: List[DownloadedMail] = get_recent_mails(ts_since=ts_since)
+    except Exception as e:
+        msg = f'Downloading mails failed. Error: {e}'
+        logger.exception(msg)
+        return msg
+    logger.info(f'... {len(mails)} mails downloaded')
+
+    # Drop mails that are already in the database
+    mails_already_in_db = Mail.objects.filter(
+        message_id__in=set([_m.get('message_id') for _m in mails])
+    ).values_list('message_id', flat=True)
+    logger.info(f'Found {len(mails_already_in_db)} mails already in database. '
+                f'We drop those now from the list to upload.')
+    mails = [_ for _ in mails if _.get('message_id') not in mails_already_in_db]
 
     # Find out if the mail contains necessary information
     extracted_mails: List[ExtractedMail] = [extract_details_from_mail(_mail) for _mail in mails]
+    logger.info(f'{len(extracted_mails)} Mails have been extracted')
 
     # Store the mails in the database
     objs = store_mails_in_db(extracted_mails)
+    logger.info(f'{len(objs)} Mails have been stored in the database.')
+    not_successful_extractions = [
+        _obj.message_id for _obj in objs if not _obj.extraction_was_successful
+    ]
+    if not_successful_extractions:
+        warn_msg += (f'{len(not_successful_extractions)}/{len(objs)} Mails could not be extracted successfully. '
+                    f'Manual verification required.')
+        logger.warning(warn_msg)
 
     # Check if users can be assigned. Conduct transactions or give notice to admin on failure for mails
     responses: List[MailAssignmentResponse] = [
         assign_user_and_conduct_transaction(_obj) for _obj in objs
     ]
+    logger.info(f'{len(objs)} database entries have been tried to be assigned to a user, '
+                f'and transactions have been tried to be created.')
+    failed_assignments = [_ for _ in responses if not _.get('success')]
+    if failed_assignments:
+        warn_msg_2 = (f'{len(failed_assignments)}/{len(objs)} mails have failed to be assigned to user. '
+                      f'No transaction has been created. '
+                      f'Manual verification required. Elements shown below.')
+        logger.warning(warn_msg_2)
+        warn_msg += '\n' + warn_msg_2
+        for _assignment in failed_assignments:
+            _msg = (f'Message-ID: {_assignment.get("mail_obj").message_id}. '
+                    f'Reason {_assignment.get("reason")}.')
+            logger.warning(_msg)
+            warn_msg += '\n' + _msg
 
+    if not warn_msg:
+        return f'Successfully saved and assigned {len(objs)} transactions from mails'
+    else:
+        return warn_msg
+
+
+if __name__ == '__main__':
+    try:
+        response: str = routine()
+    except Exception as e:
+        logger.exception(e)
+        response = f'An unexpected Exception has occurred: {str(e)}.'
