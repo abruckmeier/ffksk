@@ -31,6 +31,7 @@ class ExtractedMail(TypedDict):
     transaction_code: str | None
     transaction_date: date | None
     amount: int | None  # in Eurocent values
+    notice: str | None
 
 
 class MailAssignmentResponse(TypedDict):
@@ -112,6 +113,16 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
             extraction_was_successful = False
             amount = None
 
+    notice = re.findall(
+        r'<span>Mitteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
+        txt,
+    )
+    if len(notice) == 0:
+        extraction_was_successful = False
+        notice = None
+    else:
+        notice = notice[0]
+
     return ExtractedMail(
         downloaded_mail=mail,
         extraction_was_successful=extraction_was_successful,
@@ -119,6 +130,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         transaction_code=t_code,
         transaction_date=t_date,
         amount=amount,
+        notice=notice,
     )
 
 
@@ -158,6 +170,11 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
         return response
     if obj.assignment_was_successful:
         response['reason'] = 'Mail has already been assigned.'
+        return response
+
+    # Check if the notice in the transaction is "Einzahlung". Else, no transaction!
+    if not re.search('Einzahlung', obj.notice, re.IGNORECASE):
+        response['reason'] = 'No notice with Einzahlung given.'
         return response
 
     assigned_user: KioskUser | None = KioskUser.objects.filter(
@@ -201,7 +218,7 @@ def routine() -> str:
         ts_since = datetime.now() - timedelta(days=365)
     else:
         ts_since = last_mail.mail_ts
-    logger.info(f'Last Mail: {last_mail.id} with timestamp {ts_since}')
+    logger.info(f'Last Mail: ID {last_mail.id} with timestamp {ts_since}')
 
     # Get the recent mails from the server
     logger.info(f'Starting to download mails from server with paypal sender...')
@@ -233,7 +250,7 @@ def routine() -> str:
     ]
     if not_successful_extractions:
         warn_msg += (f'{len(not_successful_extractions)}/{len(objs)} Mails could not be extracted successfully. '
-                    f'Manual verification required.')
+                     f'Manual verification required.')
         logger.warning(warn_msg)
 
     # Check if users can be assigned. Conduct transactions or give notice to admin on failure for mails

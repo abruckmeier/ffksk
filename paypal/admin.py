@@ -10,4 +10,4 @@ class MailAdmin(admin.ModelAdmin):
     list_filter = ('extraction_was_successful', 'mail_ts', 'assignment_was_successful',
                    'user_str', 'transaction_date')
     search_fields = ('envelope_str', 'message_id', 'data', 'user_str',
-                     'transaction_code')
+                     'transaction_code', 'notice')

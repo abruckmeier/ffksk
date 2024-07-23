@@ -24,7 +24,7 @@ class KioskUser(AbstractUser):
     slackName = models.CharField(max_length=40, unique=True, help_text='Slack ID oder Name hinter @, falls keine '
                                                                        'Leerzeichen oder Umlaute.')
     paypal_name = models.CharField(max_length=64, help_text='Name, der bei PayPal nach außen zu sehen ist')
-    aktivBis = models.DateField(default=date.today())
+    aktivBis = models.DateField(default=date.today)
     instruierterKaeufer = models.BooleanField(default=False)
     rechte = models.CharField(max_length=15,default='User',choices=permissions)
     visible = models.BooleanField(default=True, help_text='Bank, Dieb, usw. sollen nicht gesehn und nicht angewaehlt '
