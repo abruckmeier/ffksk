@@ -158,3 +158,20 @@ class AktivBisChangeForm(forms.ModelForm):
 		help_texts = {
 			#'aktivBis': _('<small>Angabe des Datums deines Austritts an der FfE. Davor wirst du daran erinnert, dein Guthaben vom Konto auzahlen zu lassen, bevor dein Account gesperrt wird.</small>'),
 		}
+
+
+class PersonalInfoChangeForm(forms.ModelForm):
+	class Meta:
+		model = KioskUser
+		fields = ('slackName', 'paypal_name', )
+
+		labels = {
+			'slackName': _('Slack-Name'),
+			'paypal_name': _('PayPal Name'),
+		}
+		help_texts = {
+			'slackName': _(
+				'<small>Gib deinen Namen auf Slack an (ohne @). Falls du, ein Leerzeichen, Umlaut oder Sonderzeichen im Slack-Namen hast, dann musst du deine "Member ID" angeben, die du in Slack unter "Profile & Account" (U....) findest.</small>'),
+			'paypal_name': _(
+				'<small>Um Einzahlungen per PayPal durchführen zu können, musst du hier deinen Namen, den du auf PayPal verwendest, angeben, den du in deinem PayPal Profil findest.</small>'),
+		}

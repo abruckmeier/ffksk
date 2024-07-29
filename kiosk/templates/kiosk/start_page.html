@@ -44,20 +44,24 @@
 		<h4>Quick-Links</h4>
 	</div>
 
+			{% if perms.profil.perm_kauf %}
 			<div class="smallPadding">
 				Ein Produkt
 				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
 			</div>
+			{% endif %}
 
+			{% if perms.profil.do_einkauf %}
 			<div class="smallPadding">
 				Eine 
 				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
 			</div>
+			{% endif %}
 
-		<div class="smallPadding">
-			Hier geht es zum
-			<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
-		</div>
+			<div class="smallPadding">
+				Hier geht es zum
+				<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
+			</div>
 
 
 	<div class="page-header">

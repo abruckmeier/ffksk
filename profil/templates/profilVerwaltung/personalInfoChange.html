@@ -1,0 +1,113 @@
+{% extends 'kiosk/base.html' %}
+
+{% load static %}
+{% load widget_tweaks %}    
+
+{% block content %}
+
+    <div class="page-header noMarginTop">
+        <h4>Persönliche Informationen ändern</h4>
+    </div>
+
+    {% if msg != '' and msg != None %}
+		{% if color == 'danger' %}
+			<p class="alert alert-danger">
+				{{msg}}
+			</p>
+		{% elif color == 'success' %}
+			<p class="alert alert-success">
+				{{msg}}
+			</p>
+		{% else %}
+			<p class="alert alert-info">
+				{{msg}}
+			</p>
+		{% endif %}
+	  {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+			  {{ form.non_field_errors }}
+
+        {% for field in form %}
+            <div class="form-group">
+                {% if field.name == 'slackName' %}
+                	{{ field.label_tag }}
+                	<br>
+                	{{ field | add_class:"form-control slackName" }}
+                	&nbsp;
+                	<a name="buttonVerbindungTesten" class="btn btn-default slackName">Verbindung testen</a>
+                	&nbsp;
+                	<div name="VerbindungTestenErgebnis" class="slackName">
+                	</div>
+
+                {% else %}
+                	{{ field.label_tag }}
+                	{{ field | add_class:"form-control" }}
+                {% endif %}
+
+                <br>
+                {% if field.errors %}
+                	<p class="alert alert-danger">{{ field.errors.as_text }}</p>
+                {% endif %}
+                {% if field.help_text %}
+                    <p class="alert alert-info">{{ field.help_text|safe }}</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <input type="submit" class="btn btn-primary" value="Daten ändern" />
+    </form>
+
+    <hr>
+    <a class="bigLink" href="{% url 'home_page' %}">zur&#252;ck zum pers&#246;nlichen Bereich</a><br>
+
+{% endblock %}
+
+{% block javascript %}
+
+    <!-- Initialisation for the ajax post requests -->
+	<script type="text/javascript" src="{% static 'js/ajax_csrf_prepare.js' %}"></script>
+
+	<!-- Function to post a connection try to a Slack account to the server -->
+	<script type="text/javascript">
+
+		function postSlackAccountCheck() {
+			var slackName = $("input#id_slackName").val();
+
+			$.ajax({
+				type: 'POST',
+				url: "{% url 'neuerNutzer_page' %}",
+				data: {'what': 'testSlackName','slackName': slackName},
+				dataType: 'json',
+				error: function(jqXHR, textStatus, errorThrown){
+							$("div#loaderPower").css('display','none');
+							var msg = 'Es gab einen Fehler mit Fehlercode '+jqXHR.status+': "'+errorThrown+'".'
+							$("div[name='VerbindungTestenErgebnis']").html(msg);
+				},
+				success: function(data){
+							$("div[name='VerbindungTestenErgebnis']").html(data['data']);
+						}
+			});
+		}
+		$(document).ready(
+			function(){
+				$("a[name='buttonVerbindungTesten']").click(postSlackAccountCheck);
+			}
+		);
+  </script>
+
+	<style type="text/css">
+		.slackName {
+			display: inline-block;
+			/*min-width: 100px;*/
+			width: initial;
+		}
+		.alert-small {
+			padding-bottom: 7px;
+			padding-top:5px;
+		}
+	</style>
+
+{% endblock %}

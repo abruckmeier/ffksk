@@ -23,6 +23,8 @@ urlpatterns = [
     re_path(r'^accounts/angestellt_bis_change/$', profilViews.angestellt_bis_change, name='angestellt_bis_change'),
     re_path(r'^accounts/angestellt_bis_changed/$', profilViews.angestellt_bis_changed, name='angestellt_bis_changed'),
 
+    re_path(r'^accounts/personal_info_change/$', profilViews.PersonalInfoChange.as_view(), name='personal_info_change'),
+
     re_path(r'^accounts/registrationStatus/$', profilViews.registrationStatus.as_view(), name='registrationStatus'),
     re_path(r'^accounts/activate/(?P<uidb64>[0-9A-Za-z_]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,40})/$', profilViews.AccountActivate.as_view(), name='account_activate'),
 ]

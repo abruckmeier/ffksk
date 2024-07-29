@@ -9,7 +9,7 @@ from django.db import transaction
 from django.contrib.auth import login, authenticate
 
 from .models import KioskUser
-from .forms import AktivBisChangeForm
+from .forms import AktivBisChangeForm, PersonalInfoChangeForm
 
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -72,6 +72,33 @@ def angestellt_bis_changed(request):
     return render(request, 'profilVerwaltung/angestellt_bis_changed.html', 
         {'newDate': newDate, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,})
 
+
+class PersonalInfoChange(View):
+    """"""
+
+    def get(self, request):
+        usr = KioskUser.objects.get(id=request.user.id)
+        personal_info_change_form = PersonalInfoChangeForm(instance=usr)
+        return render(request,
+                      'profilVerwaltung/personalInfoChange.html',
+                      dict(form=personal_info_change_form,))
+
+    def post(self, request):
+        usr = KioskUser.objects.get(id=request.user.id)
+        personal_info_change_form = PersonalInfoChangeForm(request.POST, instance=usr)
+        if personal_info_change_form.is_valid():
+            personal_info_change_form.save()
+            return render(request,
+                          'profilVerwaltung/personalInfoChange.html',
+                          dict(form=personal_info_change_form,
+                               msg='Änderungen gespeichert',
+                               color='success'))
+        else:
+            return render(request,
+                          'profilVerwaltung/personalInfoChange.html',
+                          dict(form=personal_info_change_form,
+                               msg='Fehler!',
+                               color='danger'))
 
 
 # After Login, check, if the user is accepted to access to the page by the site admin. Redirect, if allowed. If not, messages are provided here.
