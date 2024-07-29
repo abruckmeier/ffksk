@@ -216,9 +216,10 @@ def routine() -> str:
     last_mail = Mail.objects.all().order_by('-mail_ts').first()
     if not last_mail:
         ts_since = datetime.now() - timedelta(days=365)
+        logger.info(f'No last mail: Use timestamp to start {ts_since}')
     else:
         ts_since = last_mail.mail_ts
-    logger.info(f'Last Mail: ID {last_mail.id} with timestamp {ts_since}')
+        logger.info(f'Last Mail: ID {last_mail.id} with timestamp {ts_since}')
 
     # Get the recent mails from the server
     logger.info(f'Starting to download mails from server with paypal sender...')
