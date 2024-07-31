@@ -14,9 +14,9 @@ class MyUserChangeForm(UserChangeForm):
 # Modified UserAdmin with additional fieldsets to adjust in the admin area
 # Also modify the view for non-Superuser staff -> restricted rights
 class KioskUserAdmin(UserAdmin):
-	list_display = ('username', 'email', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible',)
+	list_display = ('id', 'username', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible',)
 	list_filter = ('is_active', 'is_staff', 'is_superuser', 'visible', 'is_verified', 'aktivBis', 'instruierterKaeufer', 'rechte', 'activity_end_msg', 'dsgvo_accepted',)
-	search_fields = ('username', 'email', 'slackName', 'paypal_name')
+	search_fields = ('username', 'slackName', 'paypal_name')
 	
 	# New User Form in Admin area
 	add_fieldsets = (
@@ -29,7 +29,11 @@ class KioskUserAdmin(UserAdmin):
 	form = MyUserChangeForm
 
 	# Add Verification and Approvement variables for view and modification
-	superuser_fieldsets = UserAdmin.fieldsets + (
+	superuser_fieldsets = (
+							  (None, {'fields': ('username', 'password')}),
+							  ('Persönliche Informationen', {'fields': ('first_name', 'last_name')}),
+							  ('Berechtigungen', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
+							  ('Wichtige Daten', {'fields': ('last_login', 'date_joined')}),
 		(_('Interconnections'), {'fields': ('slackName', 'paypal_name',),}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
 		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
@@ -38,7 +42,7 @@ class KioskUserAdmin(UserAdmin):
 	# Restricted views for non-superuser staff
 	staff_fieldsets = (
 		(None, {'fields': ('username', 'password')}),
-		(_('Personal Info'), {'fields': ('first_name', 'last_name', 'email','slackName')}),
+		(_('Personal Info'), {'fields': ('first_name', 'last_name','slackName')}),
 		(_('Important dates'), {'fields': ('last_login', 'date_joined')}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
 		(_('Interconnections'), {'fields': ('slackName', 'paypal_name',), }),

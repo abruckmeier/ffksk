@@ -15,7 +15,8 @@ class KioskUser(AbstractUser):
 
     objects = KioskUserManager()
 
-    email = models.EmailField(_('E-Mail-Adresse'), unique=True)
+    email = None
+    EMAIL_FIELD = None
     is_verified = models.BooleanField(default=False)
 
     permissions = (('User','Standardnutzer'),
@@ -23,7 +24,8 @@ class KioskUser(AbstractUser):
     
     slackName = models.CharField(max_length=40, unique=True, help_text='Slack ID oder Name hinter @, falls keine '
                                                                        'Leerzeichen oder Umlaute.')
-    paypal_name = models.CharField(max_length=64, help_text='Name, der bei PayPal nach außen zu sehen ist')
+    paypal_name = models.CharField(max_length=64, null=True, blank=True,
+                                   help_text='Name, der bei PayPal nach außen zu sehen ist')
     aktivBis = models.DateField(default=date.today)
     instruierterKaeufer = models.BooleanField(default=False)
     rechte = models.CharField(max_length=15,default='User',choices=permissions)

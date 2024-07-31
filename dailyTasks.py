@@ -329,7 +329,6 @@ def deleteInactiveUser(nowDate):
         u.username = f'deletedUser_{str(u.id)}'
         u.first_name = 'deleted'
         u.last_name = 'deleted'
-        u.email = f'deletedUser_{str(u.id)}@ffe.de'
         u.slackName = f'deletedUser_{str(u.id)}'
         u.activity_end_msg = 4
         u.save()

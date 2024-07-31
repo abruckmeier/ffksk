@@ -42,7 +42,6 @@ def initNecessaryUsers():
 			username= u[0],
 			first_name= u[0],
 			last_name= u[0],
-			email= u[0]+'@ffe.de',
 			is_active= True,
 			is_staff= False,
 			is_superuser= False,
