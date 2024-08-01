@@ -78,7 +78,7 @@ WITH RECURSIVE dates(datum) AS (
 		from kiosk_geldtransaktionen gt
 		left join profil_kioskuser usr
 			on usr.id = gt.vonnutzer_id
-		where usr.username in ('Bargeld')
+		where usr.username in ('Bargeld', 'PayPal_Bargeld')
 		group by date(datum)
 	)
 	--select * from neg_transaktion
@@ -90,7 +90,7 @@ WITH RECURSIVE dates(datum) AS (
 		from kiosk_geldtransaktionen gt
 		left join profil_kioskuser usr
 			on usr.id = gt.zunutzer_id
-		where usr.username in ('Bargeld')
+		where usr.username in ('Bargeld', 'PayPal_Bargeld')
 		group by date(datum)
 	)
 	--select * from pos_transaktion

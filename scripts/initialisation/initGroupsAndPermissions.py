@@ -90,6 +90,11 @@ def InitGroupsAndPermissions():
 		content_type__model='kioskuser', 
 		codename='do_admin_tasks',
 	)
+	p |= Permission.objects.filter(
+		content_type__app_label='paypal',
+		content_type__model='mail',
+		codename='change_kioskuser',
+	)
 	for pp in p:
 		admin.permissions.add(pp)
 
