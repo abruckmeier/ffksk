@@ -39,6 +39,7 @@ class KioskUser(AbstractUser):
     )
 
     dsgvo_accepted = models.BooleanField(default=False)
+    is_functional_user = models.BooleanField(default=False, help_text='Set to true, if this is no real user, but System user')
 
     class Meta:
         permissions = (

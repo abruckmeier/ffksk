@@ -188,7 +188,7 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     obj.assignment_was_successful = True
 
     transaction = GeldTransaktionen(
-        vonnutzer=KioskUser.objects.get(username='Bargeld'),
+        vonnutzer=KioskUser.objects.get(username='PayPal_Bargeld'),
         zunutzer=assigned_user,
         betrag=obj.amount,
         kommentar=f'Automatisch generierte Einzahlung nach PayPal-Überweisung.'

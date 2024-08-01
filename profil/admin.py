@@ -14,8 +14,8 @@ class MyUserChangeForm(UserChangeForm):
 # Modified UserAdmin with additional fieldsets to adjust in the admin area
 # Also modify the view for non-Superuser staff -> restricted rights
 class KioskUserAdmin(UserAdmin):
-	list_display = ('id', 'username', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible',)
-	list_filter = ('is_active', 'is_staff', 'is_superuser', 'visible', 'is_verified', 'aktivBis', 'instruierterKaeufer', 'rechte', 'activity_end_msg', 'dsgvo_accepted',)
+	list_display = ('id', 'username', 'slackName', 'is_active', 'is_staff', 'is_superuser', 'visible', 'is_functional_user',)
+	list_filter = ('is_active', 'is_staff', 'is_superuser', 'visible', 'is_verified', 'aktivBis', 'instruierterKaeufer', 'rechte', 'activity_end_msg', 'dsgvo_accepted', 'is_functional_user',)
 	search_fields = ('username', 'slackName', 'paypal_name')
 	
 	# New User Form in Admin area
@@ -36,7 +36,10 @@ class KioskUserAdmin(UserAdmin):
 							  ('Wichtige Daten', {'fields': ('last_login', 'date_joined')}),
 		(_('Interconnections'), {'fields': ('slackName', 'paypal_name',),}),
 		( _('Verification and Approvement'), {'fields': ('is_verified',)}),
-		(_('Kiosk Specific'), {'fields': ('aktivBis','instruierterKaeufer','rechte','visible','activity_end_msg','dsgvo_accepted',),},),
+		(_('Kiosk Specific'), {
+			'fields': ('aktivBis', 'instruierterKaeufer', 'rechte', 'visible', 'activity_end_msg',
+					   'dsgvo_accepted', 'is_functional_user'),
+		},),
 	)
 
 	# Restricted views for non-superuser staff

@@ -27,18 +27,20 @@ from kiosk import models as kiosk_models
 def initNecessaryUsers():
 
 	users = [
-		('Bank',),
-		('Bargeld',),
-		('Bargeld_Dieb',),
-		('Bargeld_im_Tresor',),
-		('Dieb',),
-		('Gespendet',),
-		('Spendenkonto',),
+		('Bank', 3),
+		('Bargeld', 2),
+		('PayPal_Bargeld', 24),
+		('Bargeld_Dieb', 73),
+		('Bargeld_im_Tresor', 72),
+		('Dieb', 4),
+		('Gespendet', 90),
+		('Spendenkonto', 102),
 	]
 
 	for u in users:
 
 		_u = profil_models.KioskUser(
+			id=u[1],
 			username= u[0],
 			first_name= u[0],
 			last_name= u[0],
@@ -50,6 +52,7 @@ def initNecessaryUsers():
 			visible= False,
 			aktivBis= '2999-12-31',
 			rechte= 'User',
+			is_functional_user=True,
 		)
 		_u.save()
 
