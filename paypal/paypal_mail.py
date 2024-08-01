@@ -1,11 +1,12 @@
 from django.db.models import Q
 from imapclient import IMAPClient
 from imapclient.response_types import Envelope
-from typing import List, TypedDict
+from typing import List, TypedDict, Tuple
 import re
 from django.conf import settings
 from datetime import datetime, timedelta, date
 import locale
+from kiosk.bot import slack_SendMsg
 from paypal.models import Mail
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
@@ -203,11 +204,11 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     return response
 
 
-def routine() -> str:
+def routine() -> Tuple[bool, str]:
     """From the last received mail on, search for new mails from PayPal.
     Store the mails in the database, extract relevant values.
     Assign the user to the PayPal transaction and create a Kiosk transaction.
-    The routine returns relevant responses."""
+    The routine returns success bool and relevant responses."""
 
     warn_msg = ''
     logger.info('Starting the routine.')
@@ -228,7 +229,7 @@ def routine() -> str:
     except Exception as e:
         msg = f'Downloading mails failed. Error: {e}'
         logger.exception(msg)
-        return msg
+        return False, msg
     logger.info(f'... {len(mails)} mails downloaded')
 
     # Drop mails that are already in the database
@@ -274,14 +275,33 @@ def routine() -> str:
             warn_msg += '\n' + _msg
 
     if not warn_msg:
-        return f'Successfully saved and assigned {len(objs)} transactions from mails'
+        return True, f'Successfully saved and assigned {len(objs)} transactions from mails'
     else:
-        return warn_msg
+        return False, f'Saved and assigned {len(objs)} transactions from mails with warnings.\n' + warn_msg
+
+
+def routine_with_messaging() -> Tuple[bool, str]:
+    """Run the routine and send messages to the admins via Slack, only if error occur.
+    Return the response of the routine."""
+    try:
+        # Run routine
+        is_success, response_msg = routine()
+        # Slack Message to Admin on Failure
+        if not is_success:
+            # Send message to all admins
+            admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+            for u in admins:
+                slack_SendMsg(response_msg, user=u)
+    except Exception as e:
+        logger.exception(e)
+        response_msg = f'An unexpected Exception has occurred: {str(e)}.'
+        is_success = False
+        # Send message to all admins
+        admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+        for u in admins:
+            slack_SendMsg(response_msg, user=u)
+    return is_success, response_msg
 
 
 if __name__ == '__main__':
-    try:
-        response: str = routine()
-    except Exception as e:
-        logger.exception(e)
-        response = f'An unexpected Exception has occurred: {str(e)}.'
+    routine_with_messaging()

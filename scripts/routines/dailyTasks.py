@@ -12,7 +12,7 @@ django.setup()
 # Import the Modules
 from django.conf import settings
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import pytz
 from shutil import copyfile
 from slackclient import SlackClient
@@ -22,6 +22,22 @@ from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
 from profil.models import KioskUser
 from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
+from paypal.paypal_mail import routine_with_messaging
+
+
+def run_paypal_sync():
+    """Run routine to get the PayPal-Mails and conduct the transactions for the Einzahlung. Response via Slack."""
+    is_success, response_msg = routine_with_messaging()
+    if is_success:
+        # Send message to all admins. If no success, message is already sent in function before.
+        admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+        for u in admins:
+            slack_SendMsg(response_msg, user=u)
+
+
+def send_paypal_statistics():
+    """"""
+    pass
 
 
 # Elect best buyers and administrators
@@ -152,8 +168,8 @@ def weeklyBackup(nowDate):
 #
 def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
 
-    # Unix Epoche of timestamp half a year before
-    dt = (nowDate - timedelta(days=182) - datetime(1970,1,1,tzinfo=pytz.utc)).total_seconds()
+    # Unix Epoche of timestamp two months before
+    dt = (nowDate - timedelta(days=90) - datetime(1970,1,1,tzinfo=pytz.utc)).total_seconds()
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
@@ -259,7 +275,8 @@ def warnUsersToBeBlockedSoon():
 # Block user after active time
 def blockUserAfterActiveTime(nowDate):
     t = nowDate + timedelta(days=1)
-    users = KioskUser.objects.filter(aktivBis__lt=t, visible=True, is_active=True, activity_end_msg=1)
+    users = KioskUser.objects.filter(aktivBis__lt=t, visible=True, is_active=True, activity_end_msg=1,
+        is_functional_user=False,)
 
     msg = 'Liebe*r Kiosknutzer*in,\nHeute endet dein Besch'+chr(228)+'ftiungsverh'+chr(228)+'ltnis an der FfE und somit auch deine Aktivit'+chr(228)+'t im FfE-Kiosk. Dein Account ist nun inaktiv gesetzt, du kannst also keine Eink'+chr(228)+'ufe mehr t'+chr(228)+'tigen.\nHattest du noch Guthaben auf deinem Konto? Dann lasse dir dies von einem Verwalter ausbezahlen.\n Du verl'+chr(228)+'sst die FfE noch gar nicht? Dann reaktiviere dein Konto unter https://ffekiosk.pythonanywhere.com/accounts/angestellt_bis_change/.\nIn einem Monat werden deine personenbezogenen Daten gel'+chr(246)+'scht, danach ist eine Reaktivierung nicht mehr m'+chr(246)+'glich.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
@@ -289,8 +306,9 @@ def warnInactiveUsersBeforeDeletion(nowDate):
         visible= False,
         is_active= False,
         activity_end_msg= 2,
+        is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
     for u in users:
@@ -314,8 +332,9 @@ def deleteInactiveUser(nowDate):
         visible= False,
         is_active= False,
         activity_end_msg= 3,
+        is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
 
@@ -342,8 +361,23 @@ def deleteInactiveUser(nowDate):
 # Run the Script
 if __name__ == '__main__':
 
-    nowDate = datetime.utcnow()
-    nowDate = pytz.utc.localize(nowDate)
+    nowDate = datetime.now(UTC)
+
+    # PayPal sync
+    print('Do the daily sync of PayPal transactions with the Einzahlung transaction.')
+    try:
+        run_paypal_sync()
+        print('Finished the daily PayPal Sync.')
+
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('The daily PayPal Sync has failed!', user=u)
+            print('Daily PayPal Sync failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of PayPal daily sync.')
 
 
     # Elect best buyers and administrators on Friday
