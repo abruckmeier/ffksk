@@ -1,17 +1,15 @@
-
-      
+select
+  count(*) as numTransactions
+from (
     select
-      count(*) as numTransactions
-    from (
-        select
-          "AutoTrans_ID"
-        from kiosk_geldtransaktionen a
-        where a."vonNutzer_id" = %s
+      "AutoTrans_ID"
+    from kiosk_geldtransaktionen a
+    where a.vonnutzer_id = %s
 
-        union all
+    union all
 
-        select
-          "AutoTrans_ID"
-        from kiosk_geldtransaktionen a
-        where a."zuNutzer_id" = %s
-      )
+    select
+      "AutoTrans_ID"
+    from kiosk_geldtransaktionen a
+    where a.zunutzer_id = %s
+  ) ua

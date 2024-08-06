@@ -28,6 +28,6 @@ join (
     group by c."produktName"
   ) d
   using("produktName")
-where c.imVerkauf is 1
+where c."imVerkauf" is true
   and d.anzahl > 0
-order by c."produktName" asc
+order by c."produktName"

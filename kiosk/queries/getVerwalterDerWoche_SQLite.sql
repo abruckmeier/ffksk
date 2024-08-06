@@ -1,7 +1,7 @@
 select
 	first_name,
 	last_name,
-	slackName,
+	"slackName",
 	sum(anzahl) as items,
 	count(*) as anlieferungen,
 	sum(summeEingekauft) as eingekauft
@@ -9,7 +9,7 @@ from (
 	select
 	  first_name,
 	  last_name,
-	  slackName,
+	  "slackName",
 	  rounded_geliefert,
 	  produktpalette_id,
 	  sum(einkaufspreis)/100.0 as summeEingekauft,
@@ -17,9 +17,9 @@ from (
 	from (
 		select
 		  einkaufspreis,
-		  verwalterEinpflegen_id,
-		  strftime('%s', geliefertUm) - strftime('%s', geliefertUm) % 60 as rounded_geliefert,
-		  geliefertUm,
+		  "verwalterEinpflegen_id",
+		  extract(epoch from "geliefertUm") - extract(epoch from "geliefertUm") %% 60 as rounded_geliefert,
+		  "geliefertUm",
 		  produktpalette_id
 		from kiosk_gekauft
 
@@ -27,18 +27,18 @@ from (
 
 		select
 		  einkaufspreis,
-		  verwalterEinpflegen_id,
-		  strftime('%s', geliefertUm) - strftime('%s', geliefertUm) % 60 as rounded_geliefert,
-		  geliefertUm,
+		  "verwalterEinpflegen_id",
+		  extract(epoch from "geliefertUm") - extract(epoch from "geliefertUm") %% 60 as rounded_geliefert,
+		  "geliefertUm",
 		  produktpalette_id
 		from kiosk_kiosk
 		
 	) a
 	left join profil_kioskuser b
-	 on (a.verwalterEinpflegen_id = b.id)
-	where geliefertUm >= datetime(current_timestamp, '-7 days')
-	group by verwalterEinpflegen_id, rounded_geliefert, produktpalette_id
-)
-group by first_name, last_name, slackName
+	 on (a."verwalterEinpflegen_id" = b.id)
+	where "geliefertUm" >= current_timestamp - interval '7 days'
+	group by "verwalterEinpflegen_id", rounded_geliefert, produktpalette_id, first_name, last_name, "slackName"
+) ua
+group by first_name, last_name, "slackName"
 order by anlieferungen desc
 limit 3

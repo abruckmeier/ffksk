@@ -1,19 +1,19 @@
 select
-	strftime('%m', a.month_start) as month,
-	strftime('%Y', a.month_start) as y,
+	extract(month from a.month_start) as month,
+	extract(year from a.month_start) as y,
 	a.month_start as month_start,
 	a.monthly_value as monthly_value
 from (
 	select
-	  (date(date('now'), 'start of month')) as month_end,
-	  (date(date('now'), 'start of month', '-1 month')) as month_start,
+	  date_trunc('month', current_date)::date as month_end,
+	  date_trunc('month', current_date)::date - interval '1 month' as month_start,
 	  sum (verkaufspreis)/100.0 as monthly_value
 	from kiosk_gekauft a
 	join profil_kioskuser b
 	  on a.kaeufer_id = b.id
-	where b.username <> "Dieb"
-	  and date(a.gekauftUm) >= month_start
-	  and date(a.gekauftUm) <= month_end
+	where b.username <> 'Dieb'
+	  and a."gekauftUm"::date >= date_trunc('month', current_date)::date - interval '1 month'
+	  and a."gekauftUm"::date <= date_trunc('month', current_date)::date
 	group by month_start
-	order by month_start asc
+	order by month_start
 ) a

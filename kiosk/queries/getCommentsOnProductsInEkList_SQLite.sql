@@ -21,9 +21,9 @@
 	    from kiosk_produktkommentar
 	    where erstellt < current_timestamp
 	    group by produktpalette_id  
-	  )
+	  ) ua
 	  using(produktpalette_id,erstellt)
   ) d
   on b.id = d.produktpalette_id
-  where gruppenID = %s
-  group by c."gruppenID", b."produktName"
+  where "gruppenID" = %s
+  group by c."gruppenID", b."produktName", d.kommentar

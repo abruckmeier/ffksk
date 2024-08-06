@@ -3,8 +3,8 @@ select
   b."produktName" as produktname,
   count(*) as anzahlElemente,
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
-  ("input_id_angeliefert_" || b.id) as input_id_angeliefert,
-  ("input_id_bezahlt_" || b.id) as input_id_bezahlt,
+  ('input_id_angeliefert_' || b.id) as input_id_angeliefert,
+  ('input_id_bezahlt_' || b.id) as input_id_bezahlt,
   e.kommentar as kommentar
 from
   kiosk_zumEinkaufVorgemerkt a
@@ -45,9 +45,9 @@ join (
     from kiosk_produktkommentar
     where erstellt < current_timestamp
     group by produktpalette_id  
-  )
+  ) ua
   using(produktpalette_id,erstellt)
 ) e
   on b.id = e.produktpalette_id
-where c.id = %s and b.imVerkauf is 1
-group by b."produktName"
+where c.id = %s and b."imVerkauf" is true
+group by b.id, b."produktName", d.verkaufspreis, b.id, b.id, e.kommentar

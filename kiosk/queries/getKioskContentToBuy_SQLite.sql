@@ -39,9 +39,9 @@ left join (
   from kiosk_gekauft gkft
   join profil_kioskuser usr
     on usr.id = gkft.kaeufer_id
-  where usr.username = "Dieb"
+  where usr.username = 'Dieb'
   group by gkft.produktpalette_id
   ) e
   using(produktpalette_id)
-where c.imVerkauf is 1
-order by c."produktName" asc
+where c."imVerkauf" is true
+order by c."produktName"

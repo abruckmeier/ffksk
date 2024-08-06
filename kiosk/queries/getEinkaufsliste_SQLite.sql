@@ -1,7 +1,7 @@
 
   select 
 	c."gruppenID" as "gruppenID",
-	b."ID" as id,
+	b.ID as id,
 	b."produktName" as "produktName",
 	count(*) as anzahlElemente,
 	d.verkaufspreis*count(*)/100.0 as verkaufspreis,
@@ -47,12 +47,12 @@
 		from kiosk_produktkommentar
 		where erstellt < current_timestamp
 		group by produktpalette_id  
-	  )
+	  ) ua
 	  using(produktpalette_id,erstellt)
 	) e
 	  on b.id = e.produktpalette_id
 	
-  where b.imVerkauf is 1
-  group by c."gruppenID", b."produktName"
+  where b."imVerkauf" is true
+  group by c."gruppenID", b."produktName", b.ID, d.verkaufspreis, e.kommentar
 
-order by "gruppenID" asc
+order by "gruppenID"

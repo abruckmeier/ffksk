@@ -55,7 +55,7 @@ from (
 	 on (a.einkaeufer_id = b.id)
 	where geliefertUm >= datetime(current_timestamp, '-1 month')
 	group by einkaeufer_id
-)
+) ua
 where anzahl > 0
 order by ranking desc
 limit 3

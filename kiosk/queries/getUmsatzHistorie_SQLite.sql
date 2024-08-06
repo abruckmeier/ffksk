@@ -3,7 +3,7 @@ select
 	allesUmsatz - dieb as bezahlt
 from (
 	select 
-		date(stamp) as datum,
+		"gekauftUm"::date as datum,
 		sum(verkaufspreis) / 100.0 as allesUmsatz
 	from (
 		select 
@@ -12,28 +12,28 @@ from (
 		join profil_kioskuser b
 		  on a.kaeufer_id = b.id
 	) a, (
-		select 
-			datetime(stamp,'+1 day','-1 second') as stamp
+		select
+		    stamp + interval '1 day' - interval '1 second' as stamp
 		from (
 			select
-				date(gekauftUm) as stamp
+				"gekauftUm"::date as stamp
 			from (
 				select 
 					*
 				from kiosk_gekauft a
 				join profil_kioskuser b
 				  on a.kaeufer_id = b.id
-			)
+			) uua
 			where username = 'Dieb'
-			group by stamp
-		)
+			group by "gekauftUm"::date
+		) ua
 	) b
-	where gekauftUm <= stamp
-	group by stamp
+	where "gekauftUm" <= stamp
+	group by "gekauftUm"::date
 ) a
 join (
 	select 
-		date(stamp) as datum,
+		"gekauftUm"::date as datum,
 		sum(verkaufspreis) / 100.0 as dieb
 	from (
 		select 
@@ -44,28 +44,28 @@ join (
 			from kiosk_gekauft a
 			join profil_kioskuser b
 			  on a.kaeufer_id = b.id
-		)
+		) uuua
 		where username='Dieb'
 	) a, (
 		select 
-			datetime(stamp,'+1 day','-1 second') as stamp
+			stamp + interval '1 day' - interval '1 second' as stamp
 		from (
 			select
-				date(gekauftUm) as stamp
+				"gekauftUm"::date as stamp
 			from (
 				select 
 					*
 				from kiosk_gekauft a
 				join profil_kioskuser b
 				  on a.kaeufer_id = b.id
-			)
+			) uuuua
 			where username = 'Dieb'
-			group by stamp
-		)
+			group by "gekauftUm"::date
+		) au
 	) b
-	where gekauftUm <= stamp
-	group by stamp
+	where "gekauftUm" <= stamp
+	group by "gekauftUm"::date
 ) b
 	using(datum)
 	
-order by datum asc
+order by datum
