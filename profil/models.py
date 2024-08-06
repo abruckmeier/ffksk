@@ -1,7 +1,9 @@
+from django.apps import apps
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, UserManager
 from datetime import date
+from django.contrib.auth.hashers import make_password
 
 
 # Change the user manager for a case-insensitive login
@@ -10,13 +12,31 @@ class KioskUserManager(UserManager):
         case_insensitive_username_field = '{}__iexact'.format(self.model.USERNAME_FIELD)
         return self.get(**{case_insensitive_username_field: username})
 
+    def _create_user(self, username, email, password, **extra_fields):
+        """
+        Create and save a user with the given username, email, and password.
+        """
+        if not username:
+            raise ValueError("The given username must be set")
+        # Lookup the real model class from the global app registry so this
+        # manager method can be used in migrations. This is fine because
+        # managers are by definition working on the real model.
+        GlobalUserModel = apps.get_model(
+            self.model._meta.app_label, self.model._meta.object_name
+        )
+        username = GlobalUserModel.normalize_username(username)
+        user = self.model(username=username, **extra_fields)
+        user.password = make_password(password)
+        user.save(using=self._db)
+        return user
+
 
 class KioskUser(AbstractUser):
 
     objects = KioskUserManager()
+    REQUIRED_FIELDS = []
 
     email = None
-    EMAIL_FIELD = None
     is_verified = models.BooleanField(default=False)
 
     permissions = (('User','Standardnutzer'),
@@ -42,6 +62,7 @@ class KioskUser(AbstractUser):
     is_functional_user = models.BooleanField(default=False, help_text='Set to true, if this is no real user, but System user')
 
     class Meta:
+        default_manager_name = 'objects'
         permissions = (
             ("do_admin_tasks","Einpflegen von Usern, Geldtransaktionen, ..."),
             ("do_verwaltung","Einarbeiten von Waren ins Kiosk"),
