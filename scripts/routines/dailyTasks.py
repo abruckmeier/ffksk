@@ -91,21 +91,22 @@ def electBestContributors():
     return
 
 
-# Conduct the daily rotating Save of the Database
+# Conduct the daily rotating Save of the Database (to local filesystem)
 def dailyBackup(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
-        print('Backup not activated in settings. Stop.')
-        return 'Backup not activated in settings.'
+    if not backupSettings['active_local_backup']:
+        print('Local backup not activated in settings. Stop.')
+        return 'Local backup not activated in settings.'
 
     # Get the origin of the to copy file
     baseDir = getattr(settings,'BASE_DIR')
+    raise NotImplementedError('Local backup not yet implemented for Postgres.')
     databaseName = getattr(settings,'DATABASE_NAME')
 
     # Get the backup folder and create the day-specific file name of the backup file
-    backupFolder = backupSettings['backupFolder']
+    backupFolder = backupSettings['localBackupFolder']
     if not os.path.exists(backupFolder):
         print('Backup Folder does not exist. Create it...')
         os.makedirs(backupFolder)
@@ -122,16 +123,23 @@ def weeklyBackup(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
+    if not backupSettings['active_local_backup'] and not backupSettings['active_slack_backup']:
         print('Backup not activated in settings. Stop.')
         return 'Backup not activated in settings.'
 
+    raise NotImplementedError('Not yet implemented for Postgres')
+
+    # Conduct backup -> Create tar file
+    pass
+
     # Get the origin of the to attach file
+    if backupSettings['active_local_backup']:
+        pass
     baseDir = getattr(settings,'BASE_DIR')
     databaseName = getattr(settings,'DATABASE_NAME')
 
     # Get the backup folder
-    backupFolder = backupSettings['backupFolder']
+    backupFolder = backupSettings['localBackupFolder']
     if not os.path.exists(backupFolder):
         print('Backup Folder does not exist. Create it...')
         os.makedirs(backupFolder)
@@ -143,6 +151,8 @@ def weeklyBackup(nowDate):
     copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,attDatabaseName))
 
     # Send the database attached as Slack-message
+    if backupSettings['active_slack_backup']:
+        pass
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     sc = SlackClient(slack_token)
 
@@ -173,14 +183,14 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
-        print('Backup not activated in settings. Stop.')
-        return 'Backup not activated in settings.'
+    if not backupSettings['active_slack_backup']:
+        print('Slack Backup not activated in settings. Stop.')
+        return 'Slack Backup not activated in settings.'
 
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     sc = SlackClient(slack_token)
 
-    for botID in backupSettings['kioskbotChannel']:
+    for botID in backupSettings['kioskbotChannels']:
         conversation = sc.api_call(
             'conversations.history',
             channel=botID,
