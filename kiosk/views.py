@@ -436,8 +436,8 @@ def vorgemerkt_page(request):
 # String Input to Cent Values
 def strToCents(num):
 	try:
-		left = int(re.findall('^(\d+)',num)[0])
-		right = re.findall('[.,](\d*)$',num)
+		left = int(re.findall(r'^(\d+)',num)[0])
+		right = re.findall(r'[.,](\d*)$',num)
 		if right == []:
 			right = 0
 		else:
@@ -482,7 +482,7 @@ def einkauf_annahme_user_page(request, userID):
 		keys = [x for x in request.POST.keys()]
 
 		# Get the product IDs
-		productIds = [int(re.findall('^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match('^input_id_angeliefert_\d+$', x)]
+		productIds = [int(re.findall(r'^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match(r'^input_id_angeliefert_\d+$', x)]
 
 		# Connect the input values to the corresponding products and only allow correct entries
 		formInp = []
