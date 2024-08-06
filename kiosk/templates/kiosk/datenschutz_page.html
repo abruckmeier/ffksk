@@ -12,7 +12,7 @@
 
 
 		<p>Verantwortliche Stelle im Sinne der Datenschutzgesetze, insbesondere der EU-Datenschutzgrundverordnung (DSGVO), ist:</p>
-		<p class="indented">{{datenschutz.responsibility|safe}}</p>
+		<p class="indented">FfE-Kiosk Mitwirkende<br>{{ contact.email | safe }}</p>
 		<br>
 
 		<h4>Ihre Betroffenenrechte</h4>
@@ -64,7 +64,10 @@
 
 		<h5>Speicherdauer und eingesetzte Cookies:</h5>
 		<p>Soweit Sie uns durch Ihre Browsereinstellungen oder Zustimmung die Verwendung von Cookies erlauben, k&#246;nnen folgende Cookies auf unseren Webseiten zum Einsatz kommen:</p>
-		<p>{{datenschutz.cookies|safe}}</p>
+		<div><ul>
+			<li>Session-Informationen: In der Regel eine Woche gültig. Durch den Logout-Vorgang werden die Cookies ungültig.</li>
+			<li>Token zur sicheren Datenverbindung: Für die Dauer einer "Sitzung" gültig.</li>
+		</ul></div>
 		<p></p>
 		<p>Soweit diese Cookies (auch) personenbezogene Daten betreffen k&#246;nnen, informieren wir Sie dar&#252;ber in den folgenden Abschnitten.</p>
 		<p>Sie k&#246;nnen &#252;ber Ihre Browsereinstellungen einzelne Cookies oder den gesamten Cookie-Bestand l&#246;schen. Dar&#252;ber hinaus erhalten Sie Informationen und Anleitungen, wie diese Cookies gel&#246;scht oder deren Speicherung vorab blockiert werden k&#246;nnen. Je nach Anbieter Ihres Browsers finden Sie die notwendigen Informationen unter den nachfolgenden Links:</p>
@@ -142,7 +145,7 @@
 		<h4>Fragen an den Datenschutzbeauftragten</h4>
 		<p>Wenn Sie Fragen zum Datenschutz haben, schreiben Sie uns bitte eine E-Mail oder wenden Sie sich direkt an die f&#252;r den Datenschutz verantwortliche Person in unserer Organisation:</p>
 		
-		<p class="indented">{{ datenschutz.responsibility | safe }}</p>
+		<p class="indented">FfE-Kiosk Mitwirkende<br>{{ contact.email | safe }}</p>
 		<br><br>
 
 		<p class="grey">

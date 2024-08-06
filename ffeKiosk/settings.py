@@ -137,6 +137,11 @@ STATICFILES_DIRS = [
     #'/var/www/static/',
 ] # python manage.py collectstatic
 
+CONTACT = {
+    'email': config('CONTACT_EMAIL'),
+}
+
+
 
 # Finanzielle Konstanten -> spaeter in den KioskBot geben
 FINANZ = {
