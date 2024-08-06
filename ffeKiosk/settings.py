@@ -178,6 +178,7 @@ VIEWS = {
     'itemsInKontobewegungen': 10,
 }
 
+
 # Logging
 class CustomFormatter(logging.Formatter):
     def format(self, record):
@@ -186,6 +187,21 @@ class CustomFormatter(logging.Formatter):
             s = s.replace('\n', '\n........')
         return s
 
+
+file_handlers = {
+    'django_file': {
+        'class': 'logging.FileHandler',
+        'filename': os.path.join(LOGS_DIR, 'django.log'),
+        'formatter': 'verbose',
+        'encoding': 'utf8',
+    },
+    'paypal_mail_file': {
+        'class': 'logging.FileHandler',
+        'filename': os.path.join(LOGS_DIR, 'paypal_mail.log'),
+        'formatter': 'verbose',
+        'encoding': 'utf8',
+    },
+}
 
 LOGGING = {
     'version': 1,
@@ -202,19 +218,7 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-        'django_file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOGS_DIR, 'django.log'),
-            'formatter': 'verbose',
-            'encoding': 'utf8',
-        },
-        'paypal_mail_file': {
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOGS_DIR, 'paypal_mail.log'),
-            'formatter': 'verbose',
-            'encoding': 'utf8',
-        },
-    },
+    } | file_handlers if config('LOG_TO_FILE', cast=bool, default=False) else {},
     'loggers': {
         'django': {
             'handlers': ['console', 'django_file'] if config('LOG_TO_FILE', cast=bool, default=False) else ['console'],
