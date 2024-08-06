@@ -130,14 +130,14 @@ def offeneEkListe_page(request):
 def datenschutz_page(request):
 
 	# Get the contact data for the impressum
-	datenschutz = getattr(settings,'DATENSCHUTZ')
+	contact = getattr(settings,'CONTACT')
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-	return render(request, 'kiosk/datenschutz_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'datenschutz': datenschutz})
+	return render(request, 'kiosk/datenschutz_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'contact': contact})
 
 
 def kontakt_page(request):
@@ -178,14 +178,14 @@ def kontakt_page(request):
 def impressum_page(request):
 
 	# Get the contact data for the impressum
-	impressum = getattr(settings,'IMPRESSUM')
+	contact = getattr(settings,'CONTACT')
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'impressum': impressum,})
+	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'contact': contact,})
 
 
 
