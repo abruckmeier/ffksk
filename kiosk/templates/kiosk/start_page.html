@@ -30,10 +30,15 @@
 					<a class="btn btn-default" href="{% url 'anleitung_page' %}">Mehr Infos</a>
 
 					<br><br>
-					<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
-					&nbsp;
 					{% if not user.is_authenticated %}
+						<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
+						&nbsp;
 						<a class="btn btn-info" href="{% url 'login' %}">Login</a>
+					{% else %}
+						<form action="{% url 'logout' %}" method="post">
+							{% csrf_token %}
+							<button class="btn btn-default" type="submit">Logout</button>
+						</form>
 					{% endif %}
 				</p>
 				</div>
