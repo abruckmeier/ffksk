@@ -11,3 +11,7 @@ python3.12 manage.py migrate --noinput
 
 echo "Collect Static..."
 python3.12 manage.py collectstatic --noinput --clear
+
+echo "Setup groups and their permissions"
+python3.12 manage.py shell -c "from scripts.initialisation import initGroupsAndPermissions as x; x.InitGroupsAndPermissions();"
+python3.12 manage.py shell -c "from scripts.initialisation import initNecessaryUsers as x; x.initNecessaryUsers();"

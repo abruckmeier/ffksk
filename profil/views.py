@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from kiosk.models import Kontostand
 from django.db import transaction
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .models import KioskUser
 from .forms import AktivBisChangeForm, PersonalInfoChangeForm
@@ -144,7 +145,7 @@ class registrationStatus(View):
 
 
 # Verify the slack name on registration. When the token, given in the verification message is correct, the corresponding flag is set to True. A Slack-message will be sent to give further information: Welcome message
-class AccountActivate(View):
+class AccountActivate(LoginRequiredMixin, View):
 
     @transaction.atomic
     def get(self, request, uidb64, token):

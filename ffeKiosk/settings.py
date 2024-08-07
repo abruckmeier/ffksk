@@ -85,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ffeKiosk.wsgi.application'
+WSGI_APPLICATION = 'ffeKiosk.wsgi.app'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
