@@ -174,7 +174,7 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
         return response
 
     # Check if the notice in the transaction is "Einzahlung". Else, no transaction!
-    if not re.search('Einzahlung', obj.notice, re.IGNORECASE):
+    if not obj.notice or not re.search('Einzahlung', obj.notice, re.IGNORECASE):
         response['reason'] = 'No notice with Einzahlung given.'
         return response
 
@@ -304,4 +304,4 @@ def routine_with_messaging() -> Tuple[bool, str]:
 
 
 if __name__ == '__main__':
-    routine_with_messaging()
+    is_success, response_msg = routine_with_messaging()
