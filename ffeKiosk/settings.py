@@ -203,7 +203,7 @@ file_handlers = {
     },
 }
 
-"""LOGGING = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
@@ -218,7 +218,7 @@ file_handlers = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-    } | file_handlers if config('LOG_TO_FILE', cast=bool, default=False) else {},
+    } | (file_handlers if config('LOG_TO_FILE', cast=bool, default=False) else {}),
     'loggers': {
         'django': {
             'handlers': ['console', 'django_file'] if config('LOG_TO_FILE', cast=bool, default=False) else ['console'],
@@ -229,4 +229,4 @@ file_handlers = {
             'level': 'INFO',
         },
     },
-}"""
+}
