@@ -32,7 +32,7 @@ class Mail(models.Model):
                                             help_text='transaction of "Einzahlung" that has been created from this mail.')
 
     def __str__(self):
-        return f'[{self.id}] {self.envelope_str}'
+        return f'[{self.id}] {self.mail_ts}'
 
     class Meta:
         verbose_name = 'Mail'
