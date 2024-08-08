@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 import os
 import sys
-
 import django
 
-# Setup the Django environment of the Kiosk
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ffeKiosk.settings")
-django.setup()
+if __name__ == '__main__':
+    # Setup the Django environment of the Kiosk
+    BASE = os.path.dirname(os.path.dirname(os.path.dirname((os.path.abspath(__file__)))))
+    sys.path.append(BASE)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ffeKiosk.settings")
+    django.setup()
 
 
 # Import the Modules
@@ -363,13 +365,8 @@ def deleteInactiveUser(nowDate):
         u.save()
 
 
-
-
-
-
-
 # Run the Script
-if __name__ == '__main__':
+def routine():
 
     nowDate = datetime.now(UTC)
 
@@ -535,6 +532,8 @@ if __name__ == '__main__':
         except:
             print('Failing to send Slack Message with Fail Notice of Warning and deletion of inactive users.')
 
-
-
     # Weekly: Check for inactive users and to be deleted ones, check for some constraints: Too high / too low account. Calculate integrity of account, and transactions, and...
+
+
+if __name__ == '__main__':
+    routine()
