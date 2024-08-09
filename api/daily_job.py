@@ -11,6 +11,12 @@ class Handler(BaseHTTPRequestHandler):
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ffeKiosk.settings")
         django.setup()
 
+        from profil.models import KioskUser
+        from kiosk.bot import slack_SendMsg
+
+        u = KioskUser.objects.get(username='abruckmeier')
+        slack_SendMsg('Test!', u)
+
         from scripts.routines.dailyTasks import routine
         routine()
 

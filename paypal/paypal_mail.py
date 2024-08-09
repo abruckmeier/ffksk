@@ -1,4 +1,3 @@
-from django.db.models import Q
 from imapclient import IMAPClient
 from imapclient.response_types import Envelope
 from typing import List, TypedDict, Tuple
