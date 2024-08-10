@@ -542,10 +542,6 @@ class GeldTransaktionen(models.Model):
 		allTransactions = readFromDatabase('getTransactions',
 			[user.id, user.id, int(page)*int(limPP), limPPn])
 
-		# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-		for k,v in enumerate(allTransactions):
-			allTransactions[k]['datum'] = pytz.timezone('UTC').localize(v['datum'])
-
 		return(allTransactions)
 
 
@@ -554,7 +550,7 @@ class GeldTransaktionen(models.Model):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
 		# Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
-		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
+		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
 			sign = -1
 		else:
 			sign = +1
@@ -579,6 +575,7 @@ class GeldTransaktionen(models.Model):
 			except:
 				pass
 
+		return t
 
 
 	@transaction.atomic

@@ -69,7 +69,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     extraction_was_successful = True
     txt = mail.get('data')
 
-    usr = re.findall(r'<span>Mitteilung von (?P<usr>[\w\s]+):', txt)
+    usr = re.findall(r'<span>M[\w\W]*?itteilung von (?P<usr>[\w\s]+):', txt)
     if len(usr) == 0:
         extraction_was_successful = False
         usr = None
@@ -85,7 +85,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         t_code = t_code[0]
 
     t_datum = re.findall(
-        r'<span><strong>Transakti[\w\W]*?onsdatum</strong></span><br><span>(?P<t_date>\d+\. \w+ \d+)</span>',
+        r'<span><strong>Transakti[\w\W]*?onsdatum<[\w\W]*?\/strong><\/span><br \/><span>(?P<t_date>\d+\. \w+ \d+)<\/span>',
         txt,
     )
     if len(t_datum) == 0:
@@ -100,7 +100,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
             extraction_was_successful = False
             t_date = None
 
-    amount = re.findall(r'<strong>Erhaltener Betrag<\/strong>[\w\W]*?>(?P<amount>\d+,\d+)[\w\W]*?EUR<\/td>', txt)
+    amount = re.findall(r'<strong>Erhaltener Bet[\w\W]*?rag<\/strong>[\w\W]*?>(?P<amount_1>\d+)[\w\W]*?,(?P<amount_2>\d+)[\w\W]*?EUR<\/td>', txt)
     if len(amount) == 0:
         extraction_was_successful = False
         amount = None
@@ -108,13 +108,13 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         amount = amount[0]
         try:
             locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
-            amount = int(locale.atof(amount) * 100)
+            amount = int(locale.atof(f'{amount[0]},{amount[1]}') * 100)
         except Exception:
             extraction_was_successful = False
             amount = None
 
     notice = re.findall(
-        r'<span>Mitteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
+        r'<span>M[\w\W]+?itteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
         txt,
     )
     if len(notice) == 0:
@@ -149,6 +149,7 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
             transaction_code=_mail.get('transaction_code'),
             transaction_date=_mail.get('transaction_date'),
             amount=_mail.get('amount'),
+            notice=_mail.get('notice'),
         ))
     return Mail.objects.bulk_create(mail_objects)
 
@@ -187,14 +188,14 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     obj.user = assigned_user
     obj.assignment_was_successful = True
 
-    transaction = GeldTransaktionen(
+    transaction = GeldTransaktionen.doTransaction(
         vonnutzer=KioskUser.objects.get(username='PayPal_Bargeld'),
         zunutzer=assigned_user,
         betrag=obj.amount,
+        datum=obj.mail_ts.date(),
         kommentar=f'Automatisch generierte Einzahlung nach PayPal-Überweisung.'
                   f' PayPal-Transaktions-Code: {obj.transaction_code}',
     )
-    transaction.save()
     obj.geld_transaktion = transaction
     obj.save()
 
