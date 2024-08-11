@@ -94,8 +94,8 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         t_date = t_datum[0]
         try:
-            print(locale.locale_alias)
-            locale.setlocale(locale.LC_ALL, 'de_DE')
+            print([_ for _ in locale.locale_alias.keys() if _.find('de') >= 0])
+            locale.setlocale(locale.LC_ALL, 'de')
             t_date = datetime.strptime(t_datum[0], '%d. %B %Y').date()
         except Exception:
             extraction_was_successful = False
@@ -108,7 +108,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         amount = amount[0]
         try:
-            locale.setlocale(locale.LC_ALL, 'de_DE')
+            locale.setlocale(locale.LC_ALL, 'de')
             amount = int(locale.atof(f'{amount[0]},{amount[1]}') * 100)
         except Exception:
             extraction_was_successful = False
