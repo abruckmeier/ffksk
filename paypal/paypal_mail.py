@@ -94,7 +94,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         t_date = t_datum[0]
         try:
-            print(locale.getlocale())
+            print(locale.locale_alias)
             locale.setlocale(locale.LC_ALL, 'de_DE')
             t_date = datetime.strptime(t_datum[0], '%d. %B %Y').date()
         except Exception:
