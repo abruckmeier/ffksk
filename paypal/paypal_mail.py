@@ -30,7 +30,6 @@ class ExtractedMail(TypedDict):
     extraction_was_successful: bool
     user: str | None
     transaction_code: str | None
-    transaction_date: date | None
     amount: int | None  # in Eurocent values
     notice: str | None
 
@@ -85,25 +84,6 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         t_code = t_code[0]
 
-    t_datum = re.findall(
-        r'<span><strong>Transakti[\w\W]*?onsdatum<[\w\W]*?\/strong><\/span><br \/><span>(?P<t_date>\d+\. \w+ \d+)<\/span>',
-        txt,
-    )
-    if len(t_datum) == 0:
-        extraction_was_successful = False
-        t_date = None
-    else:
-        t_date = t_datum[0]
-        if True: #try:
-            print(parser.parse(t_date))
-            t_date = datetime.strptime(t_date, '%d. %B %Y').date()
-            t_date = datetime.strptime('9. July 2025', '%d. %B %Y').date()
-            t_date = datetime.strptime('8. Juli 2026', '%d. %B %Y').date()
-            print(t_date)
-        else: #except Exception:
-            extraction_was_successful = False
-            t_date = None
-
     amount = re.findall(r'<strong>Erhaltener Bet[\w\W]*?rag<\/strong>[\w\W]*?>(?P<amount_1>\d+)[\w\W]*?,(?P<amount_2>\d+)[\w\W]*?EUR<\/td>', txt)
     if len(amount) == 0:
         extraction_was_successful = False
@@ -111,8 +91,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         amount = amount[0]
         try:
-            locale.setlocale(locale.LC_ALL, 'de_de')
-            amount = int(locale.atof(f'{amount[0]},{amount[1]}') * 100)
+            amount = int(amount[0]) * 100 + int(amount[1])
         except Exception:
             extraction_was_successful = False
             amount = None
@@ -132,7 +111,6 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         extraction_was_successful=extraction_was_successful,
         user=usr,
         transaction_code=t_code,
-        transaction_date=t_date,
         amount=amount,
         notice=notice,
     )
@@ -151,7 +129,6 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
             extraction_was_successful=_mail.get('extraction_was_successful'),
             user_str=_mail.get('user'),
             transaction_code=_mail.get('transaction_code'),
-            transaction_date=_mail.get('transaction_date'),
             amount=_mail.get('amount'),
             notice=_mail.get('notice'),
         ))

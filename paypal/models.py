@@ -21,7 +21,6 @@ class Mail(models.Model):
     )
     user_str = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted user')
     transaction_code = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted transaction code')
-    transaction_date = models.DateField(help_text='Extracted transaction date', blank=True, null=True)
     amount = models.IntegerField(help_text='Extracted amount sent', blank=True, null=True)
     notice = models.TextField(help_text='Extracted notice text', blank=True, null=True)
 
