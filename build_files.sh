@@ -1,8 +1,5 @@
 #!/bin/bash
-apt-get update -y
-apt-get install -y locales dos2unix
-sed -i -e 's/# de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/' /etc/locale.gen
-dpkg-reconfigure --frontend=noninteractive locales
+
 # Build the project
 echo "Building the project..."
 python3.12 -m pip install pipenv
