@@ -97,6 +97,8 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         if True: #try:
             print(parser.parse(t_date))
             t_date = datetime.strptime(t_date, '%d. %B %Y').date()
+            t_date = datetime.strptime('9. July 2025', '%d. %B %Y').date()
+            t_date = datetime.strptime('8. Juli 2026', '%d. %B %Y').date()
             print(t_date)
         else: #except Exception:
             extraction_was_successful = False
