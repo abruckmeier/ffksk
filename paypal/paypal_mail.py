@@ -93,11 +93,14 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
         t_date = None
     else:
         t_date = t_datum[0]
-        try:
+        if True: #try:
+            print(t_date)
             print([_ for _ in locale.locale_alias.keys() if _.find('de') >= 0])
             locale.setlocale(locale.LC_ALL, 'de')
-            t_date = datetime.strptime(t_datum[0], '%d. %B %Y').date()
-        except Exception:
+            print(locale.getlocale(locale.LC_ALL))
+            t_date = datetime.strptime(t_date, '%d. %B %Y').date()
+            print(t_date)
+        else: #except Exception:
             extraction_was_successful = False
             t_date = None
 
