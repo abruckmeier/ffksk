@@ -1,6 +1,6 @@
 {% extends 'kiosk/base.html' %}	
 
-{% load staticfiles %}
+{% load static %}
 {% load widget_tweaks %}	
 
 {% block content %}
@@ -15,7 +15,9 @@
 			Info
 		</div>
 		<div class="panel-body justified">
-			Gib hier alle deine Daten an, um ein Benutzerkonto anzulegen. Best&#228;tige au&#223;erdem die <a class="bold" href="{% url 'regelwerk_page' %}">g&#252;ltigen Regeln im Kiosk</a> und die <a class="bold" href="{% url 'anleitung_page' %}">Hinweise zur Datenverwendung</a>.
+			Unter <a class="bold" href="{% url 'ersteschritte_page' %}">Erste Schritte</a> erfährst du,
+			wie du deine Registrierung abschließt und wie du deinen ersten Kauf und deine erste Besorgung
+			durchführen kannst.
 		</div>
 	</div>
 	<br>
@@ -75,6 +77,18 @@
                 	<p class="alert alert-danger">{{ field.errors.as_text }}</p>
                 {% endif %}
                 {% if field.help_text %}
+										{% if field.name == 'slackName' %}
+											<!-- Button trigger modal -->
+											<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+												Infos zur Slack-Integration
+											</button>
+										{% endif %}
+										{% if field.name == 'paypal_name' %}
+											<!-- Button trigger modal -->
+											<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal2">
+												Infos zur PayPal-Integration
+											</button>
+										{% endif %}
                     <p class="alert alert-info">{{ field.help_text|safe }}</p>
                 {% endif %}
             </div>
@@ -82,11 +96,61 @@
         
         <input type="submit" class="btn btn-primary" value="Konto erstellen" />  
     </form>
-	
+
+
 
 	<hr>
 	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
 
+{% endblock %}
+
+{% block modal_title %}
+	Infos zur Slack Integration
+{% endblock %}
+{% block modal_body %}
+	<p>
+		Eine funktionierende Verbindung zu deinem Slack-Account ist notwendig, um die Registrierung erfolgreich durchzuführen.
+		Deshalb nutze bitte <b>"Verbindung testen",</b> um zu prüfen, ob der eingegebene User existiert und erreichbar ist.
+	</p>
+	<p>
+		Sollte eine Verbindung mit dem Nutzernamen nicht möglich sein, da der Name Leerzeichen oder Sonderzeichen besitzt,
+		musst du deine User-ID nutzen. Diese kannst du folgendermaßen beschaffen:
+	</p>
+
+	<p>
+		Klicke in Slack links unten auf deinen User und dann auf dein Profil.<br />
+		<img src="{% static 'img/slack-help-1.png' %}" style="opacity: 1; width: 100%; max-width: 300px;" />
+	</p>
+	<p>
+		Rechts öffnet sich das Profil und du öffnest das erweiterte Menü bei den drei Punkten.<br />
+		<img src="{% static 'img/slack-help-2.png' %}" style="opacity: 1; width: 100%; max-width: 300px;" />
+	</p>
+	<p>
+		Hier findest du die Mitglieds-ID bzw. Member-ID, die du kopieren und einfügen kannst. Bitte nochmals testen, ob es funktioniert.<br />
+		<img src="{% static 'img/slack-help-3.png' %}" style="opacity: 1; width: 100%; max-width: 300px;" />
+	</p>
+{% endblock %}
+
+{% block modal_title_2 %}
+	Infos zur PayPal Integration
+{% endblock %}
+{% block modal_body_2 %}
+	<p>
+		Wenn du dein Guthaben via PayPal aufladen möchtest, musst du deinen PayPal Namen hier eintragen. Anderweitig
+		können wir eine Überweisung auf das Kiosk PayPal Konto nicht dir zuordnen und du musst dich bei einem Admin melden.
+	</p>
+	<p>
+		Deinen PayPal Namen, den wir benötigen, findest du folgendermaßen:
+	</p>
+
+	<p>
+		Klicke oben rechts auf das Einstellungen-Symbol.<br />
+		<img src="{% static 'img/paypal-help-1.png' %}" style="opacity: 1; width: 100%; max-width: 300px;" />
+	</p>
+	<p>
+		Links erscheint dein Name. Dieser wird benötigt.<br />
+		<img src="{% static 'img/paypal-help-2.png' %}" style="opacity: 1; width: 100%; max-width: 300px;" />
+	</p>
 {% endblock %}
 
 {% block javascript %}

@@ -1,18 +1,20 @@
 #!/usr/bin/env python
 import os
 import sys
-
 import django
 
-# Setup the Django environment of the Kiosk
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ffeKiosk.settings")
-django.setup()
+if __name__ == '__main__':
+    # Setup the Django environment of the Kiosk
+    BASE = os.path.dirname(os.path.dirname(os.path.dirname((os.path.abspath(__file__)))))
+    sys.path.append(BASE)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ffeKiosk.settings")
+    django.setup()
 
 
 # Import the Modules
 from django.conf import settings
 from django.db.models import Q
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import pytz
 from shutil import copyfile
 from slackclient import SlackClient
@@ -22,6 +24,22 @@ from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
 from profil.models import KioskUser
 from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
+from paypal.paypal_mail import routine_with_messaging
+
+
+def run_paypal_sync():
+    """Run routine to get the PayPal-Mails and conduct the transactions for the Einzahlung. Response via Slack."""
+    is_success, response_msg = routine_with_messaging()
+    if is_success:
+        # Send message to all admins. If no success, message is already sent in function before.
+        admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+        for u in admins:
+            slack_SendMsg(response_msg, user=u)
+
+
+def send_paypal_statistics():
+    """"""
+    pass
 
 
 # Elect best buyers and administrators
@@ -75,21 +93,22 @@ def electBestContributors():
     return
 
 
-# Conduct the daily rotating Save of the Database
+# Conduct the daily rotating Save of the Database (to local filesystem)
 def dailyBackup(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
-        print('Backup not activated in settings. Stop.')
-        return 'Backup not activated in settings.'
+    if not backupSettings['active_local_backup']:
+        print('Local backup not activated in settings. Stop.')
+        return 'Local backup not activated in settings.'
 
     # Get the origin of the to copy file
     baseDir = getattr(settings,'BASE_DIR')
+    raise NotImplementedError('Local backup not yet implemented for Postgres.')
     databaseName = getattr(settings,'DATABASE_NAME')
 
     # Get the backup folder and create the day-specific file name of the backup file
-    backupFolder = backupSettings['backupFolder']
+    backupFolder = backupSettings['localBackupFolder']
     if not os.path.exists(backupFolder):
         print('Backup Folder does not exist. Create it...')
         os.makedirs(backupFolder)
@@ -106,16 +125,23 @@ def weeklyBackup(nowDate):
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
+    if not backupSettings['active_local_backup'] and not backupSettings['active_slack_backup']:
         print('Backup not activated in settings. Stop.')
         return 'Backup not activated in settings.'
 
+    raise NotImplementedError('Not yet implemented for Postgres')
+
+    # Conduct backup -> Create tar file
+    pass
+
     # Get the origin of the to attach file
+    if backupSettings['active_local_backup']:
+        pass
     baseDir = getattr(settings,'BASE_DIR')
     databaseName = getattr(settings,'DATABASE_NAME')
 
     # Get the backup folder
-    backupFolder = backupSettings['backupFolder']
+    backupFolder = backupSettings['localBackupFolder']
     if not os.path.exists(backupFolder):
         print('Backup Folder does not exist. Create it...')
         os.makedirs(backupFolder)
@@ -127,6 +153,8 @@ def weeklyBackup(nowDate):
     copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,attDatabaseName))
 
     # Send the database attached as Slack-message
+    if backupSettings['active_slack_backup']:
+        pass
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     sc = SlackClient(slack_token)
 
@@ -152,19 +180,19 @@ def weeklyBackup(nowDate):
 #
 def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
 
-    # Unix Epoche of timestamp half a year before
-    dt = (nowDate - timedelta(days=182) - datetime(1970,1,1,tzinfo=pytz.utc)).total_seconds()
+    # Unix Epoche of timestamp two months before
+    dt = (nowDate - timedelta(days=90) - datetime(1970,1,1,tzinfo=pytz.utc)).total_seconds()
 
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active']:
-        print('Backup not activated in settings. Stop.')
-        return 'Backup not activated in settings.'
+    if not backupSettings['active_slack_backup']:
+        print('Slack Backup not activated in settings. Stop.')
+        return 'Slack Backup not activated in settings.'
 
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     sc = SlackClient(slack_token)
 
-    for botID in backupSettings['kioskbotChannel']:
+    for botID in backupSettings['kioskbotChannels']:
         conversation = sc.api_call(
             'conversations.history',
             channel=botID,
@@ -259,7 +287,8 @@ def warnUsersToBeBlockedSoon():
 # Block user after active time
 def blockUserAfterActiveTime(nowDate):
     t = nowDate + timedelta(days=1)
-    users = KioskUser.objects.filter(aktivBis__lt=t, visible=True, is_active=True, activity_end_msg=1)
+    users = KioskUser.objects.filter(aktivBis__lt=t, visible=True, is_active=True, activity_end_msg=1,
+        is_functional_user=False,)
 
     msg = 'Liebe*r Kiosknutzer*in,\nHeute endet dein Besch'+chr(228)+'ftiungsverh'+chr(228)+'ltnis an der FfE und somit auch deine Aktivit'+chr(228)+'t im FfE-Kiosk. Dein Account ist nun inaktiv gesetzt, du kannst also keine Eink'+chr(228)+'ufe mehr t'+chr(228)+'tigen.\nHattest du noch Guthaben auf deinem Konto? Dann lasse dir dies von einem Verwalter ausbezahlen.\n Du verl'+chr(228)+'sst die FfE noch gar nicht? Dann reaktiviere dein Konto unter https://ffekiosk.pythonanywhere.com/accounts/angestellt_bis_change/.\nIn einem Monat werden deine personenbezogenen Daten gel'+chr(246)+'scht, danach ist eine Reaktivierung nicht mehr m'+chr(246)+'glich.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
@@ -289,8 +318,9 @@ def warnInactiveUsersBeforeDeletion(nowDate):
         visible= False,
         is_active= False,
         activity_end_msg= 2,
+        is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
     for u in users:
@@ -314,8 +344,9 @@ def deleteInactiveUser(nowDate):
         visible= False,
         is_active= False,
         activity_end_msg= 3,
+        is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
 
@@ -329,22 +360,31 @@ def deleteInactiveUser(nowDate):
         u.username = f'deletedUser_{str(u.id)}'
         u.first_name = 'deleted'
         u.last_name = 'deleted'
-        u.email = f'deletedUser_{str(u.id)}@ffe.de'
         u.slackName = f'deletedUser_{str(u.id)}'
         u.activity_end_msg = 4
         u.save()
 
 
-
-
-
-
-
 # Run the Script
-if __name__ == '__main__':
+def routine():
 
-    nowDate = datetime.utcnow()
-    nowDate = pytz.utc.localize(nowDate)
+    nowDate = datetime.now(UTC)
+
+    # PayPal sync
+    print('Do the daily sync of PayPal transactions with the Einzahlung transaction.')
+    try:
+        run_paypal_sync()
+        print('Finished the daily PayPal Sync.')
+
+    except:
+        # Send failure message to all admins
+        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        try:
+            for u in data:
+                slack_SendMsg('The daily PayPal Sync has failed!', user=u)
+            print('Daily PayPal Sync failed. Slack Message sent.')
+        except:
+            print('Failing to send Slack Message with Fail Notice of PayPal daily sync.')
 
 
     # Elect best buyers and administrators on Friday
@@ -492,6 +532,8 @@ if __name__ == '__main__':
         except:
             print('Failing to send Slack Message with Fail Notice of Warning and deletion of inactive users.')
 
-
-
     # Weekly: Check for inactive users and to be deleted ones, check for some constraints: Too high / too low account. Calculate integrity of account, and transactions, and...
+
+
+if __name__ == '__main__':
+    routine()

@@ -65,13 +65,13 @@ def process_kiosk(message):
 	inQuot = re.findall(r'\"[\w\s]+\"', commandText)
 	if not inQuot is None and not inQuot==[]:
 		for x in inQuot:
-			y = x.replace(' ','\s')
+			y = x.replace(' ', r'\s')
 			commandText = re.sub(r'\"[\w\s]+\"',y[1:-1],commandText)
 
 	commandText = commandText.split(' ')
-	commandText = [x.replace('\s',' ') for x in commandText]
+	commandText = [x.replace(r'\s', ' ') for x in commandText]
 
-	commandText = list(filter(lambda a: a not in ['',' '], commandText))
+	commandText = list(filter(lambda a: a not in ['', ' '], commandText))
 
 	# Find the command 'buy'
 	if not [x for x in commandText if x in ['Kaufen','Kauf','kauf','kaufen','Buy','buy','Buying','buying']] == []:

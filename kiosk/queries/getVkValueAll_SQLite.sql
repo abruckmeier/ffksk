@@ -31,4 +31,4 @@ from (
   select
     sum(verkaufspreis) /100.0 as value
   from kiosk_gekauft
-)
+) ua

@@ -1,4 +1,4 @@
-{% load staticfiles %}
+{% load static %}
 <html>
 	<head>
 		<title>FfE-Kiosk</title>
@@ -27,6 +27,33 @@
 		<link rel="stylesheet" href="{% static 'css/kiosk.css' %}">
 
 		{% block css %}{% endblock %}
+		<style>
+			.logout {
+				border: none;
+    		outline: none;
+    		background: none;
+    		cursor: pointer;
+    		font-family: inherit;
+    		font-size: inherit;
+				display: block;
+				padding: 3px 20px;
+				clear: both;
+				font-weight: normal;
+				line-height: 1.42857143;
+				color: #333;
+				white-space: nowrap;
+				text-decoration: none;
+				background-color: transparent;
+				width: 100%;
+				text-align: left;
+			}
+			.logout:hover {
+				text-decoration: none;
+    		color: #262626;
+    		background-color: #f5f5f5;
+			}
+
+		</style>
 
   		{% block javascript %}{% endblock %}
 
@@ -74,7 +101,48 @@
 			</a>
 		</div>
 
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">
+							{% block modal_title %}
+							{% endblock %}
+						</h4>
+					</div>
+					<div class="modal-body">
+						{% block modal_body %}
+						{% endblock %}
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
+		<div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel2">
+							{% block modal_title_2 %}
+							{% endblock %}
+						</h4>
+					</div>
+					<div class="modal-body">
+						{% block modal_body_2 %}
+						{% endblock %}
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<div class="container-fluid divTopMenu">
 		
@@ -122,7 +190,12 @@
 						<li><a href="{% url 'login' %}">Login</a></li>
 					{% else %}
 						<li><a href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a></li>
-						<li><a href="{% url 'logout' %}">Logout</a></li>
+						<li>
+							<form action="{% url 'logout' %}" method="post">
+								{% csrf_token %}
+								<button class="logout" type="submit">Logout</button>
+							</form>
+						</li>
 					{% endif %}			
 
 
@@ -216,7 +289,10 @@
 						<a class="list-group-item" href="{% url 'login' %}">Login</a>
 					{% else %}
 						<a class="list-group-item" href="{% url 'registrationStatus' %}">Zu meinem pers&#246;nlichen Bereich</a>
-						<a class="list-group-item" href="{% url 'logout' %}">Logout</a>
+						<form action="{% url 'logout' %}" method="post">
+								{% csrf_token %}
+								<button class="list-group-item" type="submit">Logout</button>
+							</form>
 					{% endif %}
 				</div>
 

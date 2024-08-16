@@ -1,6 +1,6 @@
 select
 	a.produktpalette_id,
-	b.produktName as name,
+	b."produktName" as name,
 	count(a.produktpalette_id) as all_anzahl,
 	sum(a.verkaufspreis) as all_vk,
 	d.anzahl as stolen_anzahl,
@@ -14,7 +14,7 @@ join profil_kioskuser c
 join (
 	select
 		a.produktpalette_id,
-		b.produktName as name,
+		b."produktName" as name,
 		count(*) as anzahl,
 		sum(verkaufspreis) as vk
 	from kiosk_gekauft a
@@ -22,9 +22,9 @@ join (
 	  on a.produktpalette_id = b.id
 	join profil_kioskuser c
 	  on a.kaeufer_id = c.id
-	where c.username = "Dieb"
-	group by a.produktpalette_id
+	where c.username = 'Dieb'
+	group by a.produktpalette_id, b."produktName"
 ) d
 	using(produktpalette_id)
-group by a.produktpalette_id
+group by a.produktpalette_id, b."produktName"
 order by stolen_vk desc

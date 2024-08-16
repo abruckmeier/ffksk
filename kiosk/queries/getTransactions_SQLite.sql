@@ -15,7 +15,7 @@ from (
             kommentar,
            datum
           from kiosk_geldtransaktionen a
-          where a."vonNutzer_id" = %s
+          where a.vonnutzer_id = %s
 
           union all
 
@@ -25,11 +25,11 @@ from (
             kommentar,
             datum
           from kiosk_geldtransaktionen a
-          where a."zuNutzer_id" = %s
-        )
+          where a.zunutzer_id = %s
+        ) uuua
       order by datum desc limit %s
-    ) 
-    order by datum asc 
+    ) uua
+    order by datum
     limit %s
-  )
+  ) ua
 order by datum desc

@@ -7,8 +7,8 @@ from (
 	from kiosk_gekauft a
 	join profil_kioskuser b
 	  on a.kaeufer_id = b.id
-	where gekauftUm <= %s
-)
+	where "gekauftUm" <= %s
+) ua
 
 union all
 
@@ -21,8 +21,8 @@ from (
 	from kiosk_gekauft a
 	join profil_kioskuser b
 	  on a.kaeufer_id = b.id
-	where gekauftUm <= %s
-)
+	where "gekauftUm" <= %s
+) uua
 where username = 'Dieb'
 
 union all
@@ -36,6 +36,6 @@ from (
 	from kiosk_gekauft a
 	join profil_kioskuser b
 	  on a.kaeufer_id = b.id
-	where gekauftUm <= %s
-)
+	where "gekauftUm" <= %s
+) uuua
 where username <> 'Dieb'

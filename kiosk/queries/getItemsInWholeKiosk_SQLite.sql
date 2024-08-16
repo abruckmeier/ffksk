@@ -5,9 +5,9 @@ from
 (
 	select
 	  a.id,
-	  a.maxKapazitaet,
-	  a.schwelleMeldung,
-	  a.paketgroesseInListe,
+	  a."maxKapazitaet",
+	  a."schwelleMeldung",
+	  a."paketgroesseInListe",
 	  case
 		when a.cnt_kiosk is NULL then 0
 		else a.cnt_kiosk
@@ -24,10 +24,10 @@ from
 	(
 		select
 		  a.id,
-		  aa.maxKapazitaet,
-		  aa.schwelleMeldung,
-		  aa.paketgroesseInListe,
-		  a.produktName,
+		  aa."maxKapazitaet",
+		  aa."schwelleMeldung",
+		  aa."paketgroesseInListe",
+		  a."produktName",
 		  b.cnt_kiosk,
 		  c.cnt_persEKL,
 		  d.cnt_ek_vormerk
@@ -61,7 +61,7 @@ from
 			group by produktpalette_id
 		) d
 		  on a.id = d.produktpalette_id
-		where a.imVerkauf is 1
-		  and a.inAufstockung is 1
+		where a."imVerkauf" is true
+		  and a."inAufstockung" is true
 	) a
 ) a

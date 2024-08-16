@@ -1,8 +1,8 @@
 select
   a.verkaufspreis as verkaufspreis_ct,
   c.id,
-  ("count_id_" || c.id) as count_id_name,
-  ("checkbutton_id_" || c.id) as checkbutton_id_name,
+  ('count_id_' || c.id) as count_id_name,
+  ('checkbutton_id_' || c.id) as checkbutton_id_name,
   c."produktName" as produkt_name,
   d.anzahl
 from kiosk_produktverkaufspreise a
@@ -30,5 +30,5 @@ join (
     group by c."produktName"
   ) d
   using("produktName")
-where c.imVerkauf is 1
-order by c."produktName" asc
+where c."imVerkauf" is true
+order by c."produktName"

@@ -1,5 +1,5 @@
 {% extends 'kiosk/base.html' %}	
-{% load staticfiles %}
+{% load static %}
 
 {% block content %}
 
@@ -24,7 +24,9 @@
 			Gemeinschaftlich betreiben wir unseren Kiosk, indem wir uns die anfallenden Tätigkeiten in <span class="bigLink">kleine Arbeitspakete aufteilen.</span>
 			<br> 
 			Der Kiosk wirtschaftet gemeinwohlorientiert: Produkte werden möglichst zu <span class="bigLink">üblichen Supermarktpreisen verkauft.</span> Die Besorgung von Waren wird bei Sparangeboten durchgeführt.
-			Von den Gewinnen werden durchgeführte <span class="bigLink">Tätigkeiten für den Kiosk entlohnt,</span> verbleibende Überschüsse werden jährlich gespendet.
+			Von den Gewinnen werden durchgeführte <span class="bigLink">Tätigkeiten für den Kiosk entlohnt,</span> verbleibende Überschüsse werden jährlich an alle Teilnehmer:innen ausgezahlt und teils gespendet.
+			<br />
+			Kommt es am Jahresende zu Verlusten, werden diese solidarisch von allen Teilnehmer:innen getragen.
 		</div>
 	</div>
 
@@ -34,9 +36,9 @@
 			<span class="bigLink styleColor">Spende für einen guten Zweck durch Nutzung des Kiosks</span>
 			<br>
 			Durch deinen Einkauf im Kiosk <span class="bigLink">unterstützt du die <a href="http://www.bsg.org.za/startseite.html">Tätigkeiten von Pater Gerhard in Mandeni:</a></span>
-			Erwirtschaftete Profite und Spenden werden jährlich für seine Entwicklungsarbeit gespendet.
+			Spenden und teilweise erwirtschaftete Profite werden jährlich für seine Entwicklungsarbeit gespendet.
 			<br>
-			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">per Slack verbuchen.</span>
+			Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink"><a href="{% url 'start_page' %}#anleitung_slack_kauf">per Slack verbuchen.</a></span>
 		</div>
 		<div class="col-xs-12 col-sm-5 col-lg-6 justified smallPadding">
 			<img src="{% static 'img/principle-buy.png' %}" style="opacity: 0.7; max-width: 100%; max-height: 100%; max-height: 300px;" />

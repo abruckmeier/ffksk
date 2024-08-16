@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render, render_to_response, HttpResponseRedirect, reverse
+from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 from django.db.models import Count
 from django.db import connection
 from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft, Kontakt_Nachricht, Start_News
@@ -32,7 +32,7 @@ from .charts import *
 from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_text
+from django.utils.encoding import force_bytes, force_str
 from django.urls import reverse_lazy
 
 
@@ -68,7 +68,7 @@ def start_page(request):
 		accountants.append(item.first_name + ' ' + item.last_name)
 	accountants = ', '.join(accountants)
 
-
+	'''
 	# Get the news: starred + latest 3
 	newsStarred = Start_News.objects.filter(visible=True,starred=True).order_by('-date')
 	news = Start_News.objects.filter(visible=True,starred=False).order_by('-date')[:3]
@@ -83,7 +83,7 @@ def start_page(request):
 		#news[k]['created'] = pytz.timezone('UTC').localize(v['created'])
 		# Add enumerator
 		news[k]['html_id'] = 'collapse_'+str(k)
-
+	'''
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
@@ -95,8 +95,8 @@ def start_page(request):
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
 		'bestBuyers': bestBuyers, 'bestVerwalter': bestVerwalter,
 		'admins': admins, 'accountants': accountants,
-		'chart_DaylyVkValue': Chart_UmsatzHistorie(),
-		'news': news,
+		# 'chart_DaylyVkValue': Chart_UmsatzHistorie(),
+		# 'news': news,
 		'excludeTopIcon': True,
 		})
 
@@ -130,14 +130,14 @@ def offeneEkListe_page(request):
 def datenschutz_page(request):
 
 	# Get the contact data for the impressum
-	datenschutz = getattr(settings,'DATENSCHUTZ')
+	contact = getattr(settings,'CONTACT')
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-	return render(request, 'kiosk/datenschutz_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'datenschutz': datenschutz})
+	return render(request, 'kiosk/datenschutz_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'contact': contact})
 
 
 def kontakt_page(request):
@@ -178,14 +178,14 @@ def kontakt_page(request):
 def impressum_page(request):
 
 	# Get the contact data for the impressum
-	impressum = getattr(settings,'IMPRESSUM')
+	contact = getattr(settings,'CONTACT')
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()
 
 	# Einkaufsliste abfragen
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'impressum': impressum,})
+	return render(request, 'kiosk/impressum_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'contact': contact,})
 
 
 
@@ -436,8 +436,8 @@ def vorgemerkt_page(request):
 # String Input to Cent Values
 def strToCents(num):
 	try:
-		left = int(re.findall('^(\d+)',num)[0])
-		right = re.findall('[.,](\d*)$',num)
+		left = int(re.findall(r'^(\d+)',num)[0])
+		right = re.findall(r'[.,](\d*)$',num)
 		if right == []:
 			right = 0
 		else:
@@ -482,7 +482,7 @@ def einkauf_annahme_user_page(request, userID):
 		keys = [x for x in request.POST.keys()]
 
 		# Get the product IDs
-		productIds = [int(re.findall('^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match('^input_id_angeliefert_\d+$', x)]
+		productIds = [int(re.findall(r'^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match(r'^input_id_angeliefert_\d+$', x)]
 
 		# Connect the input values to the corresponding products and only allow correct entries
 		formInp = []
@@ -685,7 +685,7 @@ def neuerNutzer_page(request):
 			if request.is_secure(): protocol = 'https'
 			else: protocol = 'http'
 			domain = current_site.domain
-			uid = force_text(urlsafe_base64_encode(force_bytes(u.pk)))
+			uid = force_str(urlsafe_base64_encode(force_bytes(u.pk)))
 			token = account_activation_token.make_token(u)
 			url = reverse('account_activate', kwargs={'uidb64': uid, 'token': token})
 			#url = reverse('account_activate')+uid+'/'+token+'/'
@@ -1135,18 +1135,6 @@ def ersteSchritte(request):
 	einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
 	return render(request, 'kiosk/ersteschritte_page.html',
-		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
-
-
-def slackInfos(request):
-
-	# Hole den Kioskinhalt
-	kioskItems = Kiosk.getKioskContent()
-
-	# Einkaufsliste abfragen
-	einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
-	return render(request, 'kiosk/slackinfo_page.html',
 		{'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 

@@ -1,7 +1,7 @@
 select
 	first_name,
 	last_name,
-	slackName,
+	"slackName",
 	summeEingekauft,
 	summe_umsatz,
 	anzahl,
@@ -10,7 +10,7 @@ from (
 	select
 	  first_name,
 	  last_name,
-	  slackName,
+	  "slackName",
 	  sum(einkaufspreis)/100.0 as summeEingekauft,
 	  sum(verkaufspreis-einkaufspreis)/100.0 as summe_umsatz,
 	  count(einkaufspreis) as anzahl
@@ -19,7 +19,7 @@ from (
 		  einkaufspreis,
 		  verkaufspreis,
 		  einkaeufer_id,
-		  geliefertUm
+		  "geliefertUm"
 		from kiosk_gekauft
 
 		union all
@@ -28,7 +28,7 @@ from (
 		  a.einkaufspreis,
 		  b.verkaufspreis,
 		  a.einkaeufer_id,
-		  a.geliefertUm
+		  a."geliefertUm"
 		from kiosk_kiosk a
 		left join (
 			select
@@ -53,9 +53,9 @@ from (
 	) a
 	left join profil_kioskuser b
 	 on (a.einkaeufer_id = b.id)
-	where geliefertUm >= datetime(current_timestamp, '-7 days')
-	group by einkaeufer_id
-)
+	where "geliefertUm" >= current_timestamp - interval '7 days'
+	group by first_name, last_name, "slackName"
+) ua
 where anzahl > 0
 order by ranking desc
 limit 3

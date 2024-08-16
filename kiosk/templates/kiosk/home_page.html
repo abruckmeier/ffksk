@@ -98,7 +98,9 @@
 					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
 						<a class="btn btn-info" style="color: #888888;" href="#">Eink&#228;ufer werden</a><br><br>
 					{% endif %}
-						
+
+					<a class="btn btn-info" href="{% url 'personal_info_change' %}">Persönliche Daten &#228;ndern</a>
+					<br><br>
 					<a class="btn btn-info" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
 					<br><br>
 					<a class="btn btn-info" href="{% url 'angestellt_bis_change' %}">Datum der Deaktivierung &#228;ndern</a>

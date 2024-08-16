@@ -6,10 +6,10 @@ from
     username,
     first_name,
     last_name,
-    slackName
+    "slackName"
   from profil_kioskuser
   where is_active
-    and aktivBis > current_timestamp
+    and "aktivBis" > current_timestamp
     and visible
 	
   union all
@@ -19,8 +19,8 @@ from
     username,
     first_name,
     last_name,
-    slackName
+    "slackName"
   from profil_kioskuser
-  where username in ('Bank','Bargeld_Dieb','Bargeld_im_Tresor','Bargeld','Gespendet','Spendenkonto')
-)
+  where username in ('Bank','Bargeld_Dieb','Bargeld_im_Tresor','Bargeld','Gespendet','Spendenkonto','PayPal_Bargeld')
+) ua
 order by lower(username)

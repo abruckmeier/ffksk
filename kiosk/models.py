@@ -30,6 +30,10 @@ class Start_News(models.Model):
 	def __str__(self):
 		return(str(self.date) + ': ' + str(self.heading))
 
+	class Meta:
+		verbose_name = 'Startneuigkeit'
+		verbose_name_plural = 'Startneuigkeiten'
+
 
 
 
@@ -44,19 +48,27 @@ class Kontakt_Nachricht(models.Model):
 	def __str__(self):
 		return ('Von: ' + str(self.name) + ': '+str(self.betreff))
 
+	class Meta:
+		verbose_name = 'Kontaktnachricht'
+		verbose_name_plural = 'Kontaktnachrichten'
+
 
 
 class Produktpalette(models.Model):
-	produktName = models.CharField(max_length=40)
-	imVerkauf = models.BooleanField()
+	produktName = models.CharField(max_length=64)
+	imVerkauf = models.BooleanField(default=True)
 	inAufstockung = models.BooleanField(default=True)
 	produktErstellt = models.DateTimeField(auto_now_add=True)
 	produktGeaendert = models.DateTimeField(auto_now=True)
 	#kommentar = models.TextField(max_length=512,blank=True)
-	farbeFuerPlot = models.TextField(max_length=7,blank=True)
+	farbeFuerPlot = models.CharField(max_length=7,blank=True)
 
 	def __str__(self):
 		return ('ID ' + str(self.id) + ': ' + self.produktName)
+
+	class Meta:
+		verbose_name = 'Produkt'
+		verbose_name_plural = 'Produkte'
 
 class Produktkommentar(models.Model):
 	produktpalette = models.ForeignKey(Produktpalette, on_delete=models.CASCADE)
@@ -65,6 +77,10 @@ class Produktkommentar(models.Model):
 
 	def __str__(self):
 		return (self.produktpalette.produktName + ' (' + str(self.erstellt) + ' )')
+
+	class Meta:
+		verbose_name = 'Produktkommentar'
+		verbose_name_plural = 'Produktkommentare'
 
 
 class Kioskkapazitaet(models.Model):
@@ -78,6 +94,10 @@ class Kioskkapazitaet(models.Model):
 	def __str__(self):
 		return(self.produktpalette.produktName +
 			", Kapazit"+chr(228)+"t: " + str(self.maxKapazitaet))
+
+	class Meta:
+		verbose_name = 'Kapazität'
+		verbose_name_plural = 'Kapazitäten'
 
 
 class ProduktVerkaufspreise(models.Model):
@@ -145,6 +165,10 @@ class Einkaufsliste(models.Model):
 		comments = readFromDatabase('getCommentsOnProductsInEkList',[ekGroupID])
 		return comments
 
+	class Meta:
+		verbose_name = 'Einkaufsliste'
+		verbose_name_plural = 'Einkaufslisten'
+
 
 class EinkaufslisteGroups(models.Model):
 	einkaufslistenItem = models.OneToOneField(Einkaufsliste, to_field='kiosk_ID', on_delete=models.CASCADE)
@@ -153,6 +177,10 @@ class EinkaufslisteGroups(models.Model):
 	def __str__(self):
 		return("Element: [#" + str(self.einkaufslistenItem.kiosk_ID) + "] Gruppe " +
 			str(self.gruppenID))
+
+	class Meta:
+		verbose_name = 'Einkaufslistengruppe'
+		verbose_name_plural = 'Einkaufslistengruppen'
 
 
 class ZumEinkaufVorgemerkt(models.Model):
@@ -259,6 +287,10 @@ class ZumEinkaufVorgemerkt(models.Model):
 			retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
 			retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
 			return retVal
+
+	class Meta:
+		verbose_name = 'vorgemerktes Produkt'
+		verbose_name_plural = 'vorgemerkte Produkte'
 
 
 class Kiosk(models.Model):
@@ -381,6 +413,10 @@ class Kiosk(models.Model):
 		retVals['donation'] = donation/100.0
 		return retVals
 
+	class Meta:
+		verbose_name = 'Kioskelement'
+		verbose_name_plural = 'Kioskelemente'
+
 
 class Gekauft(models.Model):
 	kiosk_ID = models.AutoField(primary_key=True)
@@ -433,6 +469,10 @@ class Gekauft(models.Model):
 		product = Produktpalette.objects.get(id=productID)
 		
 		return  {'userID':userID, 'anzahlZurueck': anzahlZurueck, 'price': price/100.0, 'product': product.produktName}
+
+	class Meta:
+		verbose_name = 'Gekauft'
+		verbose_name_plural = 'Gekauft'
 
 
 def doRueckbuchung(userID,productID,anzahlZurueck):
@@ -502,10 +542,6 @@ class GeldTransaktionen(models.Model):
 		allTransactions = readFromDatabase('getTransactions',
 			[user.id, user.id, int(page)*int(limPP), limPPn])
 
-		# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-		for k,v in enumerate(allTransactions):
-			allTransactions[k]['datum'] = pytz.timezone('UTC').localize(v['datum'])
-
 		return(allTransactions)
 
 
@@ -514,7 +550,7 @@ class GeldTransaktionen(models.Model):
 		t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
 
 		# Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
-		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor'):
+		if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
 			sign = -1
 		else:
 			sign = +1
@@ -539,6 +575,7 @@ class GeldTransaktionen(models.Model):
 			except:
 				pass
 
+		return t
 
 
 	@transaction.atomic
@@ -599,7 +636,9 @@ class GeldTransaktionen(models.Model):
 				'user':currentUser
 				}
 
-
+	class Meta:
+		verbose_name = 'Geldtransaktion'
+		verbose_name_plural = 'Geldtransaktionen'
 
 
 # Aus den GeldTransaktionen ergibt sich eigentlich der Kontostand, aber zur Sicherheit (Loeschen von Tabelleneintraegen, Bugs, etc.) wird der Kontostand zusaetzlich gespeichert, bei jeder Transaktion wird dem aktuellen Stand die neue Transaktion angerechnet. Keine weitere Kopplung -> andere Tabellen koennen crashen, ohne den Kontostand zu beschaedigen.
@@ -611,6 +650,10 @@ class Kontostand(models.Model):
 	def __str__(self):
 		stnd = '%.2f' % (self.stand/100)
 		return(str(self.nutzer) + ": " + str(stnd) + "  "+chr(8364))
+
+	class Meta:
+		verbose_name = 'Kontostand'
+		verbose_name_plural = 'Kontostände'
 
 
 
@@ -718,3 +761,7 @@ class ZuVielBezahlt(models.Model):
 						'message': str(diff) + ' nicht bezahlt. Nun "kauft" diese der Dieb.'})
 
 		return(report)
+
+	class Meta:
+		verbose_name = 'Zu viel bezahlt'
+		verbose_name_plural = 'Zu viel bezahlt'
