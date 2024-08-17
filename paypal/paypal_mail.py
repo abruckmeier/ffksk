@@ -3,15 +3,13 @@ from imapclient.response_types import Envelope
 from typing import List, TypedDict, Tuple
 import re
 from django.conf import settings
-from datetime import datetime, timedelta, date
-import locale
-from kiosk.bot import slack_SendMsg
+from datetime import datetime, timedelta
+from kiosk.bot import slack_SendMsg, slack_PostTransactionInformation
 from paypal.models import Mail
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
 from django.db import transaction
 import logging
-from dateutil import parser
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +177,17 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     )
     obj.geld_transaktion = transaction
     obj.save()
+
+    if getattr(settings, 'ACTIVATE_SLACK_INTERACTION'):
+        try:
+            slack_PostTransactionInformation(dict(
+                type='paypal_eingezahlt',
+                betrag=transaction.betrag/100.0,
+                userFrom=transaction.vonnutzer,
+                userTo=transaction.zunutzer,
+            ))
+        except:
+            pass
 
     response['reason'] = 'Successfully assigned to user and transaction conducted'
     response['success'] = True
