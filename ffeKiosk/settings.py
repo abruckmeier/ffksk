@@ -178,6 +178,8 @@ VIEWS = {
     'itemsInKontobewegungen': 10,
 }
 
+CRON_SECRET = config('CRON_SECRET')
+
 
 # Logging
 class CustomFormatter(logging.Formatter):

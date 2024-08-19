@@ -71,6 +71,9 @@ def slack_PostTransactionInformation(info):
 		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' auf dein Konto eingezahlt.'
 	elif info['type'] == 'ausgezahlt':
 		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' von deinem Konto ausgezahlt.'
+	elif info['type'] == 'paypal_eingezahlt':
+		textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' ' + chr(
+			8364) + ' auf dein Konto via PayPal eingezahlt.'
 
 	slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
 	sc = SlackClient(slack_token)
