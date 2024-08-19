@@ -2,6 +2,7 @@
 import os
 import sys
 import django
+from django.core.files import File
 
 if __name__ == '__main__':
     # Setup the Django environment of the Kiosk
@@ -16,9 +17,11 @@ from django.conf import settings
 from django.db.models import Q
 from datetime import datetime, timedelta, UTC
 import pytz
-from shutil import copyfile
 from slackclient import SlackClient
 import time
+import subprocess
+from decouple import config
+from io import BytesIO
 
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
@@ -102,23 +105,19 @@ def dailyBackup(nowDate):
         print('Local backup not activated in settings. Stop.')
         return 'Local backup not activated in settings.'
 
-    # Get the origin of the to copy file
-    baseDir = getattr(settings,'BASE_DIR')
-    raise NotImplementedError('Local backup not yet implemented for Postgres.')
-    databaseName = getattr(settings,'DATABASE_NAME')
-
     # Get the backup folder and create the day-specific file name of the backup file
     backupFolder = backupSettings['localBackupFolder']
     if not os.path.exists(backupFolder):
         print('Backup Folder does not exist. Create it...')
         os.makedirs(backupFolder)
 
-    destinationDbName = 'save_'+str(nowDate.weekday())+'_'+databaseName
+    # Conduct backup
+    cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
+           rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
+           rf"| gzip > {os.path.join(backupFolder, f'save_{str(nowDate.weekday())}.gz')}")
+    subprocess.run(cmd, shell=True)
 
-    # Copy the file to the destination
-    copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,destinationDbName))
-
-    return str(os.path.join(backupFolder,destinationDbName))
+    return os.path.join(backupFolder, f'save_{str(nowDate.weekday())}.gz')
 
 
 def weeklyBackup(nowDate):
@@ -129,51 +128,52 @@ def weeklyBackup(nowDate):
         print('Backup not activated in settings. Stop.')
         return 'Backup not activated in settings.'
 
-    raise NotImplementedError('Not yet implemented for Postgres')
-
     # Conduct backup -> Create tar file
-    pass
-
-    # Get the origin of the to attach file
-    if backupSettings['active_local_backup']:
-        pass
-    baseDir = getattr(settings,'BASE_DIR')
-    databaseName = getattr(settings,'DATABASE_NAME')
-
-    # Get the backup folder
-    backupFolder = backupSettings['localBackupFolder']
-    if not os.path.exists(backupFolder):
-        print('Backup Folder does not exist. Create it...')
-        os.makedirs(backupFolder)
+    buffer = BytesIO()
+    cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
+           rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
+           rf"| gzip")
+    returned_process = subprocess.run(cmd, shell=True, capture_output=True)
+    buffer.write(returned_process.stdout)
+    buffer.seek(0)
 
     # Create the day-specific file name of the backup file
-    attDatabaseName = 'save_'+datetime.strftime(nowDate,'%Y-%m-%dT%H-%M-%S-%fZ')+'_'+databaseName
+    attDatabaseName = 'save_' + datetime.strftime(nowDate, '%Y-%m-%dT%H-%M-%S-%fZ') + '.gz'
+    backupFolder = backupSettings['localBackupFolder']
 
-    # Copy the file to the destination
-    copyfile(os.path.join(baseDir,databaseName), os.path.join(backupFolder,attDatabaseName))
+    # Store the backup locally
+    if backupSettings['active_local_backup']:
+
+        # Get the backup folder
+        if not os.path.exists(backupFolder):
+            print('Backup Folder does not exist. Create it...')
+            os.makedirs(backupFolder)
+
+        # Copy the file to the destination
+        with open(os.path.join(backupFolder, attDatabaseName), 'wb') as f:
+            f.write(buffer.getvalue())
 
     # Send the database attached as Slack-message
     if backupSettings['active_slack_backup']:
-        pass
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
+        slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
+        sc = SlackClient(slack_token)
 
-    for usr in backupSettings['sendWeeklyBackupToUsers']:
-        sc.api_call(
-            'files.upload',
-            channels='@'+usr,
-            as_user=True,
-            text='test',
-            filename=attDatabaseName,
-            file=open(os.path.join(baseDir,databaseName), 'rb'),
-        )
+        for usr in backupSettings['sendWeeklyBackupToUsers']:
+            sc.api_call(
+                'files.upload',
+                channels='@'+usr,
+                as_user=True,
+                text='test',
+                filename=attDatabaseName,
+                file=File(buffer),
+            )
 
-        # Send additional message to the receivers of the attached database
-        slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
+            # Send additional message to the receivers of the attached database
+            slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
 
     return {
-        'weeklyStoredAtServer':str(os.path.join(backupFolder,attDatabaseName)),
-        'weeklySentToUsers': ['@'+x for x in backupSettings['sendWeeklyBackupToUsers']],
+        'weeklyStoredAtServer':str(os.path.join(backupFolder, attDatabaseName)) if backupSettings['active_local_backup'] else 'Not activated',
+        'weeklySentToUsers': ['@'+x for x in backupSettings['sendWeeklyBackupToUsers']] if backupSettings['active_slack_backup'] else ['Not activated'],
     }
 
 

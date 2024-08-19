@@ -26,7 +26,16 @@ RUN if [ "$DEBUG_BUILD" = "true" ] ; then echo "PYTHONBREAKPOINT=debugpy.breakpo
 RUN sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 RUN apt update -y
-RUN apt install postgresql-client-16
+RUN apt install postgresql-client-16 -y
+
+# Install pgpass to run pg_dump password-less
+ARG POSTGRES_PASSWORD
+ARG POSTGRES_USER
+ARG POSTGRES_DB
+ARG POSTGRES_HOST
+ARG POSTGRES_PORT
+RUN echo "$POSTGRES_HOST:$POSTGRES_PORT:$POSTGRES_DB:$POSTGRES_USER:$POSTGRES_PASSWORD" > ~/.pgpass
+RUN chmod 0600 ~/.pgpass
 
 # Production image
 FROM develop as production
