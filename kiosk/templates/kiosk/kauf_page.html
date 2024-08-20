@@ -16,6 +16,15 @@
 			Mit der Option zum Aufstocken des Geldbetrags wird das zusätzliche Geld direkt in den Spendentopf für Pater Gerhard gelegt.
 		</div>
 	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading bold">
+			Info
+		</div>
+		<div class="panel-body justified smallText">
+			Nicht genügend Guthaben? Dann zahle Geld auf dein Konto ein. Hinweise dazu findest du unter
+			<a href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a>
+		</div>
+	</div>
 
 
 	{% if msg != '' and msg != None %}
@@ -66,6 +75,9 @@
 			</form>	
 
 		</div>
+
+		<hr>
+		<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
 
 	{% endif %}
 

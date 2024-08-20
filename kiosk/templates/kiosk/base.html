@@ -165,6 +165,7 @@
 						<li class="dropdown-header">Aktionen</li>
 						{% if perms.profil.perm_kauf %}
 							<li><a href="{% url 'kauf_page' %}">Einkaufen</a></li>
+							<li><a href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a></li>
 						{% endif %}
 						{% if perms.profil.do_einkauf %}
 							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a></li>
@@ -172,7 +173,7 @@
 						{% endif %}
 						{% if perms.profil.do_verwaltung %}
 							<li><a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a></li>
-							<li><a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a></li>
+							<li><a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a></li>
 							<li><a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a></li>
 						{% endif %}
 						<li role="separator" class="divider"></li>
@@ -264,6 +265,7 @@
 						<a class="list-group-item disabled">Aktionen</a>
 						{% if perms.profil.perm_kauf %}
 							<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
+							<a class="list-group-item" href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a>
 						{% endif %}
 						{% if perms.profil.do_einkauf %}
 							<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
@@ -271,7 +273,7 @@
 						{% endif %}
 						{% if perms.profil.do_verwaltung %}
 							<a class="list-group-item" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
-							<a class="list-group-item" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a>
+							<a class="list-group-item" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a>
 							<a class="list-group-item" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
 						{% endif %}
 					</div>

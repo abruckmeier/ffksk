@@ -31,6 +31,10 @@
 						</div>
 						<br>
 						<a class="btn btn-info" href="{% url 'kontobewegungen_page' %}">Meine Kontobewegungen anzeigen</a>
+						<br><br>
+						<a class="btn btn-info" href="{% url 'kauf_page' %}">Einkaufen</a>
+						<br><br>
+						<a class="btn btn-info" href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a>
 					</div>
 				</div>
 			</div>
@@ -123,7 +127,7 @@
 
 						<a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
 
-						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung vornehmen</a><br><br>
+						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a><br><br>
 
 						<a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
 
@@ -158,5 +162,8 @@
 		{% endif %}
 
 	</div>
+
+	<hr>
+	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
 
 {% endblock %}

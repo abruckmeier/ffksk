@@ -27,18 +27,15 @@
 					Jede FfE'ler:in ist herzlich eingeladen, dem Kiosk beizutreten, den Kiosk zu nutzen und zu unterstützen!
 				</p>
 				<p class="mt-5">
-					<a class="btn btn-default" href="{% url 'anleitung_page' %}">Mehr Infos</a>
+					<a class="btn btn-primary" href="{% url 'anleitung_page' %}">Mehr Infos</a>
+					&nbsp;
+					<a class="btn btn-info" href="#">Erste Schritte</a>
 
-					<br><br>
 					{% if not user.is_authenticated %}
+						<br><br>
 						<a class="btn btn-primary" href="{% url 'neuerNutzer_page' %}">Konto erstellen</a>
 						&nbsp;
 						<a class="btn btn-info" href="{% url 'login' %}">Login</a>
-					{% else %}
-						<form action="{% url 'logout' %}" method="post">
-							{% csrf_token %}
-							<button class="btn btn-default" type="submit">Logout</button>
-						</form>
 					{% endif %}
 				</p>
 				</div>
@@ -56,6 +53,10 @@
 				Ein Produkt
 				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
 			</div>
+			<div class="smallPadding">
+				Geld
+				<a class="bigLink" href="{% url 'paypal_einzahlung_page' %}">auf mein Konto einzahlen</a>
+			</div>
 			{% endif %}
 
 			{% if perms.profil.do_einkauf %}
@@ -66,7 +67,7 @@
 			{% endif %}
 
 			<div class="smallPadding">
-				Hier geht es zum
+				Verwaltung von Kontostand, Einkaufsliste und persönliche Einstellungen im
 				<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
 			</div>
 
@@ -75,23 +76,64 @@
 		<h4>Anleitungen</h4>
 	</div>
 
-
 	<div id="#anleitung_einzahlung" class="panel panel-default">
 			<div class="panel-heading bold smallText">
-				Geld einzahlen
+				Wie kann ich Geld auf mein Kiosk-Konto einzahlen?
 			</div>
 			<div class="panel-body justified smallText">
-				tbd...
+				<p>
+					Es gibt zwei Möglichkeiten, Geld auf dein Kiosk-Konto einzuzahlen:
+					Du kannst <b>vor Ort Bargeld bei eine:r Verwalter:in einzahlen,</b> welches dann auf dein Konto eingebucht wird.
+				</p>
+				<p class="mt-5">
+					Eine andere Möglichkeit ist die Einzahlung per PayPal an
+					<a class="bigLink" href="https://paypal.me/ffekiosk">paypal.me/ffekiosk</a>.
+					<br>
+					Beachte, dass du zuvor deinen PayPal-Namen beim Kiosk registrieren musst:
+					<br>
+					<b><a href="{% url 'personal_info_change' %}">Persönliche Einstellungen ändern</a></b>
+				</p>
 			</div>
+	</div>
+
+
+	<div id="anleitung_einkauf" class="panel panel-default">
+			<div class="panel-heading bold smallText">
+				Wie kaufe ich im Kiosk ein?
+			</div>
+			<div class="panel-body justified smallText">
+				Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">
+				<a href="{% url 'start_page' %}#anleitung_slack_kauf">per Slack verbuchen.</a></span> Gib dazu einfach den <i>Slash-Befehl</i>
+				<p class="panel panel-default code">
+					/kiosk buy
+				</p>
+				ein. Der Slack-Bot gibt dir dann weitere Hilfestellung.
+				<br>
+				Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte eine:n <a class="bigLink" href="{% url 'start_page' %}#administratoren">Administrator:in</a>. Diese:r k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.
+				</div>
 	</div>
 
 
 	<div id="anleitung_slack_kauf" class="panel panel-default">
 			<div class="panel-heading bold smallText">
-				Kauf via Slack
+				Was ist mit der Slack-Integration möglich?
 			</div>
 			<div class="panel-body justified smallText">
-				tbd ...
+				Neben der Möglichkeit, im Kiosk per Slack einzukaufen
+				<p class="panel panel-default code">
+					/kiosk buy
+				</p>
+				ist es auch möglich, folgendes zu tun:
+				<ul>
+					<li>Kontostand erfragen,</li>
+					<li>Waren im Kiosk und Preise ausgeben lassen,</li>
+					<li>...</li>
+				</ul>
+				Der Slack-Bot gibt dir dazu Hilfestellungen, wenn du einfach
+				<p class="panel panel-default code">
+					/kiosk
+				</p>
+				eingibst.
 			</div>
 	</div>
 
@@ -106,13 +148,13 @@
 						<img src="{% static 'img/Slack_Mark_Web.png' %}" style="max-height:100px;" />
 					</div>
 					<div class="col-xs-9 col-sm-10 col-lg-10 margingPadding justified">
-						In der Gruppe der FfE gibt es zwei Channels, in denen du alle wichtigen Informationen zum Kiosk bekommst.
+						Im FfE-Workspace gibt es zwei Channels, in denen du alle wichtigen Informationen zum Kiosk bekommst:
 					</div>
 				</div>
 				<div class="row">
 					<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
 							<h4>#kiosk</h4>
-							Generelle Informationen zu Neuerungen und besonderen Angeboten, wichtige Mitteilungen, ...
+							Generelle Informationen zu Neuerungen und besonderen Angeboten, wichtige Mitteilungen und Weiteres werden hier kommuniziert.
 					</div>
 					<div class="col-xs-12 col-sm-6 col-lg-6 margingPadding justified">
 							<h4>#kiosk_bot</h4>
