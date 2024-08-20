@@ -1,0 +1,76 @@
+{% extends 'kiosk/base.html' %}	
+
+{% block content %}
+	
+	<div class="page-header noMarginTop">
+		<h4>Einzahlung auf mein Kiosk-Konto</h4>
+	</div>
+
+	<div class="row">
+		<div class="col margingPadding">
+			<div class="panel panel-default">
+				<div class="panel-body bigger">
+				<p>
+					Es gibt zwei Möglichkeiten, Geld auf dein Kiosk-Konto einzuzahlen:
+					Du kannst <b>vor Ort Bargeld bei eine:r Verwalter:in einzahlen,</b> welches dann auf dein Konto eingebucht wird.
+				</p>
+				<p class="mt-5">
+					Eine andere Möglichkeit ist die Einzahlung per PayPal an
+					<a class="bigLink" href="https://paypal.me/ffekiosk">paypal.me/ffekiosk</a>.
+					<br>
+					Beachte, dass du zuvor deinen PayPal-Namen beim Kiosk registrieren musst:
+					<br>
+					<b><a href="{% url 'personal_info_change' %}">Persönliche Einstellungen ändern</a></b>
+				</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<h4>Bar-Einzahlung</h4>
+			<p>
+				Wende dich einfach vor Ort an eine:n Verwalter:in. Dein Bargeld wird von der Person auf dein Konto eingebucht.
+				<br>
+				Verwalter:in sind momentan {{accountants}} sowie die Admins {{admins}}.
+			</p>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<h4>Einzahlung mit PayPal</h4>
+			<p>
+				Du kannst dein Kiosk-Konto auch digital mit PayPal aufladen.
+				Für die Einzahlung musst du folgende drei Schritte beachten.
+			</p>
+			<p>
+				1. Hinterlege unter <b><a href="{% url 'personal_info_change' %}">Persönliche Einstellungen ändern</a></b>
+				den Namen, den du auf PayPal verwendest. Eine Anleitung dazu findest du dort.
+			</p>
+			<p>
+				2. Sende Geld via PayPal an
+				<a class="bigLink" href="https://paypal.me/ffekiosk">paypal.me/ffekiosk</a>.
+				<br>
+				Nutze bitte die Option "Für Freunde und Familie".
+			</p>
+			<p>
+				3. Die Überweisung muss vom Kiosk registriert und verbucht werden.
+				Dieser Vorgang wird regelmäßig vom System durchgeführt.
+				<br>
+				Falls es dir zu lange dauert, kannst du diesen Vorgang hier auch manuell anstoßen. Beachte, dass zwischen
+				einer PayPal-Zahlung und einer möglichen Einbuchung im Kiosk bis zu einer Minute gewartet werden muss.
+				<br>
+				<a class="bigLink" href="{% url 'paypal_sync' %}">Verbuchung der PayPal-Überweisung</a>
+			</p>
+		</div>
+	</div>
+
+	<hr>
+	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
+
+{% endblock %}
+
+
+{% block javascript %}
+
+{% endblock %}
