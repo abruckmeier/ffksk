@@ -1061,8 +1061,8 @@ def produktKommentare(request):
 	allProductComments = readFromDatabase('getAllProductComments')
 
 	# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-	for k,v in enumerate(allProductComments):
-		allProductComments[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
+	#for k,v in enumerate(allProductComments):
+	#	allProductComments[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
 
 
 	# Hole den Kioskinhalt
@@ -1099,8 +1099,8 @@ def produktKommentieren(request, s):
 	latestComment = allCommentsOfProduct[0]["kommentar"]
 
 	# Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-	for k,v in enumerate(allCommentsOfProduct):
-		allCommentsOfProduct[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
+	#for k,v in enumerate(allCommentsOfProduct):
+	#	allCommentsOfProduct[k]['erstellt'] = pytz.timezone('UTC').localize(v['erstellt'])
 
 	# Hole den Kioskinhalt
 	kioskItems = Kiosk.getKioskContent()

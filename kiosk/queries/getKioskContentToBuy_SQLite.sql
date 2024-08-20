@@ -42,6 +42,6 @@ left join (
   where usr.username = 'Dieb'
   group by gkft.produktpalette_id
   ) e
-  using(produktpalette_id)
+  on a.produktpalette_id = e.produktpalette_id
 where c."imVerkauf" is true
 order by c."produktName"

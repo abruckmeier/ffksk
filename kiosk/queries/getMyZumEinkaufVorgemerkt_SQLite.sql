@@ -1,7 +1,7 @@
 select 
   b.id as id,
   b."produktName" as produktname,
-  count(*) as anzahlElemente,
+  count(*) as "anzahlElemente",
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
   ('input_id_angeliefert_' || b.id) as input_id_angeliefert,
   ('input_id_bezahlt_' || b.id) as input_id_bezahlt,
