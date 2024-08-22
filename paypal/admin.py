@@ -9,6 +9,7 @@ class MailAdmin(admin.ModelAdmin):
                     'transaction_code')
     list_filter = ('extraction_was_successful', 'mail_ts', 'assignment_was_successful',
                    'user_str',)
-    search_fields = ('envelope_str', 'message_id', 'data', 'user_str',
-                     'transaction_code', 'notice')
+    search_fields = ('message_id', 'user_str',
+                     'transaction_code', 'notice', 'data', 'envelope_str')
     change_list_template = 'admin/mail_change_list.html'
+    readonly_fields = ('geld_transaktion',)

@@ -66,15 +66,16 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
 
     extraction_was_successful = True
     txt = mail.get('data')
+    txt = re.sub(r'=\r\n', '', txt)
 
-    usr = re.findall(r'<span>M[\w\W]*?itteilung von (?P<usr>[\w\s]+):', txt)
+    usr = re.findall(r'<span>Mitteilung von (?P<usr>[\w\s]+):', txt)
     if len(usr) == 0:
         extraction_was_successful = False
         usr = None
     else:
         usr = usr[0]
 
-    t_code = re.findall(r'<td[\w\W]+?Transaktio[\w\W]*?nscode[\w\W]+?><span>(?P<code>\w+)<\/span><\/a><\/td>',
+    t_code = re.findall(r'<td[\w\W]+?Transaktionscode[\w\W]+?><span>(?P<code>\w+)<\/span><\/a><\/td>',
                         txt)
     if len(t_code) == 0:
         extraction_was_successful = False
@@ -82,7 +83,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     else:
         t_code = t_code[0]
 
-    amount = re.findall(r'<strong>Erhaltener Bet[\w\W]*?rag<\/strong>[\w\W]*?>(?P<amount_1>\d+)[\w\W]*?,(?P<amount_2>\d+)[\w\W]*?EUR<\/td>', txt)
+    amount = re.findall(r'<strong>Erhaltener Betrag<\/strong>[\w\W]*?>(?P<amount_1>\d+)[\w\W]*?,(?P<amount_2>\d+)[\w\W]*?EUR<\/td>', txt)
     if len(amount) == 0:
         extraction_was_successful = False
         amount = None
@@ -95,7 +96,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
             amount = None
 
     notice = re.findall(
-        r'<span>M[\w\W]+?itteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
+        r'<span>Mitteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
         txt,
     )
     if len(notice) == 0:
