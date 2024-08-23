@@ -158,12 +158,15 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
         response['reason'] = 'No notice with Einzahlung given.'
         return response
 
-    assigned_user: KioskUser | None = KioskUser.objects.filter(
-        paypal_name__iexact=obj.user_str
-    ).first()
-    if not assigned_user:
-        response['reason'] = 'No user could be matched to the given name'
-        return response
+    if not obj.user:
+        assigned_user: KioskUser | None = KioskUser.objects.filter(
+            paypal_name__iexact=obj.user_str
+        ).first()
+        if not assigned_user:
+            response['reason'] = 'No user could be matched to the given name'
+            return response
+    else:
+        assigned_user: KioskUser = obj.user
 
     obj.user = assigned_user
     obj.assignment_was_successful = True

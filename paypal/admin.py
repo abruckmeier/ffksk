@@ -1,5 +1,7 @@
 from django.contrib import admin
 from paypal.models import Mail
+from django.contrib import messages
+from paypal.paypal_mail import assign_user_and_conduct_transaction, MailAssignmentResponse
 
 
 @admin.register(Mail)
@@ -13,3 +15,30 @@ class MailAdmin(admin.ModelAdmin):
                      'transaction_code', 'notice', 'data', 'envelope_str')
     change_list_template = 'admin/mail_change_list.html'
     readonly_fields = ('geld_transaktion',)
+    actions = ['create_transaction_from_details',]
+
+    @admin.action(description='Create money transaction with given details.')
+    def create_transaction_from_details(self, request, queryset):
+        """Given the (manually modified) details from the mail, the transaction is created manually.
+        This is, if there was a not automatically working incoming mail and we have to modify by hand."""
+        for _mail in queryset:
+
+            if _mail.geld_transaktion:
+                self.message_user(
+                    request,
+                    f'(ID {_mail.id}) Geld-Transaktion bereits zugeordnet',
+                    messages.ERROR,
+                )
+            elif not _mail.user_str or not _mail.transaction_code or not _mail.amount or not _mail.notice:
+                self.message_user(
+                    request,
+                    f'(ID {_mail.id}) Es fehlen Details: User_str, Transaktions-Code, Betrag, Notiz',
+                    messages.ERROR,
+                )
+            else:
+                response: MailAssignmentResponse = assign_user_and_conduct_transaction(_mail)
+                self.message_user(
+                    request,
+                    f'(ID {_mail.id}) {response.get("reason")}',
+                    messages.SUCCESS if response.get('success') else messages.ERROR,
+                )
