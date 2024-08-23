@@ -1,4 +1,5 @@
-{% extends 'kiosk/base.html' %}	
+{% extends 'kiosk/base.html' %}
+{% load static %}
 
 {% block content %}
 	
@@ -62,7 +63,9 @@
 				Falls es dir zu lange dauert, kannst du diesen Vorgang hier auch manuell anstoßen. Beachte, dass zwischen
 				einer PayPal-Zahlung und einer möglichen Einbuchung im Kiosk bis zu einer Minute gewartet werden muss.
 				<br>
-				<a class="bigLink" href="{% url 'paypal_sync' %}">Verbuchung der PayPal-Überweisung</a>
+				<a class="bigLink" id="sync_button">Verbuchung der PayPal-Überweisung</a>
+				<br>
+				<div class="alert alert-info" role="alert" id="mail_sync_notice" style="display: none;"></div>
 			</p>
 		</div>
 	</div>
@@ -74,5 +77,43 @@
 
 
 {% block javascript %}
+
+	<!-- Initialisation for the ajax post requests -->
+	<script type="text/javascript" src="{% static 'js/ajax_csrf_prepare.js' %}"></script>
+
+	<!-- Function to run the mail sync. Response is translated into user-friendly words. -->
+	<script type="text/javascript">
+
+		function sync_mails() {
+			$.ajax({
+				type: 'GET',
+				url: "{% url 'paypal_sync' %}",
+				error: function(jqXHR, textStatus, errorThrown){
+							var msg = 'Es gab einen Fehler mit Fehlercode '+jqXHR.status+': "'+errorThrown+'".'
+							$("div[id='mail_sync_notice']").html(msg);
+				},
+				success: function(data){
+							$("div[id='mail_sync_notice']").show();
+							if (data.is_success === true) {
+								$("div[id='mail_sync_notice']").html(
+												'"' + data.response_msg + '"<br>' +
+												'Die Verbuchung war wahrscheinlich erfolgreich. Prüfe bitte deine Slack-Nachrichten und deinen Kontostand.'
+								);
+							} else {
+								$("div[id='mail_sync_notice']").html(
+												'Die Verbuchung war wahrscheinlich nicht erfolgreich. Ein Admin wurde bereits informiert und kümmert sich um die Behebung des Problems.'
+								);
+							}
+
+						}
+			});
+		}
+		$(document).ready(
+			function(){
+				$("a[id='sync_button']").click(sync_mails);
+			}
+		);
+
+	</script>
 
 {% endblock %}
