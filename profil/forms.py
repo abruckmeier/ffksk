@@ -21,7 +21,7 @@ from . import models
 # This form is used in the template to enter the slack name to send a message to the user with a reset link to generate a new password. This form finds the user and sends the url.
 class SlackResetForm(forms.Form):
     
-    slackName = forms.CharField(label="Slack-Name oder E-Mail-Adresse", max_length=40)
+    slackName = forms.CharField(label="Slack-Anzeige Name (display name) oder Mitglieds-ID (member ID)", max_length=40)
 
 
     def send_slackMessage(self, subject_template_name, email_template_name, context, from_email, to_user, html_email_template_name=None):
@@ -68,13 +68,12 @@ class SlackResetForm(forms.Form):
                 'slackName': slackName,
                 'domain': domain,
                 'site_name': site_name,
-                'uid': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'user': user,
                 'token': token_generator.make_token(user),
                 'protocol': 'https' if use_https else 'http',
                 **(extra_email_context or {}),
             }
-            print('send')
             self.send_slackMessage(
                 subject_template_name, email_template_name, context, from_email,
                 user, html_email_template_name=html_email_template_name,
