@@ -2,11 +2,9 @@ import os
 import logging
 from decouple import config
 
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY')
@@ -20,7 +18,6 @@ CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = config('SESSION_EXPIRE_AT_BROWSER_CLOSE', default=True, cast=bool)
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 X_FRAME_OPTIONS = "SAMEORIGIN"
-
 
 # DATABASE
 DATABASES = {
@@ -38,12 +35,12 @@ DATABASES = {
     },
 }
 
-
 # Application definition
 
 INSTALLED_APPS = [
     'widget_tweaks',
     'jchart',
+    'django_db_logger',
     'django.contrib.humanize',
     'paypal.apps.PaypalConfig',
     'kiosk.apps.KioskConfig',
@@ -88,7 +85,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ffeKiosk.wsgi.app'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -118,17 +114,15 @@ TIME_ZONE = 'Europe/Berlin'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-USE_THOUSAND_SEPARATOR = True
+USE_THOUSAND_SEPARATOR = False
 DECIMAL_SEPARATOR = ','
-THOUSAND_SEPARATOR = ' '
-
+THOUSAND_SEPARATOR = '.'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.abspath(os.path.join(BASE_DIR, 'static', 'static'))
 STATICFILES_DIRS = [os.path.abspath(os.path.join(BASE_DIR, 'static'))]
-
 
 # Slack Integration
 SLACK_O_AUTH_TOKEN = config('SLACK_O_AUTH_TOKEN')
@@ -141,7 +135,6 @@ SLACK_SETTINGS = {
     'MinBankBalance': 100,  # Cent
 }
 
-
 BACKUP = {
     'active_local_backup': config('ACTIVATE_LOCAL_BACKUP', cast=bool, default=False),
     'active_slack_backup': config('ACTIVATE_SLACK_BACKUP', cast=bool, default=False),
@@ -149,7 +142,6 @@ BACKUP = {
     'sendWeeklyBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
     'kioskbotChannels': config('SLACK_BACKUP_KIOSKBOT_CHANNELS', cast=lambda v: [s.strip() for s in v.split(',')]),
 }
-
 
 CONTACT = {
     'email': config('CONTACT_EMAIL'),
@@ -161,15 +153,14 @@ IMAP_USERNAME = config('IMAP_USERNAME', default=None)
 IMAP_PASSWORD = config('IMAP_PASSWORD', default=None)
 IMAP_SEARCH_FROM_EMAIL = config('IMAP_SEARCH_FROM_EMAIL', default=None)
 
-
 # Finanzielle Konstanten -> spaeter in den KioskBot geben
 FINANZ = {
-    'minProduktMarge': 0.00, # vom VK-Preis
-    'gewinnEK': 0.5, # Wird beim Einpflegen vom Verwalter gutgeschrieben
-    'gewinnVW': 0.1, # Wird bei Produktverkauf gutgeschrieben
-    'gewinnBank': 0.3, # Bleibt als Ueberschuss in der Kasse, wird nicht bewegt.
-    'gewinnAdmin':0.1, # Wird bei Produktverkauf gutgeschrieben
-    'monUmverteilungAlle': 0.5, # anteilig der User am pers. Umsatz
+    'minProduktMarge': 0.00,  # vom VK-Preis
+    'gewinnEK': 0.5,  # Wird beim Einpflegen vom Verwalter gutgeschrieben
+    'gewinnVW': 0.1,  # Wird bei Produktverkauf gutgeschrieben
+    'gewinnBank': 0.3,  # Bleibt als Ueberschuss in der Kasse, wird nicht bewegt.
+    'gewinnAdmin': 0.1,  # Wird bei Produktverkauf gutgeschrieben
+    'monUmverteilungAlle': 0.5,  # anteilig der User am pers. Umsatz
     'monUmverteilungAdmin': 0.5,
     'monNegUmverteilungAdmin': 1,
 }
@@ -205,6 +196,14 @@ file_handlers = {
     },
 }
 
+db_handler = {
+    'db_log': {
+        'level': 'DEBUG',
+        'class': 'django_db_logger.db_log_handler.DatabaseLogHandler',
+        'formatter': 'verbose',
+    },
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -215,20 +214,31 @@ LOGGING = {
             'datefmt': '%Y-%m-%d %H:%M:%S',
             'style': '{',
         },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    } | (file_handlers if config('LOG_TO_FILE', cast=bool, default=False) else {}),
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                    },
+                } | (file_handlers if config('LOG_TO_FILE', cast=bool, default=False) else {})
+                | (db_handler if config('LOG_TO_DB', cast=bool, default=False) else {}),
     'loggers': {
         'django': {
-            'handlers': ['console', 'django_file'] if config('LOG_TO_FILE', cast=bool, default=False) else ['console'],
+            'handlers': ['console']
+                        + (['django_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
+                        + (['db_log'] if config('LOG_TO_FILE', cast=bool, default=False) else []),
             'level': 'WARNING',
         },
         'paypal.paypal_mail': {
-            'handlers': ['console', 'paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else ['console'],
+            'handlers': ['console']
+                        + (['paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
+                        + (['db_log'] if config('LOG_TO_FILE', cast=bool, default=False) else []),
             'level': 'INFO',
         },
     },
 }
+
+DJANGO_DB_LOGGER_ADMIN_LIST_PER_PAGE = 50
+DJANGO_DB_LOGGER_ENABLE_FORMATTER = True
