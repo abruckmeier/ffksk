@@ -228,13 +228,13 @@ LOGGING = {
         'django': {
             'handlers': ['console']
                         + (['django_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
-                        + (['db_log'] if config('LOG_TO_FILE', cast=bool, default=False) else []),
+                        + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
             'level': 'WARNING',
         },
         'paypal.paypal_mail': {
             'handlers': ['console']
                         + (['paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
-                        + (['db_log'] if config('LOG_TO_FILE', cast=bool, default=False) else []),
+                        + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
             'level': 'INFO',
         },
     },
