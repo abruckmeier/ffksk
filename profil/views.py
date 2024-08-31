@@ -8,7 +8,6 @@ from kiosk.models import Kontostand
 from django.db import transaction
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.mixins import LoginRequiredMixin
-
 from .models import KioskUser
 from .forms import AktivBisChangeForm, PersonalInfoChangeForm
 
@@ -74,7 +73,7 @@ def angestellt_bis_changed(request):
         {'newDate': newDate, 'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,})
 
 
-class PersonalInfoChange(View):
+class PersonalInfoChange(LoginRequiredMixin, View):
     """"""
 
     def get(self, request):
@@ -103,7 +102,7 @@ class PersonalInfoChange(View):
 
 
 # After Login, check, if the user is accepted to access to the page by the site admin. Redirect, if allowed. If not, messages are provided here.
-class registrationStatus(View):
+class registrationStatus(LoginRequiredMixin, View):
 
     def get(self, request):
 
