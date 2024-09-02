@@ -425,7 +425,7 @@ def routine():
 
     # Conduct a weekly Backup of the database: Send via Slack to the Admins
     # Furthermore, delete old weekly backups from the conversation
-    if nowDate.weekday()==3:
+    if True or nowDate.weekday()==3:  # Update: Do this every day
         print('It''s Thursday. Do the weekly backup.')
         try:
             deleteOldWeeklyBackupsFromSlackAdmin(nowDate)
