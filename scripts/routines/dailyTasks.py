@@ -148,7 +148,7 @@ def weeklyBackup(nowDate):
 
     # Store the backup locally
     if backupSettings['active_local_backup']:
-
+        logger.info('Store the backup locally')
         # Get the backup folder
         if not os.path.exists(backupFolder):
             logger.info('Backup Folder does not exist. Create it...')
@@ -160,17 +160,19 @@ def weeklyBackup(nowDate):
 
     # Send the database attached as Slack-message
     if backupSettings['active_slack_backup']:
+        logger.info(f'Store the data as Slack message to those users: {backupSettings["sendWeeklyBackupToUsers"]}')
         slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
         sc = SlackClient(slack_token)
 
         for usr in backupSettings['sendWeeklyBackupToUsers']:
+            logger.info(f'Now, write to Slack user {usr}')
             sc.api_call(
                 'files.upload',
                 channels='@'+usr,
                 as_user=True,
                 text='test',
                 filename=attDatabaseName,
-                file=File(buffer),
+                file=File(buffer.getvalue()),
             )
 
             # Send additional message to the receivers of the attached database
