@@ -166,7 +166,7 @@ def weeklyBackup(nowDate):
 
         for usr in backupSettings['sendWeeklyBackupToUsers']:
             logger.info(f'Now, write to Slack user {usr}')
-            sc.api_call(
+            ret = sc.api_call(
                 'files.upload',
                 channels='@'+usr,
                 as_user=True,
@@ -174,7 +174,7 @@ def weeklyBackup(nowDate):
                 filename=attDatabaseName,
                 file=File(buffer),
             )
-            logger.info('Done sending message.')
+            logger.info(f'Done sending message. Return value: {ret}')
 
             # Send additional message to the receivers of the attached database
             slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
