@@ -194,6 +194,12 @@ file_handlers = {
         'formatter': 'verbose',
         'encoding': 'utf8',
     },
+    'daily_tasks_file': {
+        'class': 'logging.FileHandler',
+        'filename': os.path.join(LOGS_DIR, 'daily_tasks.log'),
+        'formatter': 'verbose',
+        'encoding': 'utf8',
+    },
 }
 
 db_handler = {
@@ -234,6 +240,12 @@ LOGGING = {
         'paypal.paypal_mail': {
             'handlers': ['console']
                         + (['paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
+                        + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
+            'level': 'INFO',
+        },
+        'scripts.routines.dailyTasks': {
+            'handlers': ['console']
+                        + (['daily_tasks_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
                         + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
             'level': 'INFO',
         },
