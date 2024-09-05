@@ -172,8 +172,9 @@ def weeklyBackup(nowDate):
                 as_user=True,
                 text='test',
                 filename=attDatabaseName,
-                file=File(buffer.getvalue()),
+                file=File(buffer),
             )
+            logger.info('Done sending message.')
 
             # Send additional message to the receivers of the attached database
             slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
@@ -450,7 +451,8 @@ def routine():
 
             logger.info('Finished the weekly backup.')
 
-        except:
+        except Exception as e:
+            logger.exception(e)
             # Send failure message to all admins
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
             try:
