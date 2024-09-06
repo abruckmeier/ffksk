@@ -138,7 +138,9 @@ def weeklyBackup(nowDate):
            rf"| gzip")
     logger.info('Start running subprocess')
     returned_process = subprocess.run(cmd, shell=True, capture_output=True)
-    logger.info('Subprocess has finished. File will be written now.')
+    logger.info(f'Subprocess has finished with returncode {returned_process.returncode}. '
+                f'File will be written now with length {len(returned_process.stdout)}. '
+                f'Error-Msg is "{returned_process.stderr.decode("utf-8")}".')
     buffer.write(returned_process.stdout)
     buffer.seek(0)
 
