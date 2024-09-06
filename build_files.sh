@@ -1,5 +1,8 @@
 #!/bin/bash
-
+which gzip
+which /usr/bin/gzip
+which pg_dump
+which /usr/bin/pg_dump
 # Build the project
 echo "Building the project..."
 python3.12 -m pip install pipenv
