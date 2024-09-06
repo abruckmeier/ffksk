@@ -133,9 +133,9 @@ def weeklyBackup(nowDate):
 
     # Conduct backup -> Create tar file
     buffer = BytesIO()
-    cmd = (rf"/bin/pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
+    cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
            rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
-           rf"| /bin/gzip")
+           rf"| gzip")
     logger.info('Start running subprocess')
     returned_process = subprocess.run(cmd, shell=True, capture_output=True)
     logger.info(f'Subprocess has finished with returncode {returned_process.returncode}. '
