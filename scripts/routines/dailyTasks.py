@@ -3,6 +3,7 @@ import os
 import sys
 import django
 from django.core.files import File
+import logging
 
 if __name__ == '__main__':
     # Setup the Django environment of the Kiosk
@@ -28,6 +29,8 @@ from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
 from profil.models import KioskUser
 from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
 from paypal.paypal_mail import routine_with_messaging
+
+logger = logging.getLogger(__name__)
 
 
 def run_paypal_sync():
@@ -125,7 +128,7 @@ def weeklyBackup(nowDate):
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
     if not backupSettings['active_local_backup'] and not backupSettings['active_slack_backup']:
-        print('Backup not activated in settings. Stop.')
+        logger.info('Backup not activated in settings. Stop.')
         return 'Backup not activated in settings.'
 
     # Conduct backup -> Create tar file
@@ -133,7 +136,11 @@ def weeklyBackup(nowDate):
     cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
            rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
            rf"| gzip")
+    logger.info('Start running subprocess')
     returned_process = subprocess.run(cmd, shell=True, capture_output=True)
+    logger.info(f'Subprocess has finished with returncode {returned_process.returncode}. '
+                f'File will be written now with length {len(returned_process.stdout)}. '
+                f'Error-Msg is "{returned_process.stderr.decode("utf-8")}".')
     buffer.write(returned_process.stdout)
     buffer.seek(0)
 
@@ -143,10 +150,10 @@ def weeklyBackup(nowDate):
 
     # Store the backup locally
     if backupSettings['active_local_backup']:
-
+        logger.info('Store the backup locally')
         # Get the backup folder
         if not os.path.exists(backupFolder):
-            print('Backup Folder does not exist. Create it...')
+            logger.info('Backup Folder does not exist. Create it...')
             os.makedirs(backupFolder)
 
         # Copy the file to the destination
@@ -155,11 +162,13 @@ def weeklyBackup(nowDate):
 
     # Send the database attached as Slack-message
     if backupSettings['active_slack_backup']:
+        logger.info(f'Store the data as Slack message to those users: {backupSettings["sendWeeklyBackupToUsers"]}')
         slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
         sc = SlackClient(slack_token)
 
         for usr in backupSettings['sendWeeklyBackupToUsers']:
-            sc.api_call(
+            logger.info(f'Now, write to Slack user {usr}')
+            ret = sc.api_call(
                 'files.upload',
                 channels='@'+usr,
                 as_user=True,
@@ -167,6 +176,7 @@ def weeklyBackup(nowDate):
                 filename=attDatabaseName,
                 file=File(buffer),
             )
+            logger.info(f'Done sending message. Return value: {ret}')
 
             # Send additional message to the receivers of the attached database
             slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
@@ -369,12 +379,13 @@ def deleteInactiveUser(nowDate):
 def routine():
 
     nowDate = datetime.now(UTC)
+    logger.info(f'Start the daily routine with timestamp {nowDate}.')
 
     # PayPal sync
-    print('Do the daily sync of PayPal transactions with the Einzahlung transaction.')
+    logger.info('Do the daily sync of PayPal transactions with the Einzahlung transaction.')
     try:
         run_paypal_sync()
-        print('Finished the daily PayPal Sync.')
+        logger.info('Finished the daily PayPal Sync.')
 
     except:
         # Send failure message to all admins
@@ -382,24 +393,24 @@ def routine():
         try:
             for u in data:
                 slack_SendMsg('The daily PayPal Sync has failed!', user=u)
-            print('Daily PayPal Sync failed. Slack Message sent.')
+            logger.info('Daily PayPal Sync failed. Slack Message sent.')
         except:
-            print('Failing to send Slack Message with Fail Notice of PayPal daily sync.')
+            logger.info('Failing to send Slack Message with Fail Notice of PayPal daily sync.')
 
 
     # Elect best buyers and administrators on Friday
     if nowDate.weekday()==4:
-        print('It''s Friday. Elect best buyers and administrators.')
+        logger.info('It''s Friday. Elect best buyers and administrators.')
         try:
             electBestContributors()
-            print('Done electing best buyers and administrators.')
+            logger.info('Done electing best buyers and administrators.')
         except:
-            print('Error on posting the best buyers and administrators.')
+            logger.info('Error on posting the best buyers and administrators.')
 
 
 
     # Conduct the daily rotating Save of the Database
-    print('Do the daily backup of the database.')
+    logger.info('Do the daily backup of the database.')
     try:
         dest = dailyBackup(nowDate)
         msg = 'Daily Backup of the Database File successfully stored under `'+dest+'`.'
@@ -409,7 +420,7 @@ def routine():
         for u in data:
             slack_SendMsg(msg, user=u)
 
-        print('Finished the daily backup.')
+        logger.info('Finished the daily backup.')
 
     except:
         # Send failure message to all admins
@@ -417,19 +428,22 @@ def routine():
         try:
             for u in data:
                 slack_SendMsg('The daily backup of the Database failed!', user=u)
-            print('Daily Backup failed. Slack Message sent.')
+            logger.info('Daily Backup failed. Slack Message sent.')
         except:
-            print('Failing to send Slack Message with Fail Notice of database daily backup.')
+            logger.info('Failing to send Slack Message with Fail Notice of database daily backup.')
 
 
 
     # Conduct a weekly Backup of the database: Send via Slack to the Admins
     # Furthermore, delete old weekly backups from the conversation
-    if nowDate.weekday()==3:
-        print('It''s Thursday. Do the weekly backup.')
+    if True or nowDate.weekday()==3:  # Update: Do this every day
+        logger.info('Do the weekly backup. (everyday!)')
         try:
+            logger.info('Start deleting old backups from Slack...')
             deleteOldWeeklyBackupsFromSlackAdmin(nowDate)
+            logger.info('Done deleting old backups. Now start the backup...')
             ret = weeklyBackup(nowDate)
+            logger.info('Weekly Backup finished')
             msg = 'Weekly backup and deletion of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
 
             # Send message to all admins
@@ -437,17 +451,18 @@ def routine():
             for u in data:
                 slack_SendMsg(msg, user=u)
 
-            print('Finished the weekly backup.')
+            logger.info('Finished the weekly backup.')
 
-        except:
+        except Exception as e:
+            logger.exception(e)
             # Send failure message to all admins
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
             try:
                 for u in data:
                     slack_SendMsg('The weekly backup and deletion of the Database failed!', user=u)
-                print('Weekly Backup failed. Slack Message sent.')
+                logger.info('Weekly Backup failed. Slack Message sent.')
             except:
-                print('Failing to send Slack Message with Fail Notice of database weekly backup and deletion.')
+                logger.info('Failing to send Slack Message with Fail Notice of database weekly backup and deletion.')
 
 
 
