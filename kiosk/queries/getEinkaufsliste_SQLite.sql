@@ -3,7 +3,7 @@
 	c."gruppenID" as "gruppenID",
 	b.ID as id,
 	b."produktName" as "produktName",
-	count(*) as anzahlElemente,
+	count(*) as "anzahlElemente",
 	d.verkaufspreis*count(*)/100.0 as verkaufspreis,
 	e.kommentar as kommentar
   from
