@@ -96,7 +96,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
             amount = None
 
     notice = re.findall(
-        r'<span>Mitteilung von [\w\W]+?paypal-rebranding\/quote-mark[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?paypal-rebranding\/quote-mar',
+        r'<span>Mitteilung von [\w\W]+?\/quote-marks-left[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?\/quote-marks-right',
         txt,
     )
     if len(notice) == 0:
