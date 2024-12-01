@@ -12,12 +12,15 @@ class Mail(models.Model):
     data = models.TextField(help_text='Mail data')
     extraction_was_successful = models.BooleanField(
         default=False,
-        help_text='Mail extraction was successful, if all values '
-                                                              'could be extracted'
+        help_text='Mail extraction was successful, if all values could be extracted'
     )
     assignment_was_successful = models.BooleanField(
         default=False,
         help_text='Mail assignment to a user was successful'
+    )
+    mail_is_processed = models.BooleanField(
+        default=False,
+        help_text='Mail has been read and necessary action was taken.'
     )
     user_str = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted user')
     transaction_code = models.CharField(max_length=64, blank=True, null=True, help_text='Extracted transaction code')

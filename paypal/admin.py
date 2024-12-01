@@ -7,15 +7,16 @@ from paypal.paypal_mail import assign_user_and_conduct_transaction, MailAssignme
 @admin.register(Mail)
 class MailAdmin(admin.ModelAdmin):
     list_display = ('id', 'message_id', 'mail_ts', 'extraction_was_successful',
-                    'assignment_was_successful', 'user_str',
+                    'assignment_was_successful', 'mail_is_processed', 'user_str',
                     'transaction_code')
     list_filter = ('extraction_was_successful', 'mail_ts', 'assignment_was_successful',
-                   'user_str',)
+                   'mail_is_processed', 'user_str',)
     search_fields = ('message_id', 'user_str',
                      'transaction_code', 'notice', 'data', 'envelope_str')
     change_list_template = 'admin/mail_change_list.html'
     readonly_fields = ('geld_transaktion',)
     actions = ['create_transaction_from_details',]
+    list_editable = ('mail_is_processed',)
 
     @admin.action(description='Create money transaction with given details.')
     def create_transaction_from_details(self, request, queryset):
