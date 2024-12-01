@@ -898,9 +898,11 @@ def inventory(request):
 		# Einkaufsliste abfragen
 		einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-		request.session['inventory_data'] = {'loss': loss, 'tooMuch':tooMuch,
-			'report': report,'kioskItems': kioskItems
-			, 'einkaufsliste': einkaufsliste}
+		request.session['inventory_data'] = {
+			'loss': loss,
+			'tooMuch': tooMuch,
+			'report': report,
+		}
 		return HttpResponseRedirect(reverse('inventory_done'))
 
 

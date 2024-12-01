@@ -146,6 +146,9 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     )
 
     # Return, if assignment already successfully conducted
+    if obj.mail_is_processed:
+        response['reason'] = 'Mail is marked as already processed'
+        return response
     if not obj.extraction_was_successful:
         response['reason'] = 'Extraction was not marked as successful'
         return response
