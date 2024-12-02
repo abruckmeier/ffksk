@@ -126,6 +126,7 @@ def store_mails_in_db(extracted_mails: List[ExtractedMail]) -> List[Mail]:
             mail_ts=_mail.get('downloaded_mail').get('envelope').date,
             data=_mail.get('downloaded_mail').get('data'),
             extraction_was_successful=_mail.get('extraction_was_successful'),
+            mail_is_processed=False,
             user_str=_mail.get('user'),
             transaction_code=_mail.get('transaction_code'),
             amount=_mail.get('amount'),
