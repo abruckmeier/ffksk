@@ -165,13 +165,13 @@ def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     slackSettings = getattr(settings,'SLACK_SETTINGS')
 
-    if bankBalance > slackSettings['MaxBankBalance']:
+    if False and bankBalance > slackSettings['MaxBankBalance']:
         number = '%.2f' % (slackSettings['MaxBankBalance']/100.0)
         textToChannel = ':money_with_wings: Dein Kontostand ist sehr hoch ( > ' + str(number) + ' Euro ). Bitte lass dir von einem Verwalter etwas Geld auszahlen :grey_exclamation:'
 
     elif bankBalance < slackSettings['MinBankBalance']:
         number = '%.2f' % (slackSettings['MinBankBalance']/100.0)
-        textToChannel = ':dollar: Dein Kontostand ist niedrig ( < ' + str(number) + ' Euro ). Denke daran, rechtzeitig bei einem Verwalter wieder Geld einzubezahlen. :grey_exclamation:'
+        textToChannel = ':dollar: Dein Kontostand ist niedrig ( < ' + str(number) + ' Euro ). Denke daran, rechtzeitig wieder Geld einzubezahlen. :grey_exclamation:'
 
     else:
         return
