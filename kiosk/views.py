@@ -21,7 +21,7 @@ import datetime
 from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
 import re
-
+from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
@@ -973,21 +973,21 @@ def statistics(request):
 	ekValueAll = readFromDatabase('getEkValueAll')
 	ekValueAll = ekValueAll[0]['value']
 
-	priceIncrease = round((vkValueAll-ekValueAll)/ekValueAll * 100.0, 1)
+	priceIncrease = round((vkValueAll-ekValueAll)/ekValueAll * 100, 1)
 
 	kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
-	kioskBankValue = kioskBankValue.stand / 100.0
+	kioskBankValue = Decimal(kioskBankValue.stand / 100)
 
 	gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
-	gespendet = gespendet.stand / 100.0
+	gespendet = Decimal(gespendet.stand / 100)
 
 	spendenkonto = Kontostand.objects.get(nutzer__username='Spendenkonto')
-	spendenkonto = spendenkonto.stand / 100.0
+	spendenkonto = Decimal(spendenkonto.stand / 100)
 
 	bargeld = Kontostand.objects.get(nutzer__username='Bargeld')
-	bargeld = - bargeld.stand / 100.0
+	bargeld = Decimal(- bargeld.stand / 100)
 	bargeld_tresor = Kontostand.objects.get(nutzer__username='Bargeld_im_Tresor')
-	bargeld_tresor = - bargeld_tresor.stand / 100.0
+	bargeld_tresor = Decimal(- bargeld_tresor.stand / 100)
 
 	usersMoneyValue = readFromDatabase('getUsersMoneyValue')
 	usersMoneyValue = usersMoneyValue[0]['value']
@@ -996,14 +996,17 @@ def statistics(request):
 	# Bezahlte und unbezahlte Ware im Kiosk (Tabelle gekauft)
 	datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
 	unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
+	vkValueBezahlt = Decimal(0)
+	stolenValue = Decimal(0)
+	vkValueGekauft = Decimal(0)
 	for item in unBezahlt:
-		if item['what'] == 'bezahlt': vkValueBezahlt = item['preis']
-		if item['what'] == 'Dieb': stolenValue = item['preis']
-		if item['what'] == 'alle': vkValueGekauft = item['preis']
+		if item['what'] == 'bezahlt' and item['preis']: vkValueBezahlt = item['preis']
+		if item['what'] == 'Dieb' and item['preis']: stolenValue = item['preis']
+		if item['what'] == 'alle' and item['preis']: vkValueGekauft = item['preis']
 
 	# Bargeld "gestohlen"
 	bargeld_Dieb = Kontostand.objects.get(nutzer__username='Bargeld_Dieb')
-	bargeld_Dieb = - bargeld_Dieb.stand / 100.0
+	bargeld_Dieb = Decimal(- bargeld_Dieb.stand / 100)
 
 	# Gewinn & Verlust
 	theoAlloverProfit = vkValueAll - ekValueAll
@@ -1043,7 +1046,8 @@ def statistics(request):
 		'vkToday':vkToday, 'vkYesterday':vkYesterday, 'vkThisWeek':vkThisWeek, 'vkLastWeek':vkLastWeek,
 		'vkThisMonth':vkThisMonth, 'vkLastMonth':vkLastMonth,
 		'vkValueBezahlt': vkValueBezahlt, 'stolenValue': stolenValue, 'vkValueGekauft': vkValueGekauft,
-		'relDieb': stolenValue/vkValueGekauft*100.0, 'relBezahlt': vkValueBezahlt/vkValueGekauft*100.0,
+		'relDieb': stolenValue/vkValueGekauft*100 if vkValueGekauft else Decimal(0),
+		'relBezahlt': vkValueBezahlt/vkValueGekauft*100 if vkValueGekauft else Decimal(0),
 		'vkValueKiosk': vkValueKiosk, 'kioskBankValue': kioskBankValue,
 		'vkValueAll': vkValueAll, 'ekValueAll': ekValueAll, 'ekValueKiosk': ekValueKiosk,
 		'bargeld': bargeld, 'bargeld_tresor':bargeld_tresor, 'bargeld_Dieb':bargeld_Dieb, 'usersMoneyValue': usersMoneyValue,

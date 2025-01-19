@@ -1,6 +1,8 @@
+from decimal import Decimal
+
 from kiosk.queries import readFromDatabase
 from django.utils import timezone
-from .models import Kontostand
+from kiosk.models import Kontostand
 
 from jchart import Chart
 from jchart.config import Axes, DataSet, rgba
@@ -12,7 +14,7 @@ class Chart_Un_Bezahlt(Chart):
 	responsive = True
 
 	def get_datasets(self, **kwargs):
-		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now),str(timezone.now),str(timezone.now)])
+		data = readFromDatabase('getUmsatzUnBezahlt',[str(timezone.now()),str(timezone.now()),str(timezone.now())])
 		for item in data:
 			if item['what'] == 'bezahlt': bezahlt = item['preis']
 			if item['what'] == 'Dieb': dieb = item['preis']
@@ -39,7 +41,7 @@ class Chart_UmsatzHistorie(Chart):
 		umsatzHistorie = readFromDatabase('getUmsatzHistorie')
 		data = []
 		for item in umsatzHistorie:
-			data.append(round(item['dieb'] / item['allesUmsatz']*100.0,1))
+			data.append(round(item['dieb'] / item['allesumsatz']*100,1))
 		
 		return [DataSet(
 			data = data,
@@ -156,14 +158,14 @@ class Chart_Profits(Chart):
 		ekValueAll = readFromDatabase('getEkValueAll')
 		ekValueAll = ekValueAll[0]['value']
 		kioskBankValue = Kontostand.objects.get(nutzer__username='Bank')
-		kioskBankValue = kioskBankValue.stand / 100.0
+		kioskBankValue = Decimal(kioskBankValue.stand / 100)
 
 		gespendet = Kontostand.objects.get(nutzer__username='Gespendet')
-		gespendet = gespendet.stand / 100.0
+		gespendet = Decimal(gespendet.stand / 100)
 
 		# Bargeld "gestohlen"
 		bargeld_Dieb = Kontostand.objects.get(nutzer__username='Bargeld_Dieb')
-		bargeld_Dieb = - bargeld_Dieb.stand / 100.0
+		bargeld_Dieb = Decimal(- bargeld_Dieb.stand / 100)
 
 		theoAlloverProfit = vkValueAll - ekValueAll
 		theoProfit = vkValueKiosk + kioskBankValue
@@ -172,8 +174,9 @@ class Chart_Profits(Chart):
 		profitHandback = 0
 		datum = timezone.now().strftime('%Y-%m-%d %H:%M:%S')
 		unBezahlt = readFromDatabase('getUmsatzUnBezahlt',[datum, datum, datum])
+		stolenValue = Decimal(0)
 		for item in unBezahlt:
-			if item['what'] == 'Dieb': stolenValue = item['preis']
+			if item['what'] == 'Dieb' and item['preis']: stolenValue = item['preis']
 		expProfit = round(theoProfit - stolenValue - bargeld_Dieb - adminsProvision - profitHandback,2)
 
 		data = [buyersProvision, adminsProvision, profitHandback, stolenValue, expProfit, gespendet]
