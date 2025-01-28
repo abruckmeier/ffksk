@@ -10,9 +10,11 @@ django-widget-tweaks = "*"
 psycopg2-binary = "*"
 python-dateutil = "*"
 requests = "*"
-slackclient = "~=1.3"
 six = "*"
 imapclient = "*"
 pytz = "*"
 python-decouple = "*"
 django-db-logger = "*"
+slack_sdk = "*"
+
+[dev-packages]

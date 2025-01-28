@@ -1,38 +1,78 @@
+from typing import Tuple
+from slack_sdk.errors import SlackApiError
 from kiosk.queries import readFromDatabase
 from kiosk.models import Produktpalette, Einkaufsliste, EinkaufslisteGroups
 from profil.models import KioskUser
 from django.db import transaction
 from django.db.models import Max
 import math
-
 from django.conf import settings
-from slackclient import SlackClient
+from slack_sdk import WebClient
 
 
-def slack_SendMsg(msg, user=None, channel=False, userName=None, channelName=None, force_send=False):
+def slack_SendMsg(msg: str,
+                  user: KioskUser | None = None,
+                  to_standard_channel: bool = False,
+                  to_channel_with_name: str = '',
+                  force_send_to_nonvisible_user: bool = False) -> Tuple[bool, str]:
+    """
+    Send a message into Slack, either to a user (instance), the standard channel or a given channel.
+    For the user, the slackName field is taken and checked if the slackName is already a ID. If not, the ID of the
+    "real_name" can be found.
+    Order of priority: to_standard_channel > to_channel_with_name > user
 
-    if channel==True:
+    :param msg: Message text to send to Slack
+    :param user: KioskUser instance or empty if sending to a channel
+    :param to_standard_channel: Set to True, if message shall be sent to the standard channel
+    :param to_channel_with_name: Pass a channel name with a leading hash
+    :param force_send_to_nonvisible_user: When sending to a user, first check, if the user is visible. if not,
+    the message will not be sent (standard behaviour). When setting to True, message will be sent
+    :return: Tuple with bool if sending was successful and a explaining text
+    """
+
+    slack_token = getattr(settings, 'SLACK_O_AUTH_TOKEN')
+    sc = WebClient(token=slack_token)
+
+    if to_standard_channel:
         slackSettings = getattr(settings,'SLACK_SETTINGS')
-        userAdress = '#'+slackSettings['channelToPost']
-    elif not userName is None:
-        userAdress = '@' + userName
-    elif channelName:
-        userAdress = channelName
-    else:
-        userAdress = '@' + user.slackName
-        # Functional Users (bank, thief) do not need messages
-        if user.visible == False and not force_send:
-            return
+        user_address = slackSettings['channelToPost']
+        return_msg = f'Sending message to standard channel {user_address}'
+    elif to_channel_with_name:
+        user_address = to_channel_with_name
+        return_msg = f'Sending message to user-defined channel {user_address}'
+    elif user and hasattr(user, 'slackName') and user.slackName:
+        # We need to look for the User ID to send to user
+        # First, check, if slack name is already the id
+        try:
+            response = sc.users_info(user=user.slackName)
+            user_address = user.slackName
+            return_msg = f'Sending message to user {user_address}'
+        except SlackApiError as e:
+            # We need to find the user id by searching for the name
+            response = sc.users_list()
+            user_address = next(
+                (_member.get('id') for _member in response.get('members')
+                 if _member.get('real_name') == user.slackName),
+                None
+            )
+            return_msg = f'Sending message to user {user_address}'
+            if not user_address:
+                return False, f'Could not find user with real name {user.slackName}'
 
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
-    sc.api_call(
-        "chat.postMessage",
-        link_names=True,
-        channel=userAdress,
-        text = msg,
-    )
-    return
+        # Functional Users (bank, thief) do not need messages
+        if user.visible == False and not force_send_to_nonvisible_user:
+            return False, f'Not sent, because user is not visible'
+
+    else:
+        return False, 'No valid user or channel information has been handed over'
+
+
+    try:
+        response = sc.chat_postMessage(channel=user_address, text=msg, link_names=True)
+        return response.get('ok'), return_msg
+    except SlackApiError as e:
+        return e.response.get('ok'), e.response.get('error')
+
 
 # Eine Slack-Nachricht wird testweise an den persoenlichen Slackbot-Channel eines Nutzers gesendet
 def slack_TestMsgToUser(user):

@@ -130,7 +130,7 @@ SLACK_VERIFICATION_TOKEN = config('SLACK_VERIFICATION_TOKEN')
 ACTIVATE_SLACK_INTERACTION = config('ACTIVATE_SLACK_INTERACTION', cast=bool)
 SLACK_SETTINGS = {
     'channelToPost': config('SLACK_CHANNEL_TO_POST', default='#kiosk_bot'),
-    'inventoryChannelName': config('SLACK_INVENTORY_CHANNEL', default='kiosk'),
+    'inventoryChannelName': config('SLACK_INVENTORY_CHANNEL', default='#kiosk'),
     'MaxBankBalance': 3000,  # Cent
     'MinBankBalance': 100,  # Cent
 }

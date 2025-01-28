@@ -94,7 +94,7 @@ def electBestContributors():
 
         msg += chr(10)+'Vielen Dank f'+chr(252)+'r Deine Mithilfe im Kiosk!'
 
-        slack_SendMsg(msg, channel=True)
+        slack_SendMsg(msg, to_standard_channel=True)
 
     return
 
@@ -179,7 +179,8 @@ def weeklyBackup(nowDate):
             logger.info(f'Done sending message. Return value: {ret}')
 
             # Send additional message to the receivers of the attached database
-            slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
+            slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not '
+                          'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
 
     return {
         'weeklyStoredAtServer':str(os.path.join(backupFolder, attDatabaseName)) if backupSettings['active_local_backup'] else 'Not activated',
@@ -267,7 +268,7 @@ def warningTooOldProductsInShoppingList():
             msg += '\t' + str(i['anzahl']) + 'x ' + i['produktName'] + '\n'
         msg += '\n Du hast insgesamt sieben Tage Zeit, deine Besorgungen f'+chr(252)+'r den Kiosk zu machen. Wurde nach dieser Zeit kein Einkauf bei einem Verwalter abgegeben, werden die entsprechenden Produkte aus deiner pers'+chr(246)+'nlichen Einkaufsliste gel'+chr(246)+'scht und wandern wieder in die offene Einkaufsliste.'+'\nUnter https://ffekiosk.pythonanywhere.com/menu/meineeinkaufe/ kannst du deine pers'+chr(246)+'nliche Einkaufsliste einsehen und modifizieren.\nDein Kiosk-Team'
 
-        slack_SendMsg(msg, userName=u)
+        slack_SendMsg(msg, user=u)
 
     return
 
@@ -336,7 +337,7 @@ def warnInactiveUsersBeforeDeletion(nowDate):
     for u in users:
         msg = f'Liebe*r Kiosknuter*in,\nDein Account wurde vor 28 Tagen inaktiv gesetzt. In sieben Tagen wird dein Account endgültig gelöscht{ "und dein verbleibendes Guthaben von "+str(u.kontostand.stand/100)+" "+chr(8364)+" geht als Spende an den Kiosk" if u.kontostand.stand>0 else "" }. Falls du dies nicht möchtest, trete bitte mit einem Administrator in Kontakt.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
-        slack_SendMsg(msg, user=u, force_send=True);print(u)
+        slack_SendMsg(msg, user=u, force_send_to_nonvisible_user=True);print(u)
 
         # Set status, that message has been sent
         u.activity_end_msg = 3

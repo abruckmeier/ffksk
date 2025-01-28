@@ -887,7 +887,7 @@ def inventory(request):
 
 			if sendMsg:
 				slackSettings = getattr(settings,'SLACK_SETTINGS')
-				slack_SendMsg(txt, channelName=slackSettings['inventoryChannelName'])
+				slack_SendMsg(txt, to_channel_with_name=slackSettings['inventoryChannelName'])
 
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
