@@ -10,11 +10,11 @@ from django.conf import settings
 from slack_sdk import WebClient
 
 
-def slack_SendMsg(msg: str,
-                  user: KioskUser | None = None,
-                  to_standard_channel: bool = False,
-                  to_channel_with_name: str = '',
-                  force_send_to_nonvisible_user: bool = False) -> Tuple[bool, str]:
+def slack_send_msg(msg: str,
+                   user: KioskUser | None = None,
+                   to_standard_channel: bool = False,
+                   to_channel_with_name: str = '',
+                   force_send_to_nonvisible_user: bool = False) -> Tuple[bool, str]:
     """
     Send a message into Slack, either to a user (instance), the standard channel or a given channel.
     For the user, the slackName field is taken and checked if the slackName is already a ID. If not, the ID of the

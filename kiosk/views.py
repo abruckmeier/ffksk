@@ -25,7 +25,7 @@ from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_SendMsg
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_send_msg
 
 from .charts import *
 
@@ -154,7 +154,7 @@ def kontakt_page(request):
 				data = KioskUser.objects.filter(visible=True, rechte='Admin')
 				msg = 'Es kam eine neue Nachricht '+chr(252)+'ber das Kontaktformular herein. Bitte k'+chr(252)+'mmere dich im Admin-Bereich um diese Anfrage.'
 				for u in data:
-					slack_SendMsg(msg, user=u)
+					slack_send_msg(msg, user=u)
 
 				form.save()
 				successMsg = 'Deine Nachricht wurde an die Administratoren der Webseite gesendet. Dir wird so schnell wie m'+chr(246)+'glich an die E-Mail-Adresse "'+form.cleaned_data['email']+'" geantwortet. Bitte vergewissere dich, dass diese Adresse korrekt ist.'
@@ -537,7 +537,7 @@ def einkauf_annahme_user_page(request, userID):
 					user = KioskUser.objects.get(id = userID)
 
 					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
-					slack_SendMsg(txt,user)
+					slack_send_msg(txt, user)
 				except:	pass
 
 
@@ -693,7 +693,7 @@ def neuerNutzer_page(request):
 			msg = '*Verifiziere deinen FfE-Kiosk Account!*\n\n\r' +	'Hallo '+ user + ',\n\r'+ 'Du erh'+chr(228)+'lst diese Slack-Nachricht weil du dich auf der Webseite ' + str(current_site) + ' registriert hast.\n\r' + 'Bitte klicke auf den folgenden Link, um deine Registrierung zu best'+chr(228)+'tigen:\n\r'+ '\t'+ protocol + '://'+domain+url+ '\n\n\r'+ 'Hast du dich nicht auf dieser Webseite registriert? Dann ignoriere einfach diese Nachricht.\n\n\r'+ 'Dein FfE-Kiosk Team.'
 
 			try:
-				slack_SendMsg(msg,u)
+				slack_send_msg(msg, u)
 			except:
 				pass
 
@@ -887,7 +887,7 @@ def inventory(request):
 
 			if sendMsg:
 				slackSettings = getattr(settings,'SLACK_SETTINGS')
-				slack_SendMsg(txt, to_channel_with_name=slackSettings['inventoryChannelName'])
+				slack_send_msg(txt, to_channel_with_name=slackSettings['inventoryChannelName'])
 
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
@@ -1216,7 +1216,7 @@ def rueckbuchung_user(request, userID):
 				for r in ret:
 					try:
 						u = KioskUser.objects.get(id = r['userID'])
-						slack_SendMsg(r['slackMsg'],u)
+						slack_send_msg(r['slackMsg'], u)
 					except:	pass
 
 

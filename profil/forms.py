@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.tokens import default_token_generator
-from kiosk.bot import slack_SendMsg
+from kiosk.bot import slack_send_msg
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -35,7 +35,7 @@ class SlackResetForm(forms.Form):
 
         msg = '*'+str(subject)+'*\n\n\r' + str(body)
         try:
-            slack_SendMsg(msg,to_user)
+            slack_send_msg(msg, to_user)
         except:
             pass
 
