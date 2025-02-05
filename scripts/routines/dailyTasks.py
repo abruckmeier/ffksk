@@ -2,7 +2,6 @@
 import os
 import sys
 import django
-from django.core.files import File
 import logging
 
 if __name__ == '__main__':
@@ -18,12 +17,12 @@ from django.conf import settings
 from django.db.models import Q
 from datetime import datetime, timedelta, UTC
 import pytz
-from slackclient import SlackClient
+from slack_sdk import WebClient
 import time
 import subprocess
 from decouple import config
 from io import BytesIO
-
+from utils.slack import get_user_information
 from kiosk.queries import readFromDatabase
 from kiosk.bot import slack_send_msg, checkKioskContentAndFillUp
 from profil.models import KioskUser
@@ -164,17 +163,24 @@ def weeklyBackup(nowDate):
     if backupSettings['active_slack_backup']:
         logger.info(f'Store the data as Slack message to those users: {backupSettings["sendWeeklyBackupToUsers"]}')
         slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-        sc = SlackClient(slack_token)
+        sc = WebClient(slack_token)
 
         for usr in backupSettings['sendWeeklyBackupToUsers']:
             logger.info(f'Now, write to Slack user {usr}')
-            ret = sc.api_call(
-                'files.upload',
-                channels='@'+usr,
-                as_user=True,
-                text='test',
+
+            error, user_address, return_msg = get_user_information(usr)
+            if error:
+                logger.warning(f'Slack user not found on Slack. Skipping to send file.')
+                continue
+
+            # Get the conversation channel for the user-Kioskbot interaction
+            channel_resp = sc.conversations_open(users=user_address)
+
+            # Upload the file
+            ret = sc.files_upload_v2(
+                channel=channel_resp.get('channel').get('id'),
                 filename=attDatabaseName,
-                file=File(buffer),
+                file=buffer,
             )
             logger.info(f'Done sending message. Return value: {ret}')
 
@@ -201,25 +207,35 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
         return 'Slack Backup not activated in settings.'
 
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
+    sc = WebClient(slack_token)
 
-    for botID in backupSettings['kioskbotChannels']:
-        conversation = sc.api_call(
-            'conversations.history',
-            channel=botID,
+    for usr in backupSettings['sendWeeklyBackupToUsers']:
+        logger.info(f'Now, delete old messages in conversation with Slack user {usr}')
+
+        error, user_address, return_msg = get_user_information(usr)
+        if error:
+            logger.warning(f'Slack user not found on Slack. Skipping to delete files.')
+            continue
+
+        # Get the conversation channel for the user-Kioskbot interaction
+        channel_resp = sc.conversations_open(users=user_address)
+        channel = channel_resp.get('channel').get('id')
+
+        # Delete the file
+        conversation = sc.conversations_history(
+            channel=channel,
         )
 
         if not conversation.get('ok', False):
-            print('deleteOldWeeklyBackupsFromSlackAdmin: For botID {}, no messages found.'.format(botID))
+            print('deleteOldWeeklyBackupsFromSlackAdmin: For conversation {}, no messages found.'.format(channel))
 
-        to_delete_msgs = [ msg.get('ts','') for msg in conversation.get('messages',[]) if float(msg.get('ts')) < dt  ]
+        to_delete_msgs = [ msg.get('ts') for msg in conversation.get('messages',[]) if float(msg.get('ts')) < dt  ]
 
         print('Deletion of following {} messages:'.format(str(len(to_delete_msgs))))
         for ts in to_delete_msgs:
-            ret = sc.api_call(
-                'chat.delete',
-                channel=botID,
-                ts = ts,
+            ret = sc.chat_delete(
+                channel=channel,
+                ts=ts,
             )
             print(ret)
             time.sleep(2)

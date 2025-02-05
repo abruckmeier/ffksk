@@ -140,7 +140,6 @@ BACKUP = {
     'active_slack_backup': config('ACTIVATE_SLACK_BACKUP', cast=bool, default=False),
     'localBackupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)), 'backup'),
     'sendWeeklyBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
-    'kioskbotChannels': config('SLACK_BACKUP_KIOSKBOT_CHANNELS', cast=lambda v: [s.strip() for s in v.split(',')]),
 }
 
 CONTACT = {

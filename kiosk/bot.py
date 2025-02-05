@@ -9,6 +9,8 @@ import math
 from django.conf import settings
 from slack_sdk import WebClient
 
+from utils.slack import get_user_information
+
 
 def slack_send_msg(msg: str,
                    user: KioskUser | None = None,
@@ -42,22 +44,9 @@ def slack_send_msg(msg: str,
         return_msg = f'Sending message to user-defined channel {user_address}'
     elif user and hasattr(user, 'slackName') and user.slackName:
         # We need to look for the User ID to send to user
-        # First, check, if slack name is already the id
-        try:
-            response = sc.users_info(user=user.slackName)
-            user_address = user.slackName
-            return_msg = f'Sending message to user {user_address}'
-        except SlackApiError as e:
-            # We need to find the user id by searching for the name
-            response = sc.users_list()
-            user_address = next(
-                (_member.get('id') for _member in response.get('members')
-                 if _member.get('real_name') == user.slackName),
-                None
-            )
-            return_msg = f'Sending message to user {user_address}'
-            if not user_address:
-                return False, f'Could not find user with real name {user.slackName}'
+        error, user_address, return_msg = get_user_information(user.slackName)
+        if error:
+            return False, f'Could not find user with real name {user.slackName}'
 
         # Functional Users (bank, thief) do not need messages
         if user.visible == False and not force_send_to_nonvisible_user:
@@ -77,27 +66,9 @@ def slack_send_msg(msg: str,
 # Eine Slack-Nachricht wird testweise an den persoenlichen Slackbot-Channel eines Nutzers gesendet
 def slack_TestMsgToUser(user):
 
-    # Functional Users (bank, thief) do not need messages
-    if user.visible == False:
-        return
-
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-
     textToChannel = 'Hallo ' + str(user.first_name) + '!\n' + ':mailbox_with_mail: Das ist eine Testnachricht, die ich von deinem pers'+chr(246)+'nlichen Bereich im FfE-Kiosk gesendet habe. Da du das lesen kannst scheint die pers'+chr(246)+'nliche Benachrichtigung zu funktionieren!\n' + 'An dieser Stelle wirst du dann '+chr(252)+'ber deinen niedrigen (hohen) Kontostand und '+chr(252)+'ber besondere Kontobewegungen wie '+chr(220)+'berweisungen, Einzahlungen und Auszahlungen informiert.'
 
-    userAdress = '@' + user.slackName
-
-    sc = SlackClient(slack_token)
-
-    sc.api_call(
-        "chat.postMessage",
-        channel=userAdress,
-        text = textToChannel,
-    )
-    #print(sc.api_call("users.list",include_locale=True))
-    #print(sc.api_call("channels.list"))
-    #print(sc.api_call("conversations.info",channel="D7E1357DE"))
-
+    slack_send_msg(textToChannel, user=user)
 
     return
 
@@ -115,17 +86,8 @@ def slack_PostTransactionInformation(info):
         textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' ' + chr(
             8364) + ' auf dein Konto via PayPal eingezahlt.'
 
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
-
     for user in [info['userFrom'], info['userTo']]:
-        if user.visible == True:
-            userAdress = '@' + user.slackName
-            sc.api_call(
-                "chat.postMessage",
-                channel=userAdress,
-                text = textToChannel,
-            )
+        slack_send_msg(textToChannel, user=user)
 
     return
 
@@ -140,35 +102,19 @@ def slack_PostWelcomeMessage(user):
 
     textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n\n' + 'Du bist jetzt Teil einer Community, die als Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des Kiosks musst du zun'+chr(228)+'chst etwas Guthaben auf dein Konto bei einem Verwalter ('+ accountants + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n' + 'Im #kiosk-Channel hier auf Slack bekommst du alle wichtigen Informationen zum FfE-Kiosk. Vor allem sende ich im #kiosk_bot-Channel Benachrichtigungen, wenn neue Produkte angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n' + 'Apropos Einkaufsliste: Du kannst dich aktiv am Betrieb des Kiosks als Eink'+chr(228)+'ufer beteiligen. Nach Belieben kannst du Produkte von der Einkaufsliste f'+chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung f'+chr(252)+'r das Kiosk besorgen.'
 
-    userAdress = '@' + user.slackName
-
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
-    sc.api_call(
-        "chat.postMessage",
-        channel=userAdress,
-        text = textToChannel,
-    )
+    slack_send_msg(textToChannel, user=user)
 
     return
 
 # Neue Produkte sind im Kiosk: Im Channel informieren
 def slack_PostNewProductsInKioskToChannel(angeliefert):
 
-    if angeliefert==[] or angeliefert is None:
+    if not angeliefert:
         return
 
     textToChannel = ':tada: Frisch angeliefert: ' + ', '.join(angeliefert) + ':grey_exclamation:'
 
-    slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    slackSettings = getattr(settings,'SLACK_SETTINGS')
-
-    sc = SlackClient(slack_token)
-    sc.api_call(
-        "chat.postMessage",
-        channel=slackSettings['channelToPost'],
-        text = textToChannel,
-    )
+    slack_send_msg(textToChannel, to_standard_channel=True)
 
     return
 
@@ -179,16 +125,7 @@ def slack_PostNewItemsInShoppingListToChannel(newItems):
     if not newItems==set():
         textToChannel = ':mailbox_with_mail: Neue Produkte in der Einkaufsliste: ' + ', '.join(newItems) + ':grey_exclamation:'
 
-        slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-        slackSettings = getattr(settings,'SLACK_SETTINGS')
-
-        sc = SlackClient(slack_token)
-
-        sc.api_call(
-            "chat.postMessage",
-            channel=slackSettings['channelToPost'],
-            text = textToChannel,
-        )
+        slack_send_msg(textToChannel, to_standard_channel=True)
 
     return
 
@@ -199,7 +136,7 @@ def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
     user = KioskUser.objects.get(id = userID)
 
     # Functional Users (bank, thief) do not need messages
-    if user.visible == False:
+    if not user.visible:
         return
 
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
@@ -216,15 +153,7 @@ def slack_MsgToUserAboutNonNormalBankBalance(userID, bankBalance):
     else:
         return
 
-    userAdress = '@' + user.slackName
-
-    sc = SlackClient(slack_token)
-
-    sc.api_call(
-        "chat.postMessage",
-        channel=userAdress,
-        text = textToChannel,
-    )
+    slack_send_msg(textToChannel, user=user)
 
     return
 

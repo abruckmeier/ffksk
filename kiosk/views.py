@@ -1,27 +1,20 @@
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
-from django.db.models import Count
-from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft, Kontakt_Nachricht, Start_News
-from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
+
+from utils.slack import get_user_information
+from .models import Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
+from .models import GeldTransaktionen, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
 
-from slackclient import SlackClient
-
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
-from django.utils import timezone
-import pytz
-import datetime
-from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
 import re
-from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
@@ -31,7 +24,7 @@ from .charts import *
 
 from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.urls import reverse_lazy
 
@@ -628,40 +621,15 @@ def neuerNutzer_page(request):
 
 		if request.POST.get('what')=='testSlackName':
 			slackName = request.POST.get('slackName')
-
-			# Try to find the given Slack-User in the user list on slack
-			slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-			users = []
-			next_cursor = ''
-			nextIteration = True
-
-			while nextIteration:
-				sc = SlackClient(slack_token)
-				ulist = sc.api_call(
-					"users.list",
-					limit=100,
-					cursor=next_cursor,
-				)
-
-				if ulist.get('ok')==False:
-					# No successful return of the members list
-					error = True
-					nextIteration = False
-				else:
-					users.extend( [ {'id':x.get('id'), 'name':x.get('name'), 'real_name':x.get('real_name')} for x in ulist.get('members',[]) ] )
-					next_cursor = ulist.get('response_metadata',{}).get('next_cursor','')
-					if next_cursor=='':
-						error = False
-						nextIteration = False
+			error, user_address, return_msg = get_user_information(slackName)
 
 			if not error:
-				matched = [ x for x in users if x['id']==slackName or x['name']==slackName ]
-				if len(matched)==1:
+				if user_address:
 					retVal = '<div class="alert alert-success alert-small">ok</div>'
 				else:
 					retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
 			else:
-				retVal = '<div class="alert alert-danger alert-small">Fehler beim Zugriff auf Slack.</div>'
+				retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
 
 			return JsonResponse({'data': retVal})
 
