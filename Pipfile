@@ -18,3 +18,8 @@ django-db-logger = "*"
 slack_sdk = "*"
 
 [dev-packages]
+notebook = "*"
+matplotlib = "*"
+plotly = "*"
+pandas = "*"
+lets_plot = "*"

@@ -42,4 +42,11 @@ RUN if [ "$DEBUG_BUILD" = "true" ] ; then echo "PYTHONBREAKPOINT=debugpy.breakpo
 
 # Production image
 FROM develop as production
-RUN python manage.py collectstatic
+#RUN python manage.py collectstatic
+
+FROM develop as analysis
+RUN pipenv requirements --dev-only > requirements-dev.txt
+RUN pip install -r requirements-dev.txt
+
+EXPOSE 8888
+CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
