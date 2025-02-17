@@ -77,7 +77,9 @@ def slack_TestMsgToUser(user):
 def slack_PostTransactionInformation(info):
 
     if info['type'] == 'manTransaction':
-        textToChannel = ':grey_exclamation::dollar: Es wurde eine '+chr(220)+'berweisung von ' + info['userFrom'].slackName + ' an ' + info['userTo'].slackName + ' in H'+chr(246)+'he von ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' get'+chr(228)+'tigt.'
+        textToChannel = ':grey_exclamation::dollar: Es wurde eine '+chr(220)+'berweisung von <@' + info[
+            'userFrom'].slackName + '> an <@' + info['userTo'].slackName + '> in H'+chr(246)+'he von ' + str('%.2f' %
+                                                                                                          info['betrag']) + ' '+chr(8364)+' get'+chr(228)+'tigt.'
     elif info['type'] == 'eingezahlt':
         textToChannel = ':grey_exclamation::dollar: Es wurden ' + str('%.2f' % info['betrag']) + ' '+chr(8364)+' auf dein Konto eingezahlt.'
     elif info['type'] == 'ausgezahlt':

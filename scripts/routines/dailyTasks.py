@@ -83,7 +83,7 @@ def electBestContributors():
 
     # Send the message
     if bestBuyers or bestAdmins:
-        addressaten = ', '.join(['@'+x for x in list(set(addressaten))])
+        addressaten = ', '.join(['<@'+x+'>' for x in list(set(addressaten))])
         msg = addressaten + chr(10)
         msg += '*Zeit f'+chr(252)+'r ein Lob:*'+chr(10)+chr(10)
         if bestBuyers:
