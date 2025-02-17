@@ -17,7 +17,7 @@ def get_user_information(name: str) -> Tuple[bool, str, str]:
     # First, check, if name is already the id
     try:
         response = sc.users_info(user=name)
-        user_address = name
+        found_id = name
         return_msg = f'Found name. Was already the id.'
 
     except SlackApiError as e:

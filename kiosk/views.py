@@ -625,11 +625,14 @@ def neuerNutzer_page(request):
 
 			if not error:
 				if user_address:
-					retVal = '<div class="alert alert-success alert-small">ok</div>'
+					retVal = ('<div class="alert alert-success alert-small">Es ist ein Slack-Account unter diesem '
+							  'Namen vorhanden.</div>')
 				else:
-					retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
+					retVal = ('<div class="alert alert-warning alert-small">Es kann kein Slack-Account unter '
+							  'diesem Namen gefunden werden</div>')
 			else:
-				retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
+				retVal = ('<div class="alert alert-warning alert-small">Es kann kein Slack-Account unter '
+							  'diesem Namen gefunden werden</div>')
 
 			return JsonResponse({'data': retVal})
 
