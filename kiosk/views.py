@@ -529,7 +529,9 @@ def einkauf_annahme_user_page(request, userID):
 				try:
 					user = KioskUser.objects.get(id = userID)
 
-					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
+					txt = ('Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '
+						   +str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)
+						   +'r deine Besorgungen! :thumbsup::clap:')
 					slack_send_msg(txt, user)
 				except:	pass
 

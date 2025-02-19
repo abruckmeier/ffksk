@@ -95,6 +95,7 @@ def slack_PostTransactionInformation(info):
 
 
 def slack_PostWelcomeMessage(user):
+    slack_settings = getattr(settings, 'SLACK_SETTINGS')
     # Verwalter
     data = KioskUser.objects.filter(visible=True, rechte='Accountant')
     accountants = []
@@ -102,7 +103,22 @@ def slack_PostWelcomeMessage(user):
         accountants.append(item.first_name + ' ' + item.last_name)
     accountants = ', '.join(accountants)
 
-    textToChannel = ':tada: Willkommen im FfE-Kiosk! :tada:\n\n' + 'Du bist jetzt Teil einer Community, die als Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des Kiosks musst du zun'+chr(228)+'chst etwas Guthaben auf dein Konto bei einem Verwalter ('+ accountants + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n' + 'Im #kiosk-Channel hier auf Slack bekommst du alle wichtigen Informationen zum FfE-Kiosk. Vor allem sende ich im #kiosk_bot-Channel Benachrichtigungen, wenn neue Produkte angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n' + 'Apropos Einkaufsliste: Du kannst dich aktiv am Betrieb des Kiosks als Eink'+chr(228)+'ufer beteiligen. Nach Belieben kannst du Produkte von der Einkaufsliste f'+chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung f'+chr(252)+'r das Kiosk besorgen.'
+    textToChannel = (':tada: Willkommen im FfE-Kiosk! :tada:\n\nDu bist jetzt Teil einer Community, die als '
+                     'Gemeinschaft ein Kiosk betreibt und zu Supermarktpreisen Produkte verkauft. Als Nutzer des '
+                     'Kiosks musst du zun'
+                     +chr(228)+
+                     'chst etwas Guthaben auf dein Konto bei einem Verwalter ('
+                     + accountants
+                     + ') einzahlen um Produkte einkaufen zu k'+chr(246)+'nnen.\n'
+                     + f'Im <#{slack_settings["inventoryChannelName"]}>-Channel hier auf Slack bekommst du '
+                       f'alle wichtigen Informationen zum '
+                       f'FfE-Kiosk. '
+                       f'Vor allem sende ich im <#{slack_settings["channelToPost"]}>-Channel Benachrichtigungen, '
+                       f'wenn neue Produkte '
+                       'angeliefert wurden und wenn Produkte auf der Einkaufsliste stehen.\n'
+                     + 'Apropos Einkaufsliste: Du kannst dich aktiv am Betrieb des Kiosks als Eink'+chr(228)
+                     +'ufer beteiligen. Nach Belieben kannst du Produkte von der Einkaufsliste f'
+                     +chr(252)+'r eine kleine Aufwandsentsch'+chr(228)+'digung f'+chr(252)+'r das Kiosk besorgen.')
 
     slack_send_msg(textToChannel, user=user)
 
