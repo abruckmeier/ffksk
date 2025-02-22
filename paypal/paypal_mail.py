@@ -4,7 +4,7 @@ from typing import List, TypedDict, Tuple
 import re
 from django.conf import settings
 from datetime import datetime, timedelta
-from kiosk.bot import slack_SendMsg, slack_PostTransactionInformation
+from kiosk.bot import slack_send_msg, slack_PostTransactionInformation
 from paypal.models import Mail
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
@@ -289,7 +289,7 @@ def routine_with_messaging() -> Tuple[bool, str]:
             # Send message to all admins
             admins = KioskUser.objects.filter(visible=True, rechte='Admin')
             for u in admins:
-                slack_SendMsg(response_msg, user=u)
+                slack_send_msg(response_msg, user=u)
     except Exception as e:
         logger.exception(e)
         response_msg = f'An unexpected Exception has occurred: {str(e)}.'
@@ -297,7 +297,7 @@ def routine_with_messaging() -> Tuple[bool, str]:
         # Send message to all admins
         admins = KioskUser.objects.filter(visible=True, rechte='Admin')
         for u in admins:
-            slack_SendMsg(response_msg, user=u)
+            slack_send_msg(response_msg, user=u)
     return is_success, response_msg
 
 

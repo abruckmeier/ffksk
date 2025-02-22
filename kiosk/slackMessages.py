@@ -67,10 +67,10 @@ def process_kiosk_buy(message):
 
 
 	# Check if the user has an account in the kiosk
-	user = KioskUser.objects.get(
+	user = KioskUser.objects.filter(
 		slackName__in=[ message['user']['id'], message['user']['name'], ],
 		visible=True
-	)
+	).first()
 	if not user:
 		slack_sendMessageToResponseUrl(message.get('response_url'), 'Ich kann deinen Slack-Account nicht mit deinem  FfE-Konto verbinden.'+chr(10)+'Wende dich bitte an einen Administrator.', getCancelAttachementForResponse())
 		return

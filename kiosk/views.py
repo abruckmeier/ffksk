@@ -1,37 +1,30 @@
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
-from django.db.models import Count
-from django.db import connection
-from .models import Kontostand, Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft, Kontakt_Nachricht, Start_News
-from .models import GeldTransaktionen, ProduktVerkaufspreise, ZuVielBezahlt, Produktkommentar, Produktpalette
+
+from utils.slack import get_user_information
+from .models import Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
+from .models import GeldTransaktionen, ZuVielBezahlt, Produktkommentar, Produktpalette
 from profil.models import KioskUser
 from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
 
-from slackclient import SlackClient
-
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
-from django.utils import timezone
-import pytz
-import datetime
-from .queries import readFromDatabase
 from django.contrib.auth import login, authenticate
 import re
-from decimal import Decimal
 from django.db import transaction
 from django.db.models import Sum
 
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_SendMsg
+from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_send_msg
 
 from .charts import *
 
 from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.urls import reverse_lazy
 
@@ -154,7 +147,7 @@ def kontakt_page(request):
 				data = KioskUser.objects.filter(visible=True, rechte='Admin')
 				msg = 'Es kam eine neue Nachricht '+chr(252)+'ber das Kontaktformular herein. Bitte k'+chr(252)+'mmere dich im Admin-Bereich um diese Anfrage.'
 				for u in data:
-					slack_SendMsg(msg, user=u)
+					slack_send_msg(msg, user=u)
 
 				form.save()
 				successMsg = 'Deine Nachricht wurde an die Administratoren der Webseite gesendet. Dir wird so schnell wie m'+chr(246)+'glich an die E-Mail-Adresse "'+form.cleaned_data['email']+'" geantwortet. Bitte vergewissere dich, dass diese Adresse korrekt ist.'
@@ -536,8 +529,10 @@ def einkauf_annahme_user_page(request, userID):
 				try:
 					user = KioskUser.objects.get(id = userID)
 
-					txt = 'Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '+str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)+'rs einkaufen! :thumbsup::clap:'
-					slack_SendMsg(txt,user)
+					txt = ('Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '
+						   +str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)
+						   +'r deine Besorgungen! :thumbsup::clap:')
+					slack_send_msg(txt, user)
 				except:	pass
 
 
@@ -628,40 +623,18 @@ def neuerNutzer_page(request):
 
 		if request.POST.get('what')=='testSlackName':
 			slackName = request.POST.get('slackName')
-
-			# Try to find the given Slack-User in the user list on slack
-			slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-			users = []
-			next_cursor = ''
-			nextIteration = True
-
-			while nextIteration:
-				sc = SlackClient(slack_token)
-				ulist = sc.api_call(
-					"users.list",
-					limit=100,
-					cursor=next_cursor,
-				)
-
-				if ulist.get('ok')==False:
-					# No successful return of the members list
-					error = True
-					nextIteration = False
-				else:
-					users.extend( [ {'id':x.get('id'), 'name':x.get('name'), 'real_name':x.get('real_name')} for x in ulist.get('members',[]) ] )
-					next_cursor = ulist.get('response_metadata',{}).get('next_cursor','')
-					if next_cursor=='':
-						error = False
-						nextIteration = False
+			error, user_address, return_msg = get_user_information(slackName)
 
 			if not error:
-				matched = [ x for x in users if x['id']==slackName or x['name']==slackName ]
-				if len(matched)==1:
-					retVal = '<div class="alert alert-success alert-small">ok</div>'
+				if user_address:
+					retVal = ('<div class="alert alert-success alert-small">Es ist ein Slack-Account unter diesem '
+							  'Namen vorhanden.</div>')
 				else:
-					retVal = '<div class="alert alert-warning alert-small">Keinen Nutzer im Team gefunden</div>'
+					retVal = ('<div class="alert alert-warning alert-small">Es kann kein Slack-Account unter '
+							  'diesem Namen gefunden werden</div>')
 			else:
-				retVal = '<div class="alert alert-danger alert-small">Fehler beim Zugriff auf Slack.</div>'
+				retVal = ('<div class="alert alert-warning alert-small">Es kann kein Slack-Account unter '
+							  'diesem Namen gefunden werden</div>')
 
 			return JsonResponse({'data': retVal})
 
@@ -693,7 +666,7 @@ def neuerNutzer_page(request):
 			msg = '*Verifiziere deinen FfE-Kiosk Account!*\n\n\r' +	'Hallo '+ user + ',\n\r'+ 'Du erh'+chr(228)+'lst diese Slack-Nachricht weil du dich auf der Webseite ' + str(current_site) + ' registriert hast.\n\r' + 'Bitte klicke auf den folgenden Link, um deine Registrierung zu best'+chr(228)+'tigen:\n\r'+ '\t'+ protocol + '://'+domain+url+ '\n\n\r'+ 'Hast du dich nicht auf dieser Webseite registriert? Dann ignoriere einfach diese Nachricht.\n\n\r'+ 'Dein FfE-Kiosk Team.'
 
 			try:
-				slack_SendMsg(msg,u)
+				slack_send_msg(msg, u)
 			except:
 				pass
 
@@ -887,7 +860,7 @@ def inventory(request):
 
 			if sendMsg:
 				slackSettings = getattr(settings,'SLACK_SETTINGS')
-				slack_SendMsg(txt, channelName=slackSettings['inventoryChannelName'])
+				slack_send_msg(txt, to_channel_with_name=slackSettings['inventoryChannelName'])
 
 		# Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
 		checkKioskContentAndFillUp()
@@ -1216,7 +1189,7 @@ def rueckbuchung_user(request, userID):
 				for r in ret:
 					try:
 						u = KioskUser.objects.get(id = r['userID'])
-						slack_SendMsg(r['slackMsg'],u)
+						slack_send_msg(r['slackMsg'], u)
 					except:	pass
 
 

@@ -2,7 +2,6 @@
 import os
 import sys
 import django
-from django.core.files import File
 import logging
 
 if __name__ == '__main__':
@@ -18,14 +17,14 @@ from django.conf import settings
 from django.db.models import Q
 from datetime import datetime, timedelta, UTC
 import pytz
-from slackclient import SlackClient
+from slack_sdk import WebClient
 import time
 import subprocess
 from decouple import config
 from io import BytesIO
-
+from utils.slack import get_user_information
 from kiosk.queries import readFromDatabase
-from kiosk.bot import slack_SendMsg, checkKioskContentAndFillUp
+from kiosk.bot import slack_send_msg, checkKioskContentAndFillUp
 from profil.models import KioskUser
 from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
 from paypal.paypal_mail import routine_with_messaging
@@ -40,7 +39,7 @@ def run_paypal_sync():
         # Send message to all admins. If no success, message is already sent in function before.
         admins = KioskUser.objects.filter(visible=True, rechte='Admin')
         for u in admins:
-            slack_SendMsg(response_msg, user=u)
+            slack_send_msg(response_msg, user=u)
 
 
 def send_paypal_statistics():
@@ -84,7 +83,7 @@ def electBestContributors():
 
     # Send the message
     if bestBuyers or bestAdmins:
-        addressaten = ', '.join(['@'+x for x in list(set(addressaten))])
+        addressaten = ', '.join(['<@'+x+'>' for x in list(set(addressaten))])
         msg = addressaten + chr(10)
         msg += '*Zeit f'+chr(252)+'r ein Lob:*'+chr(10)+chr(10)
         if bestBuyers:
@@ -94,7 +93,7 @@ def electBestContributors():
 
         msg += chr(10)+'Vielen Dank f'+chr(252)+'r Deine Mithilfe im Kiosk!'
 
-        slack_SendMsg(msg, channel=True)
+        slack_send_msg(msg, to_standard_channel=True)
 
     return
 
@@ -164,22 +163,30 @@ def weeklyBackup(nowDate):
     if backupSettings['active_slack_backup']:
         logger.info(f'Store the data as Slack message to those users: {backupSettings["sendWeeklyBackupToUsers"]}')
         slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-        sc = SlackClient(slack_token)
+        sc = WebClient(slack_token)
 
         for usr in backupSettings['sendWeeklyBackupToUsers']:
             logger.info(f'Now, write to Slack user {usr}')
-            ret = sc.api_call(
-                'files.upload',
-                channels='@'+usr,
-                as_user=True,
-                text='test',
+
+            error, user_address, return_msg = get_user_information(usr)
+            if error:
+                logger.warning(f'Slack user not found on Slack. Skipping to send file.')
+                continue
+
+            # Get the conversation channel for the user-Kioskbot interaction
+            channel_resp = sc.conversations_open(users=user_address)
+
+            # Upload the file
+            ret = sc.files_upload_v2(
+                channel=channel_resp.get('channel').get('id'),
                 filename=attDatabaseName,
-                file=File(buffer),
+                file=buffer,
             )
             logger.info(f'Done sending message. Return value: {ret}')
 
             # Send additional message to the receivers of the attached database
-            slack_SendMsg('You received the database attached as backup in an other message to the kioskbot. Do not save the file otherwise! This file will be deleted in one year from the thread.', userName=usr)
+            slack_send_msg('You received the database attached as backup in an other message to the kioskbot. Do not '
+                          'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
 
     return {
         'weeklyStoredAtServer':str(os.path.join(backupFolder, attDatabaseName)) if backupSettings['active_local_backup'] else 'Not activated',
@@ -200,25 +207,35 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
         return 'Slack Backup not activated in settings.'
 
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-    sc = SlackClient(slack_token)
+    sc = WebClient(slack_token)
 
-    for botID in backupSettings['kioskbotChannels']:
-        conversation = sc.api_call(
-            'conversations.history',
-            channel=botID,
+    for usr in backupSettings['sendWeeklyBackupToUsers']:
+        logger.info(f'Now, delete old messages in conversation with Slack user {usr}')
+
+        error, user_address, return_msg = get_user_information(usr)
+        if error:
+            logger.warning(f'Slack user not found on Slack. Skipping to delete files.')
+            continue
+
+        # Get the conversation channel for the user-Kioskbot interaction
+        channel_resp = sc.conversations_open(users=user_address)
+        channel = channel_resp.get('channel').get('id')
+
+        # Delete the file
+        conversation = sc.conversations_history(
+            channel=channel,
         )
 
         if not conversation.get('ok', False):
-            print('deleteOldWeeklyBackupsFromSlackAdmin: For botID {}, no messages found.'.format(botID))
+            print('deleteOldWeeklyBackupsFromSlackAdmin: For conversation {}, no messages found.'.format(channel))
 
-        to_delete_msgs = [ msg.get('ts','') for msg in conversation.get('messages',[]) if float(msg.get('ts')) < dt  ]
+        to_delete_msgs = [ msg.get('ts') for msg in conversation.get('messages',[]) if float(msg.get('ts')) < dt  ]
 
         print('Deletion of following {} messages:'.format(str(len(to_delete_msgs))))
         for ts in to_delete_msgs:
-            ret = sc.api_call(
-                'chat.delete',
-                channel=botID,
-                ts = ts,
+            ret = sc.chat_delete(
+                channel=channel,
+                ts=ts,
             )
             print(ret)
             time.sleep(2)
@@ -237,7 +254,7 @@ def deleteTooOldProductsInShoppingList(nowDate):
     for userID in userIDs:
         u = KioskUser.objects.get(id=userID)
         msg = 'Produkte, die l'+chr(228)+'nger als sieben Tage in deiner pers'+chr(246)+'nlichen Einkaufsliste waren, wurden nun wieder in die offene Einkaufsliste zur'+chr(252)+'ckgeschrieben. Du hast nun nicht mehr das Vorrecht, diese Produkte zu kaufen. \nUnter https://ffekiosk.pythonanywhere.com/menu/meineeinkaufe/ kannst du deine ver'+chr(228)+'nderte pers'+chr(246)+'nliche Einkaufsliste einsehen. Unter https://ffekiosk.pythonanywhere.com/menu/einkaufsvormerkungen/ kannst du neue Produkte in deine pers'+chr(246)+'nliche Einkaufsliste aufnehmen.\nDein Kiosk-Team'
-        slack_SendMsg(msg,u)
+        slack_send_msg(msg, u)
 
     # Delete the items and refill the Kiosk
     oldItems.delete()
@@ -267,7 +284,7 @@ def warningTooOldProductsInShoppingList():
             msg += '\t' + str(i['anzahl']) + 'x ' + i['produktName'] + '\n'
         msg += '\n Du hast insgesamt sieben Tage Zeit, deine Besorgungen f'+chr(252)+'r den Kiosk zu machen. Wurde nach dieser Zeit kein Einkauf bei einem Verwalter abgegeben, werden die entsprechenden Produkte aus deiner pers'+chr(246)+'nlichen Einkaufsliste gel'+chr(246)+'scht und wandern wieder in die offene Einkaufsliste.'+'\nUnter https://ffekiosk.pythonanywhere.com/menu/meineeinkaufe/ kannst du deine pers'+chr(246)+'nliche Einkaufsliste einsehen und modifizieren.\nDein Kiosk-Team'
 
-        slack_SendMsg(msg, userName=u)
+        slack_send_msg(msg, user=u)
 
     return
 
@@ -285,7 +302,7 @@ def warnUsersToBeBlockedSoon():
 
         # Send the message to the user
         msgSend = msg.replace('{{date_end}}',datetime.strftime(u['aktivBis'],'%d.%m.%Y'))
-        slack_SendMsg(msgSend, user=user)
+        slack_send_msg(msgSend, user=user)
 
         # Set the flag that user has been warned
         user.activity_end_msg = 1
@@ -305,7 +322,7 @@ def blockUserAfterActiveTime(nowDate):
     for u in users:
 
         msgSend = msg
-        slack_SendMsg(msgSend, user=u)
+        slack_send_msg(msgSend, user=u)
 
         # Set status, that message has been sent
         u.activity_end_msg = 2
@@ -336,7 +353,7 @@ def warnInactiveUsersBeforeDeletion(nowDate):
     for u in users:
         msg = f'Liebe*r Kiosknuter*in,\nDein Account wurde vor 28 Tagen inaktiv gesetzt. In sieben Tagen wird dein Account endgültig gelöscht{ "und dein verbleibendes Guthaben von "+str(u.kontostand.stand/100)+" "+chr(8364)+" geht als Spende an den Kiosk" if u.kontostand.stand>0 else "" }. Falls du dies nicht möchtest, trete bitte mit einem Administrator in Kontakt.\n\nDanke, dass du den FfE-Kiosk genutzt hast!\nDein Kiosk-Team'
 
-        slack_SendMsg(msg, user=u, force_send=True);print(u)
+        slack_send_msg(msg, user=u, force_send_to_nonvisible_user=True);print(u)
 
         # Set status, that message has been sent
         u.activity_end_msg = 3
@@ -392,7 +409,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The daily PayPal Sync has failed!', user=u)
+                slack_send_msg('The daily PayPal Sync has failed!', user=u)
             logger.info('Daily PayPal Sync failed. Slack Message sent.')
         except:
             logger.info('Failing to send Slack Message with Fail Notice of PayPal daily sync.')
@@ -418,7 +435,7 @@ def routine():
         # Send message to all admins
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         for u in data:
-            slack_SendMsg(msg, user=u)
+            slack_send_msg(msg, user=u)
 
         logger.info('Finished the daily backup.')
 
@@ -427,7 +444,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The daily backup of the Database failed!', user=u)
+                slack_send_msg('The daily backup of the Database failed!', user=u)
             logger.info('Daily Backup failed. Slack Message sent.')
         except:
             logger.info('Failing to send Slack Message with Fail Notice of database daily backup.')
@@ -449,7 +466,7 @@ def routine():
             # Send message to all admins
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
             for u in data:
-                slack_SendMsg(msg, user=u)
+                slack_send_msg(msg, user=u)
 
             logger.info('Finished the weekly backup.')
 
@@ -459,7 +476,7 @@ def routine():
             data = KioskUser.objects.filter(visible=True, rechte='Admin')
             try:
                 for u in data:
-                    slack_SendMsg('The weekly backup and deletion of the Database failed!', user=u)
+                    slack_send_msg('The weekly backup and deletion of the Database failed!', user=u)
                 logger.info('Weekly Backup failed. Slack Message sent.')
             except:
                 logger.info('Failing to send Slack Message with Fail Notice of database weekly backup and deletion.')
@@ -476,7 +493,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The deletion of products in the shopping list, older than 7 days, did not complete!', user=u)
+                slack_send_msg('The deletion of products in the shopping list, older than 7 days, did not complete!', user=u)
             print('Daily deletion of products in the shopping list, older than 7 days failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of Daily deletion of products in the shopping list, older than 7 days.')
@@ -493,7 +510,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The notification of products in the shopping list, older than 4 days, did not complete!', user=u)
+                slack_send_msg('The notification of products in the shopping list, older than 4 days, did not complete!', user=u)
             print('Daily warning of products in the shopping list, older than 4 days failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of Daily warning of products in the shopping list, older than 4 days.')
@@ -510,7 +527,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The notification of users to be blocked soon, did not complete!', user=u)
+                slack_send_msg('The notification of users to be blocked soon, did not complete!', user=u)
             print('Daily warning of users to be blocked soon failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of users to be blocked soon.')
@@ -526,7 +543,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('The notification of users to be blocked after active time, did not complete!', user=u)
+                slack_send_msg('The notification of users to be blocked after active time, did not complete!', user=u)
             print('Daily warning of users to be blocked after active time failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of users to be blocked.')
@@ -542,7 +559,7 @@ def routine():
         data = KioskUser.objects.filter(visible=True, rechte='Admin')
         try:
             for u in data:
-                slack_SendMsg('Warning and deletion of inactive users, did not complete!', user=u)
+                slack_send_msg('Warning and deletion of inactive users, did not complete!', user=u)
             print('Warning and deletion of inactive users failed. Slack Message sent.')
         except:
             print('Failing to send Slack Message with Fail Notice of Warning and deletion of inactive users.')

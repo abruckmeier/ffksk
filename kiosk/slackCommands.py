@@ -1,9 +1,6 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from django.conf import settings
-
-from slackclient import SlackClient
-
 from .models import Produktpalette, Kontostand, Kiosk
 from profil.models import KioskUser
 
