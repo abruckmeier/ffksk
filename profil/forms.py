@@ -187,3 +187,14 @@ class PersonalInfoChangeForm(forms.ModelForm):
             'paypal_name': _(
                 '<small>Um Einzahlungen per PayPal durchführen zu können, musst du hier deinen Namen, den du auf PayPal verwendest, angeben, den du in deinem PayPal Profil findest.</small>'),
         }
+
+    def clean_slackName(self):
+        # Get the User ID from Slack and use this for the database saving
+        error, user_address, return_msg = get_user_information(self.cleaned_data['slackName'])
+        if error:
+            raise ValidationError('Für den eingegebenen Slack-Namen wurde kein Account gefunden. '
+                                  'Nutze evtl. die Slack User ID.')
+
+        slackName = user_address
+        if KioskUser.objects.filter(slackName=slackName).exists():
+            raise ValidationError(_('Dieser Slack Account wird bereits verwendet'), code='invalid')
