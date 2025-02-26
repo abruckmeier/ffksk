@@ -225,8 +225,9 @@ class ZumEinkaufVorgemerkt(models.Model):
 		anzahlElemente = [x['anzahlElemente'] for x in persEkList if x['id']==product_id][0]
 
 		# Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
-		if anzahlAngeliefert > anzahlElemente:
-			retVal['msg'] = "Die Menge der angelieferten Ware ist zu gro"+chr(223)+" f"+chr(252)+"r '"+product.produktName+"'"
+		if anzahlAngeliefert > anzahlElemente * 1.5:
+			retVal['msg'] = (f"Die Menge der angelieferten Ware ist höher als das 1,5-fache der vereinbarten Menge bei "
+							 f"{product.produktName}")
 			retVal['err'] = True
 
 		# Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
@@ -254,8 +255,16 @@ class ZumEinkaufVorgemerkt(models.Model):
 			angeliefert = ZumEinkaufVorgemerkt.objects.filter(einkaeufer__id=userID,
 				produktpalette__id=product_id).order_by('kiosk_ID')[:anzahlAngeliefert]
 
-			if len(angeliefert) != anzahlAngeliefert:
-				raise ValueError
+			# If there is more items delivered than in ek list, then just create blank kiosk items
+			if anzahlAngeliefert - len(angeliefert) > 0:
+				for i in range(anzahlAngeliefert - len(angeliefert)):
+					an = angeliefert[0]
+					k = Kiosk(kiosk_ID=an.kiosk_ID, bedarfErstelltUm=datum,
+							  produktpalette_id=an.produktpalette_id, einkaufsvermerkUm=datum,
+							  einkaeufer_id = an.einkaeufer_id, geliefertUm = datum,
+							  verwalterEinpflegen_id = currentUser.id, einkaufspreis = prodEkPreis)
+					# Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
+					k.save()
 
 			# Eintragen der Werte und Schreiben ins Kiosk
 			for an in angeliefert:
