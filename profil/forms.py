@@ -194,10 +194,5 @@ class PersonalInfoChangeForm(forms.ModelForm):
         if error:
             raise ValidationError('Für den eingegebenen Slack-Namen wurde kein Account gefunden. '
                                   'Nutze evtl. die Slack User ID.')
-
-        slackName = user_address
-        if KioskUser.objects.filter(slackName=slackName).exists():
-            raise ValidationError(_('Dieser Slack Account wird bereits verwendet'), code='invalid')
-
-        return slackName
+        return user_address
     
