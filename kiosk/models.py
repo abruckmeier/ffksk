@@ -62,6 +62,8 @@ class Produktpalette(models.Model):
     produktGeaendert = models.DateTimeField(auto_now=True)
     #kommentar = models.TextField(max_length=512,blank=True)
     farbeFuerPlot = models.CharField(max_length=7,blank=True)
+    is_beverage = models.BooleanField(default=False,
+                                      help_text='Set to True if the product comes with pledge (Pfand)')
 
     def __str__(self):
         return ('ID ' + str(self.id) + ': ' + self.produktName)
