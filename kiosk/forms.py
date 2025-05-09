@@ -64,4 +64,43 @@ class RueckbuchungForm(forms.Form):
         return data
     
     
-
+class BeverageBookingForm(forms.Form):
+    """This form is used to book beverages into the system on the view 'Einkauf Annahme'."""
+    product_id = forms.IntegerField(
+        widget=forms.TextInput(attrs={'readonly': 'true', 'hidden': 'true'})
+    )
+    user_id = forms.IntegerField(
+        widget=forms.TextInput(attrs={'readonly': 'true', 'hidden': 'true'})
+    )
+    product_name = forms.CharField(
+        label='Produkt',
+        widget=forms.TextInput(attrs={'readonly': 'true'})
+    )
+    max_number_elements = forms.IntegerField(
+        label='Anzahl zu kaufen',
+        widget=forms.TextInput(attrs={'readonly': 'true'})
+    )
+    max_price = forms.DecimalField(
+        label='Maximaler Einkaufspreis',
+        decimal_places=2,
+        widget=forms.TextInput(attrs={'readonly': 'true'}),
+        localize=True,
+    )
+    delivered_elements = forms.IntegerField(
+        label='Angelieferte Menge',
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'x', 'class': 'form-control', 'style': 'width: 60px;'}),
+    )
+    price_paid = forms.DecimalField(
+        localize=True,
+        label='Bezahlter Preis in € (ohne Pfand)',
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'x,yz €', 'class': 'form-control', 'style': 'width: 70px;'}),
+    )
+    pledge = forms.DecimalField(
+        label='Pfand bezahlt in €',
+        decimal_places=2,
+        localize=True,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': 'x,yz €', 'class': 'form-control', 'style': 'width: 70px;'}),
+    )

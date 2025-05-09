@@ -1,3 +1,5 @@
+from typing import TypedDict
+
 from django.db import models
 from django.utils import timezone
 from dateutil import tz
@@ -115,13 +117,15 @@ class ProduktVerkaufspreise(models.Model):
         return(self.produktpalette.produktName + ", " +
             str(price) + "(+"+str(aufstockung)+") "+chr(8364)+" g"+chr(252)+"ltig ab " + str(self.gueltigAb))
 
-    def getActPrices(produkt_id):
+    @classmethod
+    def getActPrices(cls, produkt_id):
         verkaufspreis = readFromDatabase('getActPrices',[produkt_id])
-        return(verkaufspreis[0])
+        return verkaufspreis[0]['verkaufspreis']
 
-    def getPreisAufstockung(produkt_id):
+    @classmethod
+    def getPreisAufstockung(cls, produkt_id):
         aufstockung = readFromDatabase('getPreisAufstockung',[produkt_id])
-        return(aufstockung[0])
+        return aufstockung[0]['preisAufstockung']
 
     class Meta:
         verbose_name = 'Produkt-Verkaufspreis'
@@ -199,28 +203,48 @@ class ZumEinkaufVorgemerkt(models.Model):
             self.produktpalette.produktName + ", vorgemerkt um " +
             str(self.einkaufsvermerkUm) + ", von " + str(self.einkaeufer))
 
-    def getMyZumEinkaufVorgemerkt(currentUserID):
+    @classmethod
+    def getMyZumEinkaufVorgemerkt(cls, currentUserID):
         persEinkaufsliste = readFromDatabase('getMyZumEinkaufVorgemerkt',[currentUserID])
         return(persEinkaufsliste)
 
+    class EinkaufAnnehmenProductDict(TypedDict):
+        product_id: int
+        price_paid: int
+        anzahl_angeliefert: int
+        user_id_einkaeufer: int
+        user_id_verwalter: int
 
+    class EinkaufAnnehmenReturnDict(TypedDict):
+        product_id: int
+        err: bool
+        msg: str
+        html: str
+        dct: dict
+        angeliefert: list
+
+    @classmethod
     @transaction.atomic
-    def einkaufAnnehmen(form, currentUser):
+    def einkauf_annehmen(cls, form: EinkaufAnnehmenProductDict) -> EinkaufAnnehmenReturnDict:
 
-        retVal = {'product_id': None, 'err': False, 'msg': None, 'html': None, 'dct': None, 'angeliefert': None}
+        return_values = cls.EinkaufAnnehmenReturnDict(
+            product_id=form['product_id'],
+            err=False,
+            msg='',
+            html='',
+            dct=dict(),
+            angeliefert=list(),
+        )
 
-        finanz = getattr(settings,'FINANZ')
-        product_id= form['product_id']
+        # Prepare information for the transaction
+        finanz_constants = getattr(settings, 'FINANZ')
+        product_id = form['product_id']
         product = Produktpalette.objects.get(id=product_id)
-        retVal['product_id'] = product_id
         prodVkPreis = ProduktVerkaufspreise.getActPrices(product_id)
-        prodVkPreis = prodVkPreis.get('verkaufspreis')
-        retVal['err'] = False
-
-
-        userID = form['userID']
-        anzahlAngeliefert = form['anzahlAngeliefert']
-        gesPreis = form['gesPreis']
+        userID = form['user_id_einkaeufer']
+        anzahlAngeliefert = form['anzahl_angeliefert']
+        gesPreis = form['price_paid']
+        currentUser = KioskUser.objects.get(id=form['user_id_verwalter'])
 
         # Get the maximal number of products to accept
         persEkList = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
@@ -228,27 +252,34 @@ class ZumEinkaufVorgemerkt(models.Model):
 
         # Pruefen, ob nicht mehr einkgekauft wurde, als auf der Liste stand
         if anzahlAngeliefert > anzahlElemente * 1.5:
-            retVal['msg'] = (f"Die Menge der angelieferten Ware ist höher als das 1,5-fache der vereinbarten Menge bei "
-                             f"{product.produktName}")
-            retVal['err'] = True
+            return_values['msg'] = (f"Die Menge der angelieferten Ware ist höher als das 1,5-fache der vereinbarten "
+                                    f"Menge bei {product.produktName}")
+            return_values['err'] = True
 
-        # Pruefen, dass die Kosten niedrig genug sind, so dass eine Marge zwischen Einkauf und Verkauf von 10 % vorhanden ist.
-        minProduktMarge = finanz['minProduktMarge']
+        # Pruefen, dass die Kosten niedrig genug sind, sodass eine Marge zwischen Einkauf und Verkauf
+        # von 10 % vorhanden ist.
+        minProduktMarge = finanz_constants['minProduktMarge']
 
         if float(gesPreis) > float(anzahlAngeliefert) * (1-float(minProduktMarge)) * float(prodVkPreis):
-            retVal['msg'] = "Die Kosten f"+chr(252)+"r den Einkauf von '"+product.produktName+"' sind zu hoch. Der Einkauf kann nicht angenommen werden."
-            retVal['err'] = True
+            return_values['msg'] = ("Die Kosten f"+chr(252)+"r den Einkauf von '"+product.produktName
+                                    + "' sind zu hoch. Der Einkauf kann nicht angenommen werden.")
+            return_values['err'] = True
 
-        if retVal['err'] == True:
+        if return_values['err']:
 
-            # Bei Eingabefehler, Eine Alert-Meldung zurueck, dass Eingabe falsch ist
-            retVal['html'] = render_to_string('kiosk/fehler_message.html', {'message':retVal['msg']})
-            return retVal
-            # Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen, der Token muss in die uebergebenen Daten im JavaScript mit rein.
+            # Bei Eingabefehler, eine Alert-Meldung zurueck, dass Eingabe falsch ist
+            return_values['html'] = render_to_string(
+                'kiosk/fehler_message.html',
+                {'message': return_values['msg']}
+            )
+            return return_values
+            # Hier am besten die <form> aufloesen und das manuell bauen, POST wie oben GET nutzen,
+            # der Token muss in die uebergebenen Daten im JavaScript mit rein.
 
         else:
 
-            # Wenn Eingabe passt, dann wird der Einkaufspreis errechnet, zu den Produkten geschrieben und die Produkte in das Kiosk gelegt. Geldueberweisung von der Bank an den Einkaeufer
+            # Wenn Eingabe passt, dann wird der Einkaufspreis errechnet, zu den Produkten geschrieben und
+            # die Produkte in den Kiosk gelegt. Geldueberweisung von der Bank an den Einkaeufer
 
             # Einkaufspreis berechnen
             prodEkPreis = int(gesPreis / anzahlAngeliefert)
@@ -280,7 +311,7 @@ class ZumEinkaufVorgemerkt(models.Model):
                 an.delete()
 
             # Gewinn und Gesamtrechnung berechnen
-            gewinnEK = finanz['gewinnEK']
+            gewinnEK = finanz_constants['gewinnEK']
             provision = int(((float(prodVkPreis) * float(anzahlAngeliefert)) - float(gesPreis)) * float(gewinnEK))
             paidPrice = gesPreis
             gesPreis = gesPreis + provision
@@ -289,15 +320,27 @@ class ZumEinkaufVorgemerkt(models.Model):
             # Geldueberweisung von der Bank an den Einkaeufer
             userBank = KioskUser.objects.get(username='Bank')
             userAnlieferer = KioskUser.objects.get(id=userID)
-            GeldTransaktionen.doTransaction(userBank,userAnlieferer,gesPreis,datum,
-            "Erstattung Einkauf " + product.produktName + " (" + str(anzahlAngeliefert) + "x)" )#" um " + str(datum.astimezone(tz.tzlocal())))
+            GeldTransaktionen.doTransaction(userBank,
+                                            userAnlieferer,
+                                            gesPreis, datum,
+                                            "Erstattung Einkauf " + product.produktName
+                                            + " (" + str(anzahlAngeliefert) + "x)"
+                                            )
             # Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
-            retVal['dct'] = {'gesPreis':gesPreis/100,'userAnlieferer':userAnlieferer.username, 'produktName': product.produktName,'anzahlElemente':anzahlElemente}
-            retVal['angeliefert'] = angeliefert
-            retVal['msg'] = "Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)+' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '+chr(8364)+' angeliefert.'
-            retVal['html'] = render_to_string('kiosk/success_message.html', {'message':retVal['msg']})
-            return retVal
+            return_values['dct'] = {
+                'gesPreis': gesPreis/100,
+                'userAnlieferer': userAnlieferer.username,
+                'produktName': product.produktName,
+                'anzahlElemente': anzahlElemente
+            }
+            return_values['angeliefert'] = angeliefert
+            return_values['msg'] = ("Vom Produkt '"+str(product.produktName)+"' wurden "+str(anzahlAngeliefert)
+                                    +' St'+chr(252)+'ck zum Preis von '+'%.2f'%(paidPrice/100)+' '
+                                    +chr(8364)+' angeliefert.')
+            return_values['html'] = render_to_string('kiosk/success_message.html',
+                                                     {'message':return_values['msg']})
+            return return_values
 
     class Meta:
         verbose_name = 'vorgemerktes Produkt'
@@ -364,9 +407,7 @@ class Kiosk(models.Model):
         
         # Abfrage des aktuellen Verkaufspreis fuer das Objekt
         actPrices = ProduktVerkaufspreise.getActPrices(item.produktpalette.id)
-        actPrices = actPrices.get('verkaufspreis')
         donation = ProduktVerkaufspreise.getPreisAufstockung(item.produktpalette.id)
-        donation = donation.get('preisAufstockung')        
 
         # Check if user is allowed to buy something and has enough money
         allowedConusmers = readFromDatabase('getUsersToConsume')

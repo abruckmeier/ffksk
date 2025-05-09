@@ -50,4 +50,5 @@ join (
 ) e
   on b.id = e.produktpalette_id
 where c.id = %s and b."imVerkauf" is true
+  and b.is_beverage is false
 group by b.id, b."produktName", d.verkaufspreis, b.id, b.id, e.kommentar

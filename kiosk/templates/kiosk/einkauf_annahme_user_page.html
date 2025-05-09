@@ -46,7 +46,7 @@
 							<input type="text" name="{{item.input_id_angeliefert}}" id="{{item.input_id_angeliefert}}" class="form-control" style="width:60px;" placeholder="x">
 						</td>
 						<td>
-							<input type="text" name="{{item.input_id_bezahlt}}" id="{{item.input_id_bezahlt}}" class="form-control" style="width:60px;" placeholder="x,yz €">
+							<input type="text" name="{{item.input_id_bezahlt}}" id="{{item.input_id_bezahlt}}" class="form-control" style="width:70px;" placeholder="x,yz €">
 						</td>
 					</tr>
 				
@@ -54,9 +54,66 @@
 			</table>
 		
 			<input type="text" name="userID" id="userID" style="display: none" readonly value="{{userID}}">
-			<button type="submit" class="btn btn-primary">Annehmen!</button>
+			<button type="submit" class="btn btn-primary" name="submit_products">Annehmen</button>
 
 		</form>
+
+    <hr />
+
+    <div class="panel panel-default">
+      <div class="panel-heading bold">
+        Info für Getränke
+      </div>
+      <div class="panel-body justified smallText">
+        x
+      </div>
+    </div>
+
+    <form method="POST" class="">{% csrf_token %}
+      {{ beverages_formset.management_form }}
+
+      <table class="table table-striped smallText autoSize">
+				<tr>
+					<th>Produkt</th>
+					<th>Anzahl zu kaufen</th>
+					<th>Maximaler Einkaufspreis</th>
+					<th>Angelieferte Menge</th>
+					<th>Bezahlter Preis in &#8364;<br>(Ohne Pfand)</th>
+          <th>Pfand in &#8364;<br>(optional; Rückgabe vom Pfand subtrahieren und evtl. negativ eintragen)</th>
+				</tr>
+
+				{% for b_form in beverages_formset %}
+
+					<tr>
+            {{ b_form.id }}{{ b_form.product_id }} {{ b_form.user_id }}
+						<td>
+              {{b_form.product_name.value}}
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.product_name.name }}"
+                     value="{{ b_form.product_name.value }}">
+            </td>
+						<td>
+              {{b_form.max_number_elements.value}}
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.max_number_elements.name }}"
+                     value="{{ b_form.max_number_elements.value }}">
+            </td>
+						<td>
+              {{b_form.max_price.value}} &#8364;
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.max_price.name }}"
+                     value="{{ b_form.max_price.value }}">
+            </td>
+						<td>{{b_form.delivered_elements}}<br />{{b_form.delivered_elements.errors}}</td>
+            <td>{{b_form.price_paid}}<br />{{b_form.price_paid.errors}}</td>
+            <td>{{b_form.pledge}}<br />{{b_form.pledge.errors}}</td>
+					</tr>
+
+				{% endfor %}
+			</table>
+
+    <button type="submit" class="btn btn-primary" name="submit_beverages">Annehmen</button>
+    </form>
 
 	{% endif %}
 

@@ -1,3 +1,5 @@
+from typing import List
+
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 
 from utils.slack import get_user_information
@@ -9,7 +11,7 @@ from django.template.loader import render_to_string
 from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
 
-from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form
+from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form, BeverageBookingForm
 from django.contrib.auth.decorators import login_required, permission_required
 import math
 from django.conf import settings
@@ -429,14 +431,8 @@ def vorgemerkt_page(request):
 # String Input to Cent Values
 def strToCents(num):
     try:
-        left = int(re.findall(r'^(\d+)',num)[0])
-        right = re.findall(r'[.,](\d*)$',num)
-        if right == []:
-            right = 0
-        else:
-            right = int(right[0])
-
-        erg = int(left*100 + right)
+        erg = float(num.replace(",", "."))
+        erg = int(erg*100)
 
     except:
         erg = None
@@ -466,7 +462,25 @@ def einkauf_annahme_page(request):
 @permission_required('profil.do_verwaltung',raise_exception=True)
 def einkauf_annahme_user_page(request, userID):
 
-    if request.method == "POST":
+    notifications = ''
+
+    # Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
+    seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
+    user = KioskUser.objects.get(id=userID)
+
+    # Get the formset for beverages of the user to book into the system
+    BeverageFormSet = formset_factory(BeverageBookingForm, extra=0)
+    beverages_to_book = readFromDatabase('getBeveragesToBook', [userID])
+    beverages_formset = BeverageFormSet(initial=beverages_to_book, prefix='form_beverages')
+
+    # Hole den Kioskinhalt
+    kioskItems = Kiosk.getKioskContent()
+
+    # Einkaufsliste abfragen
+    einkaufsliste = Einkaufsliste.getEinkaufsliste()
+
+    # If the first, the products without beverages have been submitted, run the following, else, the other method
+    if request.method == "POST" and 'submit_products' in request.POST.keys():
 
         # Get the "Verwalter"
         currentUser = request.user
@@ -478,8 +492,8 @@ def einkauf_annahme_user_page(request, userID):
         productIds = [int(re.findall(r'^input_id_angeliefert_(\d+)$',x)[0]) for x in keys if re.match(r'^input_id_angeliefert_\d+$', x)]
 
         # Connect the input values to the corresponding products and only allow correct entries
-        formInp = []
-        ret = []
+        form_inp: List[ZumEinkaufVorgemerkt.EinkaufAnnehmenProductDict] = []
+        ret: List = []
         for x in productIds:
             a = request.POST['input_id_angeliefert_'+str(x)]
             try:
@@ -490,39 +504,47 @@ def einkauf_annahme_user_page(request, userID):
             b = request.POST['input_id_bezahlt_'+str(x)]
             b = strToCents(b)
 
-            if not a is None and not b is None:
-                formInp.append({
-                    'userID': userID,
-                    'product_id':x ,
-                    'anzahlAngeliefert': a,
-                    'gesPreis': b,
-                })
+            if a is not None and b is not None:
+                # Collect and append all information for Einkaufannahme
+                form_inp.append(
+                    ZumEinkaufVorgemerkt.EinkaufAnnehmenProductDict(
+                        product_id=x,
+                        price_paid=b,
+                        anzahl_angeliefert=a,
+                        user_id_einkaeufer=userID,
+                        user_id_verwalter=currentUser.id,
+                    )
+                )
 
                 # For each List-Item, Run the procedure of "Einkauf-Annahme"
-                ret.append(ZumEinkaufVorgemerkt.einkaufAnnehmen(formInp[-1],currentUser))
+                ret.append(ZumEinkaufVorgemerkt.einkauf_annehmen(form_inp[-1]))
 
         # Create the response for the website
         notifications = chr(10).join( [r['html'] for r in ret] )
+
+        # Recalculate the list of products to book
+        seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
 
         if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
 
             # Send new products info to kiosk channel
             angeliefert = []
             for a in ret:
-                if not a['angeliefert'] is None:
+                if a['angeliefert']:
                     for aa in a['angeliefert']:
                         angeliefert.append(aa.produktpalette.produktName)
 
             angeliefert = list(set(angeliefert))
             try:
                 slack_PostNewProductsInKioskToChannel(angeliefert)
-            except:    pass
+            except:
+                pass
 
 
             # Send Thank You message to user who bought the products
             gesPreis = 0.0
             for a in ret:
-                if not a['dct'] is None:
+                if a['dct']:
                     gesPreis += a['dct']['gesPreis']
 
             if gesPreis > 0.0:
@@ -533,32 +555,25 @@ def einkauf_annahme_user_page(request, userID):
                            +str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)
                            +'r deine Besorgungen! :thumbsup::clap:')
                     slack_send_msg(txt, user)
-                except:    pass
+                except:
+                    pass
 
-
-    else:
-        notifications = ''
-
-    # Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
-    seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
-    user = KioskUser.objects.get(id=userID)
-
-    # Hole den Kioskinhalt
-    kioskItems = Kiosk.getKioskContent()
-
-    # Einkaufsliste abfragen
-    einkaufsliste = Einkaufsliste.getEinkaufsliste()
+    if request.method == "POST" and 'submit_beverages' in request.POST.keys():
+        BeverageFormSet = formset_factory(BeverageBookingForm, extra=0)
+        beverages_formset = BeverageFormSet(request.POST, prefix='form_beverages')
+        if beverages_formset.is_valid():
+            # Now, we look at each form (beverage) and book it into the system
+            pass
 
     return render(request,
                   'kiosk/einkauf_annahme_user_page.html',
                   {
                       'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 
-                       'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user, 
-                       'notifications': notifications,
+                      'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user,
+                      'notifications': notifications,
+                      'beverages_formset': beverages_formset,
                    }
                   )
-
-
 
 
 @login_required
