@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, NotRequired
 
 from django.db import models
 from django.utils import timezone
@@ -214,6 +214,7 @@ class ZumEinkaufVorgemerkt(models.Model):
         anzahl_angeliefert: int
         user_id_einkaeufer: int
         user_id_verwalter: int
+        pledge: NotRequired[int | None]
 
     class EinkaufAnnehmenReturnDict(TypedDict):
         product_id: int
@@ -245,6 +246,7 @@ class ZumEinkaufVorgemerkt(models.Model):
         anzahlAngeliefert = form['anzahl_angeliefert']
         gesPreis = form['price_paid']
         currentUser = KioskUser.objects.get(id=form['user_id_verwalter'])
+        pledge = form['pledge'] if 'pledge' in form.keys() else None
 
         # Get the maximal number of products to accept
         persEkList = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt(userID)
@@ -314,22 +316,25 @@ class ZumEinkaufVorgemerkt(models.Model):
             gewinnEK = finanz_constants['gewinnEK']
             provision = int(((float(prodVkPreis) * float(anzahlAngeliefert)) - float(gesPreis)) * float(gewinnEK))
             paidPrice = gesPreis
-            gesPreis = gesPreis + provision
-
+            gesPreis = gesPreis + provision + (pledge if pledge else 0)
 
             # Geldueberweisung von der Bank an den Einkaeufer
             userBank = KioskUser.objects.get(username='Bank')
             userAnlieferer = KioskUser.objects.get(id=userID)
-            GeldTransaktionen.doTransaction(userBank,
-                                            userAnlieferer,
-                                            gesPreis, datum,
-                                            "Erstattung Einkauf " + product.produktName
-                                            + " (" + str(anzahlAngeliefert) + "x)"
-                                            )
+            GeldTransaktionen.doTransaction(
+                userBank,
+                userAnlieferer,
+                gesPreis, datum,
+                f'Erstattung für Besorgung von {str(anzahlAngeliefert)}x {product.produktName} '
+                f'(davon {str("%.2f" % (provision/100))} € Provision'
+                f'{", " + str("%.2f" % (pledge/100)) + " € Pfand)" if pledge else ")"}'
+            )
             # Aufpassen, dass dann ein zweistelliger Nachkommawert eingetragen wird!
 
             return_values['dct'] = {
                 'gesPreis': gesPreis/100,
+                'provision': provision/100,
+                'pledge': pledge/100 if pledge else 0,
                 'userAnlieferer': userAnlieferer.username,
                 'produktName': product.produktName,
                 'anzahlElemente': anzahlElemente

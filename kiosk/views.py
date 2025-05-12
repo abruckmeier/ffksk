@@ -543,17 +543,23 @@ def einkauf_annahme_user_page(request, userID):
 
             # Send Thank You message to user who bought the products
             gesPreis = 0.0
+            provision = 0.0
+            pledge = 0.0
             for a in ret:
                 if a['dct']:
                     gesPreis += a['dct']['gesPreis']
+                    provision += a['dct']['provision']
+                    pledge += a['dct']['pledge']
 
             if gesPreis > 0.0:
                 try:
                     user = KioskUser.objects.get(id = userID)
 
-                    txt = ('Deine Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '
-                           +str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet.\nDanke f'+chr(252)
-                           +'r deine Besorgungen! :thumbsup::clap:')
+                    txt = ('Deine von dir besorgten Produkte wurden im Kiosk verbucht und dir wurde der Betrag von '
+                           + str('%.2f' % gesPreis)+' '+chr(8364)+' erstattet. '
+                           + f"(Davon sind {'%.2f' % provision} € Provision"
+                           + f"{' und '+str('%.2f' % pledge)+' € Pfand.)' if pledge > 0 else ')'}"
+                           + '\nDanke f'+chr(252)+'r deine Besorgungen! :thumbsup::clap:')
                     slack_send_msg(txt, user)
                 except:
                     pass
