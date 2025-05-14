@@ -152,7 +152,7 @@
 					<span class="glyphicon glyphicon-list"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right ulTopMenuWidth" aria-labelledby="dropdownHead">
-					<li class="dropdown-header">Navigation</li>
+					<li class="dropdown-header">Kiosk</li>
 					<li><a href="{% url 'start_page' %}">Startseite</a></li>
 					{% if user.is_authenticated and perms.profil.perm_kauf %}
 						<li><a href="{% url 'imkiosk_page' %}">Im Kiosk</a></li>
@@ -162,7 +162,7 @@
 
 
 					{% if user.is_authenticated %}
-						<li class="dropdown-header">Aktionen</li>
+						<li class="dropdown-header">Quick Links</li>
 						{% if perms.profil.perm_kauf %}
 							<li><a href="{% url 'kauf_page' %}">Einkaufen</a></li>
 							<li><a href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a></li>
@@ -252,7 +252,7 @@
 				<br>
 
 				<div class="list-group">
-					<a class="list-group-item disabled">Navigation</a>
+					<a class="list-group-item disabled">Kiosk</a>
 					<a class="list-group-item" href="{% url 'start_page' %}">Startseite</a>
 					{% if user.is_authenticated and perms.profil.perm_kauf %}
 						<a class="list-group-item" href="{% url 'imkiosk_page' %}">Im Kiosk</a>
@@ -262,7 +262,7 @@
 
 				{% if user.is_authenticated %}
 					<div class="list-group">
-						<a class="list-group-item disabled">Aktionen</a>
+						<a class="list-group-item disabled">Quick Links</a>
 						{% if perms.profil.perm_kauf %}
 							<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
 							<a class="list-group-item" href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a>

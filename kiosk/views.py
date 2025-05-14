@@ -63,23 +63,6 @@ def start_page(request):
         accountants.append(item.first_name + ' ' + item.last_name)
     accountants = ', '.join(accountants)
 
-    '''
-    # Get the news: starred + latest 3
-    newsStarred = Start_News.objects.filter(visible=True,starred=True).order_by('-date')
-    news = Start_News.objects.filter(visible=True,starred=False).order_by('-date')[:3]
-
-    news = list(news.values())
-    newsStarred = list(newsStarred.values())
-    news = news + newsStarred
-    news = sorted(news, key=lambda k: k['date'], reverse=True)
-    # Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-    for k,v in enumerate(news):
-        #news[k]['date'] = pytz.timezone('UTC').localize(v['date'])
-        #news[k]['created'] = pytz.timezone('UTC').localize(v['created'])
-        # Add enumerator
-        news[k]['html_id'] = 'collapse_'+str(k)
-    '''
-
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
 
