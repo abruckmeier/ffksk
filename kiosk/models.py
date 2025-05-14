@@ -205,8 +205,14 @@ class ZumEinkaufVorgemerkt(models.Model):
 
     @classmethod
     def getMyZumEinkaufVorgemerkt(cls, currentUserID):
-        persEinkaufsliste = readFromDatabase('getMyZumEinkaufVorgemerkt',[currentUserID])
-        return(persEinkaufsliste)
+        persEinkaufsliste = readFromDatabase('getMyZumEinkaufVorgemerkt', [currentUserID])
+        return persEinkaufsliste
+
+    @classmethod
+    def getMyZumEinkaufVorgemerkt_without_beverages(cls, currentUserID):
+        ek_list = cls.getMyZumEinkaufVorgemerkt(currentUserID)
+        ek_list = [x for x in ek_list if not x['is_beverage']]
+        return ek_list
 
     class EinkaufAnnehmenProductDict(TypedDict):
         product_id: int
