@@ -1,5 +1,6 @@
 from typing import List
 
+from django.contrib import messages
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 
 from utils.slack import get_user_information
@@ -730,7 +731,7 @@ def einzahlung_page(request):
     currentUser = request.user
     errorMsg = ''
     successMsg = ''
-    form = None
+    form = EinzahlungenForm()
 
     if request.method == "POST":
 
@@ -760,7 +761,10 @@ def einzahlung_page(request):
                     except:
                         pass
 
-                successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde f'+chr(252)+'r '+auszUser.username+' '+returnHttp['type']+'.'
+                messages.success(request,
+                                 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)
+                                 + ' wurde f'+chr(252)+'r '+auszUser.username+' '+returnHttp['type']+'.')
+                return HttpResponseRedirect(reverse('einzahlung_page'))
 
     # Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
     if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
@@ -771,9 +775,6 @@ def einzahlung_page(request):
 
     # Besorge alle User
     allUsers = readFromDatabase('getUsersForEinzahlung')
-
-    if form is None or successMsg!='':
-        form = EinzahlungenForm()
 
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
