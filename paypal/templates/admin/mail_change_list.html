@@ -19,9 +19,10 @@
       Hier kommen alle Mails, die mit PayPal zu tun haben an und werden ausgewertet.
       Nur Mails mit Einzahl-Vorgängen sind relevant und werden in Geldtransaktionen umgewandelt.
       Es kann auch Mails zu Auszahlungen oder andere Inhalte geben, diese werden hier ignoriert.
-      Auszahlungen werden anderweitig durchgeführt.
+      Auszahlungen werden anderweitig durchgeführt (siehe unten).
     </p>
-    <h3 style="display: inline-block">Vorgehen</h3>
+
+    <h3 style="display: inline-block">Vorgehen bei PayPal-Einzahlung</h3>
     <ul>
       <li>
         Entweder sind neue Mails bereits aufgelistet oder neue Mails können manuell oben rechts via "Sync Mails" abgerufen werden.
@@ -37,6 +38,19 @@
       </li>
       <li>
         Nun sollte auch das "Assignment was successful" gesetzt sein. Damit wurde eine Einzahlung erstellt. Die Mail kann nun auf "Mail is processed" gesetzt werden.
+      </li>
+    </ul>
+
+    <h3 style="display: inline-block">Vorgehen bei PayPal-Auszahlung</h3>
+    <ul>
+      <li>
+        Unter <a href="{% url 'transaktion_page' %}">Überweisungen</a> muss eine Transaktion vom
+        User an das "PayPal_Bargeld" Konto durchgeführt werden.
+      </li>
+      <li>
+        Die Überweisung selbst wird dann über die PayPal-Webseite abgewickelt.
+        <br />
+        Die dazu hier ankommende Mail wird entsprechend ignoriert.
       </li>
     </ul>
   </div>
