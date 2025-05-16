@@ -34,7 +34,6 @@ def initNecessaryUsers():
         ('Bargeld_Dieb', 73),
         ('Bargeld_im_Tresor', 72),
         ('Dieb', 4),
-        ('Gespendet', 90),
         ('Spendenkonto', 102),
     ]
 

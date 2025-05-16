@@ -347,7 +347,7 @@ def warnInactiveUsersBeforeDeletion(nowDate):
         activity_end_msg= 2,
         is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
     for u in users:
@@ -373,7 +373,7 @@ def deleteInactiveUser(nowDate):
         activity_end_msg= 3,
         is_functional_user=False,
     ).filter(
-        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Gespendet','Spendenkonto', 'PayPal_Bargeld'),),
+        ~Q(username__in= ('kioskAdmin','Bargeld','Bank','Dieb','Bargeld_Dieb','Bargeld_im_Tresor','Spendenkonto', 'PayPal_Bargeld'),),
     )
 
 
