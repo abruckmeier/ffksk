@@ -72,11 +72,6 @@ def InitGroupsAndPermissions():
     )
     p |= Permission.objects.filter(
         content_type__app_label='kiosk', 
-        content_type__model='start_news', 
-        codename__iregex=r'(add|change)_start_news',
-    )
-    p |= Permission.objects.filter(
-        content_type__app_label='kiosk', 
         content_type__model='produktverkaufspreise', 
         codename='add_produktverkaufspreise',
     )

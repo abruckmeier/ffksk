@@ -1,42 +1,13 @@
 from typing import TypedDict, NotRequired
-
 from django.db import models
 from django.utils import timezone
-from dateutil import tz
-import pytz
-from datetime import date
 from django.core.validators import MinValueValidator
 from django.db import transaction
-
 from profil.models import KioskUser
-from django.db import connection
 from django.conf import settings
 from django.template.loader import render_to_string
 from .queries import readFromDatabase
 from django.db.models import Max
-
-
-
-
-# Create your models here.
-
-class Start_News(models.Model):
-    heading = models.CharField(max_length=256)
-    date = models.DateTimeField(default=timezone.now)
-    content = models.TextField(max_length=2048, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-    starred = models.BooleanField(default=False)
-    visible = models.BooleanField(default=True)
-
-    def __str__(self):
-        return(str(self.date) + ': ' + str(self.heading))
-
-    class Meta:
-        verbose_name = 'Startneuigkeit'
-        verbose_name_plural = 'Startneuigkeiten'
-
-
 
 
 class Kontakt_Nachricht(models.Model):

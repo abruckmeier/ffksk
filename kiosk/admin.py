@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Produktpalette, Kioskkapazitaet, ProduktVerkaufspreise, Produktkommentar, Kontakt_Nachricht, Start_News
+from .models import Produktpalette, Kioskkapazitaet, ProduktVerkaufspreise, Produktkommentar, Kontakt_Nachricht
 from .models import Einkaufsliste, ZumEinkaufVorgemerkt, Kiosk, Gekauft, Kontostand, EinkaufslisteGroups, GeldTransaktionen
 
 
@@ -132,4 +132,3 @@ admin.site.register(Kontostand, KontostandAdmin)
 admin.site.register(EinkaufslisteGroups)
 admin.site.register(Produktkommentar, ProduktkommentarAdmin)
 admin.site.register(Kontakt_Nachricht)
-admin.site.register(Start_News)
