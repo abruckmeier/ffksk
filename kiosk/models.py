@@ -640,9 +640,9 @@ class GeldTransaktionen(models.Model):
 
         return t
 
-
+    @classmethod
     @transaction.atomic
-    def makeManualTransaktion(form,currentUser):
+    def makeManualTransaktion(cls, form, currentUser):
         # Durchfuehren einer Ueberweisung aus dem Admin-Bereich
 
         idFrom = int(form['idFrom'].value())
@@ -666,9 +666,9 @@ class GeldTransaktionen(models.Model):
                 'user':currentUser
                 }
 
-
+    @classmethod
     @transaction.atomic
-    def makeEinzahlung(form,currentUser):
+    def makeEinzahlung(cls, form, currentUser):
         # Durchfuehren einer Einzahlung bzw. Auszahlung (GegenUser ist 'Bargeld')
         barUser = KioskUser.objects.get(username='Bargeld')
 

@@ -590,45 +590,42 @@ def einkauf_annahme_user_page(request, userID):
 def transaktion_page(request):
 
     currentUser = request.user
-    errorMsg = ''
-    successMsg = ''
-    form = None
+    form = TransaktionenForm()
 
     if request.method == "POST":
         # Hier kommen die eingegebenen Daten der Transaktion an.
         form = TransaktionenForm(request.POST)
 
         if not form.is_valid():
-            errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
+            messages.error(request, 'Formaler Eingabefehler. Bitte erneut eingeben.')
 
         else:
-
             schuldner = KioskUser.objects.get(id=form.cleaned_data['idFrom'])
             schuldnerKto = Kontostand.objects.get(nutzer=schuldner)
 
             if form.cleaned_data['idTo'] == form.cleaned_data['idFrom']:
-                errorMsg = chr(220)+'berweiser(in) und Empf'+chr(228)+'nger(in) sind identisch.'
+                messages.error(request, chr(220)+'berweiser(in) und Empf'+chr(228)+'nger(in) sind identisch.')
 
             elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username not in ('Bank','Dieb','Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
-                errorMsg = 'Kontostand des Schuldners ist nicht gedeckt.'
+                messages.error(request, 'Kontostand des Schuldners ist nicht gedeckt.')
 
             else:
-                returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
+                returnHttp = GeldTransaktionen.makeManualTransaktion(form, currentUser)
 
-                if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+                if getattr(settings,'ACTIVATE_SLACK_INTERACTION'):
                     try:
                         slack_PostTransactionInformation(returnHttp)
                     except:
                         pass
 
-                successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '+returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' '+chr(252)+'berwiesen.'
+                messages.success(request,
+                                 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '
+                                 + returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' '
+                                 + chr(252)+'berwiesen.')
+                return HttpResponseRedirect(reverse('transaktion_page'))
 
     # Besorge alle User
-    #allUsers = KioskUser.objects.filter(visible=True).order_by('username')
     allUsers = readFromDatabase('getUsersForTransaction')
-
-    if form is None or successMsg!='':
-        form = TransaktionenForm()
 
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
@@ -637,9 +634,7 @@ def transaktion_page(request):
 
     return render(request, 'kiosk/transaktion_page.html',
         {'user': currentUser, 'allUsers': allUsers,
-        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-        'errorMsg': errorMsg, 'successMsg': successMsg, 'form': form,})
-
+        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'form': form})
 
 
 # Anmelden neuer Nutzer, Light-Version: Jeder darf das tun, aber nur Basics, jeder wird Standardnutzer
@@ -729,8 +724,6 @@ def neuerNutzer_page(request):
 def einzahlung_page(request):
 
     currentUser = request.user
-    errorMsg = ''
-    successMsg = ''
     form = EinzahlungenForm()
 
     if request.method == "POST":
@@ -739,7 +732,7 @@ def einzahlung_page(request):
         form = EinzahlungenForm(request.POST)
 
         if not form.is_valid():
-            errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
+            messages.error(request, 'Formaler Eingabefehler. Bitte erneut eingeben.')
 
         # Testen bei Auszahlung, ob nicht zu viel ausgezahlt wird
         else:
@@ -750,12 +743,12 @@ def einzahlung_page(request):
                 auszKto = Kontostand.objects.get(nutzer=auszUser)
 
             if form['typ'].value() == 'Auszahlung' and int(100*float(form['betrag'].value())) > auszKto.stand:
-                    errorMsg = 'Das Konto deckt den eingegebenen Betrag nicht ab.'
+                    messages.error(request, 'Das Konto deckt den eingegebenen Betrag nicht ab.')
 
             else:
-                returnHttp = GeldTransaktionen.makeEinzahlung(form,currentUser)
+                returnHttp = GeldTransaktionen.makeEinzahlung(form, currentUser)
 
-                if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+                if getattr(settings,'ACTIVATE_SLACK_INTERACTION'):
                     try:
                         slack_PostTransactionInformation(returnHttp)
                     except:
@@ -783,8 +776,7 @@ def einzahlung_page(request):
 
     return render(request, 'kiosk/einzahlung_page.html',
         {'user': currentUser, 'form': form, 'allUsers': allUsers,
-        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-        'errorMsg': errorMsg, 'successMsg': successMsg})
+        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
 
