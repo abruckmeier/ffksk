@@ -52,7 +52,6 @@ def initNecessaryUsers():
                 is_verified = True,
                 visible= False,
                 aktivBis= '2999-12-31',
-                rechte= 'User',
                 is_functional_user=True,
             )
         )

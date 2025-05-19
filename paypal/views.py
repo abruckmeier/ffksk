@@ -23,14 +23,14 @@ class SyncPayPalTransactions(LoginRequiredMixin, PermissionRequiredMixin, View):
 class PayPalEinzahlungInfoPage(View):
     def get(self, request):
         # Administrator
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         admins = []
         for item in data:
             admins.append(item.first_name + ' ' + item.last_name)
         admins = ', '.join(admins)
 
         # Verwalter
-        data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_verwaltung')
         accountants = []
         for item in data:
             accountants.append(item.first_name + ' ' + item.last_name)

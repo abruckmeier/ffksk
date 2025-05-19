@@ -97,7 +97,7 @@ def slack_PostTransactionInformation(info):
 def slack_PostWelcomeMessage(user):
     slack_settings = getattr(settings, 'SLACK_SETTINGS')
     # Verwalter
-    data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_verwaltung')
     accountants = []
     for item in data:
         accountants.append(item.first_name + ' ' + item.last_name)

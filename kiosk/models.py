@@ -392,8 +392,14 @@ class Kiosk(models.Model):
         donation = ProduktVerkaufspreise.getPreisAufstockung(item.produktpalette.id)
 
         # Check if user is allowed to buy something and has enough money
-        allowedConusmers = readFromDatabase('getUsersToConsume')
-        if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
+        allowed_consumers = KioskUser.objects.filter(
+            is_active=True,
+            visible=True,
+            aktivBis__gt=timezone.now(),
+            groups__permissions__codename='perm_kauf',
+            is_functional_user=False,
+        )
+        if not allowed_consumers.filter(id=user.id).exists() and not user.username=='Dieb':
             msg = 'Du bist nicht berechtigt, Produkte zu kaufen.'
             print(msg)
             retVals['msg'].append(msg)

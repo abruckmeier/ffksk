@@ -1,6 +1,7 @@
 from typing import List
 
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 
 from utils.slack import get_user_information
@@ -51,14 +52,14 @@ def start_page(request):
     bestVerwalter = ', '.join(bestVerwalter)
 
     # Administrator
-    data = KioskUser.objects.filter(visible=True, rechte='Admin')
+    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
     admins = []
     for item in data:
         admins.append(item.first_name + ' ' + item.last_name)
     admins = ', '.join(admins)
 
     # Verwalter
-    data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_verwaltung')
     accountants = []
     for item in data:
         accountants.append(item.first_name + ' ' + item.last_name)
@@ -130,7 +131,7 @@ def kontakt_page(request):
 
         if form.is_valid():
             try:
-                data = KioskUser.objects.filter(visible=True, rechte='Admin')
+                data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
                 msg = 'Es kam eine neue Nachricht '+chr(252)+'ber das Kontaktformular herein. Bitte k'+chr(252)+'mmere dich im Admin-Bereich um diese Anfrage.'
                 for u in data:
                     slack_send_msg(msg, user=u)
@@ -671,11 +672,13 @@ def neuerNutzer_page(request):
             res.is_staff = False
             res.is_active = True
             res.instruierterKaeufer = False
-            res.rechte = 'Buyer'
             res.visible = True
 
             u = res.save()
             u.refresh_from_db()
+
+            u.groups.add(Group.objects.get(name='Nutzer'))
+            u.groups.add(Group.objects.get(name='Einkaufer'))
 
             # Generate Confirmation Email
             user = u.username

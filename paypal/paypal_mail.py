@@ -287,7 +287,7 @@ def routine_with_messaging() -> Tuple[bool, str]:
         # Slack Message to Admin on Failure
         if not is_success:
             # Send message to all admins
-            admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+            admins = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
             for u in admins:
                 slack_send_msg(response_msg, user=u)
     except Exception as e:
@@ -295,7 +295,7 @@ def routine_with_messaging() -> Tuple[bool, str]:
         response_msg = f'An unexpected Exception has occurred: {str(e)}.'
         is_success = False
         # Send message to all admins
-        admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+        admins = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         for u in admins:
             slack_send_msg(response_msg, user=u)
     return is_success, response_msg

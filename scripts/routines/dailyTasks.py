@@ -37,7 +37,7 @@ def run_paypal_sync():
     is_success, response_msg = routine_with_messaging()
     if is_success:
         # Send message to all admins. If no success, message is already sent in function before.
-        admins = KioskUser.objects.filter(visible=True, rechte='Admin')
+        admins = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         for u in admins:
             slack_send_msg(response_msg, user=u)
 
@@ -406,7 +406,7 @@ def routine():
 
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The daily PayPal Sync has failed!', user=u)
@@ -433,7 +433,7 @@ def routine():
         msg = 'Daily Backup of the Database File successfully stored under `'+dest+'`.'
 
         # Send message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         for u in data:
             slack_send_msg(msg, user=u)
 
@@ -441,7 +441,7 @@ def routine():
 
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The daily backup of the Database failed!', user=u)
@@ -464,7 +464,7 @@ def routine():
             msg = 'Weekly backup and deletion of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
 
             # Send message to all admins
-            data = KioskUser.objects.filter(visible=True, rechte='Admin')
+            data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
             for u in data:
                 slack_send_msg(msg, user=u)
 
@@ -473,7 +473,7 @@ def routine():
         except Exception as e:
             logger.exception(e)
             # Send failure message to all admins
-            data = KioskUser.objects.filter(visible=True, rechte='Admin')
+            data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
             try:
                 for u in data:
                     slack_send_msg('The weekly backup and deletion of the Database failed!', user=u)
@@ -490,7 +490,7 @@ def routine():
         print('Finished deletion of products in the shopping list, older than 7 days.')
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The deletion of products in the shopping list, older than 7 days, did not complete!', user=u)
@@ -507,7 +507,7 @@ def routine():
         print('Finished warning of products in the shopping list, older than 4 days.')
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The notification of products in the shopping list, older than 4 days, did not complete!', user=u)
@@ -524,7 +524,7 @@ def routine():
         print('Finished checking, if Users are going to be blocked, give notice to them.')
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The notification of users to be blocked soon, did not complete!', user=u)
@@ -540,7 +540,7 @@ def routine():
         print('Finished blocking user after active time.')
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('The notification of users to be blocked after active time, did not complete!', user=u)
@@ -556,7 +556,7 @@ def routine():
         deleteInactiveUser(nowDate)
     except:
         # Send failure message to all admins
-        data = KioskUser.objects.filter(visible=True, rechte='Admin')
+        data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
                 slack_send_msg('Warning and deletion of inactive users, did not complete!', user=u)
