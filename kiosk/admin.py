@@ -121,8 +121,8 @@ class GeldTransaktionenAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Produktpalette, ProduktpaletteAdmin)
-admin.site.register(Kioskkapazitaet, KioskkapazitaetAdmin)
-admin.site.register(ProduktVerkaufspreise, ProduktVerkaufspreiseAdmin)
+# admin.site.register(Kioskkapazitaet, KioskkapazitaetAdmin)
+# admin.site.register(ProduktVerkaufspreise, ProduktVerkaufspreiseAdmin)
 admin.site.register(Einkaufsliste)
 admin.site.register(ZumEinkaufVorgemerkt)
 admin.site.register(Kiosk)
@@ -130,5 +130,5 @@ admin.site.register(Gekauft)
 admin.site.register(GeldTransaktionen, GeldTransaktionenAdmin)
 admin.site.register(Kontostand, KontostandAdmin)
 admin.site.register(EinkaufslisteGroups)
-admin.site.register(Produktkommentar, ProduktkommentarAdmin)
+# admin.site.register(Produktkommentar, ProduktkommentarAdmin)
 admin.site.register(Kontakt_Nachricht)

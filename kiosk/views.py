@@ -425,7 +425,7 @@ def strToCents(num):
 
 # Der Verwalter pflegt den Einkauf ins System ein
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def einkauf_annahme_page(request):
     currentUser = request.user
     # Besorge alle User
@@ -443,7 +443,7 @@ def einkauf_annahme_page(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def einkauf_annahme_user_page(request, userID):
 
     notifications = ''
@@ -586,7 +586,7 @@ def einkauf_annahme_user_page(request, userID):
 
 
 @login_required
-@permission_required('profil.do_admin_tasks',raise_exception=True)
+@permission_required('profil.do_verwaltung_financial_operations',raise_exception=True)
 def transaktion_page(request):
 
     currentUser = request.user
@@ -720,7 +720,7 @@ def neuerNutzer_page(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_financial_operations',raise_exception=True)
 def einzahlung_page(request):
 
     currentUser = request.user
@@ -829,16 +829,17 @@ def meine_einkaufe_page(request):
 
 
 @login_required
-@permission_required('profil.do_admin_tasks',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def fillKioskUp(request):
 
     checkKioskContentAndFillUp()
+    messages.success(request, 'Die Einkaufslisten wurden aktualisiert.')
 
     return redirect('home_page')
 
 
 @login_required
-@permission_required('profil.do_verwaltung', raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations', raise_exception=True)
 def inventory(request):
     currentUser = request.user
 
@@ -918,7 +919,7 @@ def inventory(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung', raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations', raise_exception=True)
 def inventory_done(request):
     currentUser = request.user
     # Hole den Kioskinhalt
@@ -1152,7 +1153,7 @@ def regelwerk(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def rueckbuchung(request):
 
     # Abfrage aller Nutzer
@@ -1173,7 +1174,7 @@ def rueckbuchung(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def rueckbuchung_user(request, userID):
 
     user = KioskUser.objects.get(id=userID)

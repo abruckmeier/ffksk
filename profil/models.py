@@ -64,8 +64,10 @@ class KioskUser(AbstractUser):
     class Meta:
         default_manager_name = 'objects'
         permissions = (
-            ("do_admin_tasks","Einpflegen von Usern, Geldtransaktionen, ..."),
-            ("do_verwaltung","Einarbeiten von Waren ins Kiosk"),
-            ("do_einkauf","Eink"+chr(228)+"ufe vormerken und einkaufen"),
-            ("perm_kauf","Kaufen im Kiosk")
+            ("do_admin_tasks", "Kontaktnachrichten, Statistiken, Erweiterte Produktverwaltung, Nutzerverwaltung"),
+            ("do_verwaltung_product_operations", "Besorgungen annehmen, Einkäufe rückbuchen, Inventur durchführen"),
+            ("do_verwaltung_financial_operations", "Einzahlungen, Auszahlungen und Geldtransaktionen abwickeln"),
+            ("do_verwaltung_product_management", "Produktlisten und -preise pflegen"),
+            ("do_einkauf", "Produkte vormerken und besorgen"),
+            ("perm_kauf", "Einkaufen im Kiosk"),
         )

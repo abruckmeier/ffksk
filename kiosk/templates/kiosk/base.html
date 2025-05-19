@@ -171,9 +171,13 @@
 							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a></li>
 							<li><a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a></li>
 						{% endif %}
-						{% if perms.profil.do_verwaltung %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<li><a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a></li>
+            {% endif %}
+						{% if perms.profil.do_verwaltung_financial_operations %}
 							<li><a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a></li>
+            {% endif %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<li><a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a></li>
 						{% endif %}
 						<li role="separator" class="divider"></li>
@@ -282,9 +286,13 @@
 							<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
 							<a class="list-group-item" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
 						{% endif %}
-						{% if perms.profil.do_verwaltung %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<a class="list-group-item" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
 							<a class="list-group-item" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
 							<a class="list-group-item" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
 						{% endif %}
 					</div>

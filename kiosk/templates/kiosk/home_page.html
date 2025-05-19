@@ -1,4 +1,4 @@
-{% extends 'kiosk/base.html' %}	
+{% extends 'kiosk/base.html' %}
 
 {% block content %}
 	
@@ -107,7 +107,7 @@
 			</div>
 		</div>
 
-		{% if perms.profil.do_verwaltung %}
+		{% if perms.profil.do_verwaltung_product_operations or perms.profil.do_verwaltung_financial_operations or perms.profil.do_verwaltung_product_management %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_4">
 					<h5 class="panel-title bold">
@@ -119,14 +119,24 @@
 				<div id="collapse_4" class="panel-collapse collapse">
 					<div class="panel-body justified">
 
-						<a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
-
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
+						  <a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
+              <a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'fillKioskUp' %}">Aktualisierung der Einkaufsliste anstoßen</a>
+            {% endif %}
 					</div>
 				</div>
 			</div>
@@ -143,10 +153,6 @@
 				</div>
 				<div id="collapse_5" class="panel-collapse collapse">
 					<div class="panel-body justified">
-
-						<a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'fillKioskUp' %}">Aktualisierung der Einkaufsliste anstoßen</a><br><br>
 
 						<a class="btn btn-info" href="{% url 'statistics' %}">Statistiken anzeigen</a>
 					
