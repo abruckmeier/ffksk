@@ -33,8 +33,6 @@ class Produktpalette(models.Model):
     inAufstockung = models.BooleanField(default=True)
     produktErstellt = models.DateTimeField(auto_now_add=True)
     produktGeaendert = models.DateTimeField(auto_now=True)
-    #kommentar = models.TextField(max_length=512,blank=True)
-    farbeFuerPlot = models.CharField(max_length=7,blank=True)
     is_beverage = models.BooleanField(default=False,
                                       help_text='Set to True if the product comes with pledge (Pfand)')
 
@@ -559,6 +557,12 @@ class GeldTransaktionen(models.Model):
     betrag = models.IntegerField(validators=[MinValueValidator(0)])
     kommentar = models.TextField(max_length=512,blank=True)
     datum = models.DateTimeField(auto_now_add=timezone.now)
+    user_conducted = models.ForeignKey(
+        KioskUser, on_delete=models.CASCADE, related_name='conducted_by',
+        null=True, blank=True,
+        help_text='User who conducted the transaction. If not set, it is assumed that the transaction was '
+                  'conducted by the system (e.g. automatic transactions).',
+    )
 
     def __str__(self):
         betr = '%.2f' % (self.betrag/100)
@@ -584,10 +588,11 @@ class GeldTransaktionen(models.Model):
 
         return(allTransactions)
 
-
+    @classmethod
     @transaction.atomic
-    def doTransaction(vonnutzer,zunutzer,betrag,datum, kommentar):
-        t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
+    def doTransaction(cls, vonnutzer, zunutzer,betrag,datum, kommentar, user_conducted=None):
+        t = cls(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar,
+                              user_conducted=user_conducted)
 
         # Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
         if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
@@ -632,8 +637,8 @@ class GeldTransaktionen(models.Model):
 
         kommentar = kommentar + ' (' + userFrom.username + ' --> ' + userTo.username + ')'
 
-        GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
-            betrag=betrag, datum=timezone.now(), kommentar=kommentar)
+        cls.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
+            betrag=betrag, datum=timezone.now(), kommentar=kommentar, user_conducted=currentUser)
 
         return {'returnDict':{'betrag':betrag/100,'userFrom':userFrom.username,'userTo':userTo.username},
                 'type':'manTransaction',
@@ -666,8 +671,8 @@ class GeldTransaktionen(models.Model):
 
         kommentar = kommentar + ' (' + form['typ'].value() + ')'
 
-        GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
-            betrag=betrag, datum=timezone.now(), kommentar=kommentar)
+        cls.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
+            betrag=betrag, datum=timezone.now(), kommentar=kommentar, user_conducted=currentUser)
 
         return {'type':ezaz,
                 'userFrom':userFrom,
