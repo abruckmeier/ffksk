@@ -1,6 +1,10 @@
 from django.contrib import admin
+from django.db.models import Subquery
+
 from .models import Produktpalette, Kioskkapazitaet, ProduktVerkaufspreise, Produktkommentar, Kontakt_Nachricht
 from .models import Einkaufsliste, ZumEinkaufVorgemerkt, Kiosk, Gekauft, Kontostand, EinkaufslisteGroups, GeldTransaktionen
+from rules.contrib.admin import ObjectPermissionsModelAdmin
+import rules
 
 
 class KioskkapazitaetInline(admin.TabularInline):
@@ -97,7 +101,11 @@ class KontostandAdmin(admin.ModelAdmin):
     search_fields = ('get_username',)
 
 
-class GeldTransaktionenAdmin(admin.ModelAdmin):
+class GeldTransaktionenAdmin(ObjectPermissionsModelAdmin):
+
+    def has_module_permission(self, request):
+        """Only display this module if the user is a superuser."""
+        return request.user.is_superuser
 
     def get_username_from(self, obj):
         return f'[{obj.vonnutzer.id}] {obj.vonnutzer.username}'

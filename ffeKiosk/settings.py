@@ -39,6 +39,7 @@ DATABASES = {
 # Application definition
 
 INSTALLED_APPS = [
+    'rules.apps.AutodiscoverRulesConfig',
     'widget_tweaks',
     'jchart',
     'django_db_logger',
@@ -93,6 +94,11 @@ MESSAGE_TAGS = {
 
 WSGI_APPLICATION = 'ffeKiosk.wsgi.app'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = (
+    'rules.permissions.ObjectPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators

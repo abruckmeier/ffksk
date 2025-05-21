@@ -8,6 +8,8 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from .queries import readFromDatabase
 from django.db.models import Max
+from rules.contrib.models import RulesModel
+from kiosk import rules as my_rules
 
 
 class Kontakt_Nachricht(models.Model):
@@ -545,10 +547,7 @@ def doRueckbuchung(userID,productID,anzahlZurueck):
 from .bot import slack_MsgToUserAboutNonNormalBankBalance
 
 
-
-
-
-class GeldTransaktionen(models.Model):
+class GeldTransaktionen(RulesModel):
     AutoTrans_ID = models.AutoField(primary_key=True)
     vonnutzer = models.ForeignKey(
         KioskUser, on_delete=models.CASCADE,related_name='nutzerVon')
@@ -684,6 +683,9 @@ class GeldTransaktionen(models.Model):
     class Meta:
         verbose_name = 'Geldtransaktion'
         verbose_name_plural = 'Geldtransaktionen'
+        rules_permissions = {
+            'view': my_rules.perm_is_financial_admin_and_transaction_is_paypal,
+        }
 
 
 # Aus den GeldTransaktionen ergibt sich eigentlich der Kontostand, aber zur Sicherheit (Loeschen von Tabelleneintraegen, Bugs, etc.) wird der Kontostand zusaetzlich gespeichert, bei jeder Transaktion wird dem aktuellen Stand die neue Transaktion angerechnet. Keine weitere Kopplung -> andere Tabellen koennen crashen, ohne den Kontostand zu beschaedigen.
