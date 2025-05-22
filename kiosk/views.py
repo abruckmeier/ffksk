@@ -1,9 +1,7 @@
 from typing import List
-
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
-
 from utils.slack import get_user_information
 from .models import Kiosk, Einkaufsliste, ZumEinkaufVorgemerkt, Gekauft
 from .models import GeldTransaktionen, ZuVielBezahlt, Produktkommentar, Produktpalette
@@ -12,7 +10,6 @@ from profil.forms import UserErstellenForm
 from django.template.loader import render_to_string
 from django.http import HttpResponse, JsonResponse
 from django.forms import formset_factory
-
 from .forms import TransaktionenForm, EinzahlungenForm, RueckbuchungForm, Kontakt_Nachricht_Form, BeverageBookingForm
 from django.contrib.auth.decorators import login_required, permission_required
 import math
@@ -21,11 +18,9 @@ from django.contrib.auth import login, authenticate
 import re
 from django.db import transaction
 from django.db.models import Sum
-
-from .bot import checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel, slack_PostTransactionInformation, slack_TestMsgToUser, slack_send_msg
-
+from .bot import (checkKioskContentAndFillUp, slack_PostNewProductsInKioskToChannel,
+                  slack_PostTransactionInformation, slack_TestMsgToUser, slack_send_msg)
 from .charts import *
-
 from profil.tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode
