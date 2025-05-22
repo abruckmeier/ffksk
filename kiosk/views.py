@@ -52,14 +52,22 @@ def start_page(request):
     bestVerwalter = ', '.join(bestVerwalter)
 
     # Administrator
-    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
+    data = KioskUser.objects.filter(
+        groups__permissions__codename__icontains='do_admin_tasks',
+        visible=True,
+        activity_end_msg__lte=1,
+    ).distinct()
     admins = []
     for item in data:
         admins.append(item.first_name + ' ' + item.last_name)
     admins = ', '.join(admins)
 
     # Verwalter
-    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_verwaltung')
+    data = KioskUser.objects.filter(
+        groups__permissions__codename__icontains='do_verwaltung',
+        visible=True,
+        activity_end_msg__lte=1,
+    ).distinct()
     accountants = []
     for item in data:
         accountants.append(item.first_name + ' ' + item.last_name)
