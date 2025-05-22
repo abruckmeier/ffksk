@@ -152,7 +152,7 @@
 					<span class="glyphicon glyphicon-list"></span>
 				</button>
 				<ul class="dropdown-menu dropdown-menu-right ulTopMenuWidth" aria-labelledby="dropdownHead">
-					<li class="dropdown-header">Navigation</li>
+					<li class="dropdown-header">Kiosk</li>
 					<li><a href="{% url 'start_page' %}">Startseite</a></li>
 					{% if user.is_authenticated and perms.profil.perm_kauf %}
 						<li><a href="{% url 'imkiosk_page' %}">Im Kiosk</a></li>
@@ -162,7 +162,7 @@
 
 
 					{% if user.is_authenticated %}
-						<li class="dropdown-header">Aktionen</li>
+						<li class="dropdown-header">Quick Links</li>
 						{% if perms.profil.perm_kauf %}
 							<li><a href="{% url 'kauf_page' %}">Einkaufen</a></li>
 							<li><a href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a></li>
@@ -171,9 +171,13 @@
 							<li><a href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a></li>
 							<li><a href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a></li>
 						{% endif %}
-						{% if perms.profil.do_verwaltung %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<li><a href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a></li>
+            {% endif %}
+						{% if perms.profil.do_verwaltung_financial_operations %}
 							<li><a href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a></li>
+            {% endif %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<li><a href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a></li>
 						{% endif %}
 						<li role="separator" class="divider"></li>
@@ -215,6 +219,17 @@
 
 		
 		<div class="container-fluid divMain">
+      {% if messages %}
+        {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message | safe }}
+            </div>
+        {% endfor %}
+      {% endif %}
+
 			{% block content %}
 			{% endblock %}
 
@@ -252,7 +267,7 @@
 				<br>
 
 				<div class="list-group">
-					<a class="list-group-item disabled">Navigation</a>
+					<a class="list-group-item disabled">Kiosk</a>
 					<a class="list-group-item" href="{% url 'start_page' %}">Startseite</a>
 					{% if user.is_authenticated and perms.profil.perm_kauf %}
 						<a class="list-group-item" href="{% url 'imkiosk_page' %}">Im Kiosk</a>
@@ -262,7 +277,7 @@
 
 				{% if user.is_authenticated %}
 					<div class="list-group">
-						<a class="list-group-item disabled">Aktionen</a>
+						<a class="list-group-item disabled">Quick Links</a>
 						{% if perms.profil.perm_kauf %}
 							<a class="list-group-item" href="{% url 'kauf_page' %}">Einkaufen</a>
 							<a class="list-group-item" href="{% url 'paypal_einzahlung_page' %}">Einzahlung auf mein Konto</a>
@@ -271,9 +286,13 @@
 							<a class="list-group-item" href="{% url 'einkauf_vormerk_page' %}">Besorgungen ank&#252;ndigen</a>
 							<a class="list-group-item" href="{% url 'produkt_kommentare_page' %}">Produkte kommentieren</a>
 						{% endif %}
-						{% if perms.profil.do_verwaltung %}
+						{% if perms.profil.do_verwaltung_product_operations %}
 							<a class="list-group-item" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
 							<a class="list-group-item" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
 							<a class="list-group-item" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a>
 						{% endif %}
 					</div>

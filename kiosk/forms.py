@@ -1,6 +1,7 @@
 from django import forms
 from django.core.validators import MinValueValidator
 from . import models
+from .queries import readFromDatabase
 
 
 class Kontakt_Nachricht_Form(forms.ModelForm):
@@ -46,20 +47,18 @@ class RueckbuchungForm(forms.Form):
     produkt_name = forms.CharField(
         widget=forms.TextInput(attrs={'readonly':'true'})
     )
-    anzahl_gekauft = forms.IntegerField(
-        widget=forms.TextInput(attrs={'readonly':'true'})
-    )
     anzahl_zurueck = forms.IntegerField(required=False, validators=[MinValueValidator(0)])
 
     # Clean "anzahl_zurueck" so that no values have to be filled in and they are set to default with zero
     def clean_anzahl_zurueck(self):
         data = self.cleaned_data['anzahl_zurueck']
-        anzahl_gekauft = self.cleaned_data['anzahl_gekauft']
+        seine_kaeufe = readFromDatabase('getBoughtItemsOfUser', [self.cleaned_data['kaeufer_id']])
+        anzahl_gekauft = [x['anzahl_gekauft'] for x in seine_kaeufe if x['produkt_id'] == self.cleaned_data['produkt_id']][0]
         if not data:
             data = 0
 
         if data > anzahl_gekauft:
-            raise forms.ValidationError('Der Wert muss kleiner gleich '+str(anzahl_gekauft)+' sein.')
+            raise forms.ValidationError('Die Nutzer:in hat nicht so viele Produkte gekauft.')
 
         return data
     

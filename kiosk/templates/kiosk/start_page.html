@@ -29,7 +29,7 @@
 				<p class="mt-5">
 					<a class="btn btn-primary" href="{% url 'anleitung_page' %}">Mehr Infos</a>
 					&nbsp;
-					<a class="btn btn-info" href="#">Erste Schritte</a>
+					<a class="btn btn-info" href="{% url 'ersteschritte_page' %}">Erste Schritte</a>
 
 					{% if not user.is_authenticated %}
 						<br><br>
@@ -44,11 +44,12 @@
 	</div>
 
 
-	<div class="page-header">
-		<h4>Quick-Links</h4>
-	</div>
+	{% if user.is_authenticated %}
+    <div class="page-header">
+      <h4>Quick Links</h4>
+    </div>
 
-			{% if perms.profil.perm_kauf %}
+    {% if perms.profil.perm_kauf %}
 			<div class="smallPadding">
 				Ein Produkt
 				<a class="bigLink" href="{% url 'kauf_page' %}">kaufen.</a>
@@ -57,88 +58,93 @@
 				Geld
 				<a class="bigLink" href="{% url 'paypal_einzahlung_page' %}">auf mein Konto einzahlen</a>
 			</div>
-			{% endif %}
+		{% endif %}
 
-			{% if perms.profil.do_einkauf %}
+		{% if perms.profil.do_einkauf %}
 			<div class="smallPadding">
 				Eine 
 				<a class="bigLink" href="{% url 'einkauf_vormerk_page' %}">Besorgung ank&#252;ndigen.</a>
 			</div>
-			{% endif %}
+		{% endif %}
 
-			<div class="smallPadding">
-				Verwaltung von Kontostand, Einkaufsliste und persönliche Einstellungen im
-				<a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
-			</div>
+    <div class="smallPadding">
+      Verwaltung von Kontostand, Einkaufsliste und persönliche Einstellungen im
+      <a class="bigLink" href="{% url 'registrationStatus' %}">pers&#246;nlichen Bereich.</a>
+    </div>
+  {% endif %}
 
+	{% if user.is_authenticated and perms.profil.perm_kauf %}
+    <div class="page-header">
+      <h4>Anleitungen</h4>
+    </div>
 
-	<div class="page-header">
-		<h4>Anleitungen</h4>
-	</div>
-
-	<div id="#anleitung_einzahlung" class="panel panel-default">
-			<div class="panel-heading bold smallText">
-				Wie kann ich Geld auf mein Kiosk-Konto einzahlen?
-			</div>
-			<div class="panel-body justified smallText">
-				<p>
-					Es gibt zwei Möglichkeiten, Geld auf dein Kiosk-Konto einzuzahlen:
-					Du kannst <b>vor Ort Bargeld bei eine:r Verwalter:in einzahlen,</b> welches dann auf dein Konto eingebucht wird.
-				</p>
-				<p class="mt-5">
-					Eine andere Möglichkeit ist die Einzahlung per PayPal an
-					<a class="bigLink" href="https://paypal.me/ffekiosk">paypal.me/ffekiosk</a>.
-					<br>
-					Beachte, dass du zuvor deinen PayPal-Namen beim Kiosk registrieren musst:
-					<br>
-					<b><a href="{% url 'personal_info_change' %}">Persönliche Einstellungen ändern</a></b>
-				</p>
-			</div>
-	</div>
-
-
-	<div id="anleitung_einkauf" class="panel panel-default">
-			<div class="panel-heading bold smallText">
-				Wie kaufe ich im Kiosk ein?
-			</div>
-			<div class="panel-body justified smallText">
-				Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">
-				<a href="{% url 'start_page' %}#anleitung_slack_kauf">per Slack verbuchen.</a></span> Gib dazu einfach den <i>Slash-Befehl</i>
-				<p class="panel panel-default code">
-					/kiosk buy
-				</p>
-				ein. Der Slack-Bot gibt dir dann weitere Hilfestellung.
-				<br>
-				Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte eine:n <a class="bigLink" href="{% url 'start_page' %}#administratoren">Administrator:in</a>. Diese:r k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.
-				</div>
-	</div>
+    <div id="#anleitung_einzahlung" class="panel panel-default">
+        <div class="panel-heading bold smallText">
+          Wie kann ich Geld auf mein Kiosk-Konto einzahlen?
+        </div>
+        <div class="panel-body justified smallText">
+          <p>
+            Es gibt zwei Möglichkeiten, Geld auf dein Kiosk-Konto einzuzahlen:
+          </p>
+          <ul>
+            <li>
+              Du kannst <b>vor Ort Bargeld bei eine:r Verwalter:in einzahlen,</b> welches dann auf dein Konto eingebucht wird.
+            </li>
+            <li>
+              Eine andere Möglichkeit ist die Einzahlung per PayPal an
+              <a href="https://paypal.me/ffekiosk">paypal.me/ffekiosk</a>.
+              <br>
+              Bitte beachte hierzu die Anleitung zur Einzahlung mit PayPal:
+              <b><a class="bigLink" href="{% url 'paypal_einzahlung_page' %}">Einzahlung mit PayPal</a></b>
+            </li>
+          </ul>
+        </div>
+    </div>
 
 
-	<div id="anleitung_slack_kauf" class="panel panel-default">
-			<div class="panel-heading bold smallText">
-				Was ist mit der Slack-Integration möglich?
-			</div>
-			<div class="panel-body justified smallText">
-				Neben der Möglichkeit, im Kiosk per Slack einzukaufen
-				<p class="panel panel-default code">
-					/kiosk buy
-				</p>
-				ist es auch möglich, folgendes zu tun:
-				<ul>
-					<li>Kontostand erfragen,</li>
-					<li>Waren im Kiosk und Preise ausgeben lassen,</li>
-					<li>...</li>
-				</ul>
-				Der Slack-Bot gibt dir dazu Hilfestellungen, wenn du einfach
-				<p class="panel panel-default code">
-					/kiosk
-				</p>
-				eingibst.
-			</div>
-	</div>
+    <div id="anleitung_einkauf" class="panel panel-default">
+        <div class="panel-heading bold smallText">
+          Wie kaufe ich im Kiosk ein?
+        </div>
+        <div class="panel-body justified smallText">
+          Zum Kaufen, <a class="bigLink" href="{% url 'kauf_page' %}">verbuche online deinen Einkauf</a> und nimm dir die Ware selbst aus dem Kiosk. Deinen Kauf kannst du auch bequem <span class="bigLink">
+          <a href="{% url 'start_page' %}#anleitung_slack_kauf">per Slack verbuchen.</a></span> Gib dazu einfach den <i>Slash-Befehl</i>
+          <p class="panel panel-default code">
+            /kiosk buy
+          </p>
+          ein. Der Slack-Bot gibt dir dann weitere Hilfestellung.
+          <br>
+          Sollte ein Produkt nicht mehr verbuchbar sein, obwohl dieses noch im Kiosk vorr&#228;tig ist, kontaktiere bitte eine:n <a class="bigLink" href="{% url 'start_page' %}#administratoren">Administrator:in</a>. Diese:r k&#252;mmert sich um den Abgleich des tats&#228;chlichen Warenvorrats mit den Angaben des Systems.
+          </div>
+    </div>
 
 
-	<div id="anleitung_slack_channels" class="panel panel-default">
+    <div id="anleitung_slack_kauf" class="panel panel-default">
+        <div class="panel-heading bold smallText">
+          Was ist mit der Slack-Integration möglich?
+        </div>
+        <div class="panel-body justified smallText">
+          Neben der Möglichkeit, im Kiosk per Slack einzukaufen
+          <p class="panel panel-default code">
+            /kiosk buy
+          </p>
+          ist es auch möglich, folgendes zu tun:
+          <ul>
+            <li>Kontostand erfragen,</li>
+            <li>Waren im Kiosk und Preise ausgeben lassen,</li>
+            <li>...</li>
+          </ul>
+          Der Slack-Bot gibt dir dazu Hilfestellungen, wenn du einfach
+          <p class="panel panel-default code">
+            /kiosk
+          </p>
+          eingibst.
+        </div>
+    </div>
+  {% endif %}
+
+  {% if user.is_authenticated and perms.profil.perm_kauf %}
+	  <div id="anleitung_slack_channels" class="panel panel-default">
 			<div class="panel-heading bold smallText">
 				Tritt unseren Slack-Channels bei!
 			</div>
@@ -163,6 +169,7 @@
 				</div>
 			</div>
 		</div>
+  {% endif %}
 
 
 	{% if user.is_authenticated and perms.profil.perm_kauf %}

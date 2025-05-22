@@ -1,5 +1,7 @@
 from typing import List
 
+from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.shortcuts import redirect, render, HttpResponseRedirect, reverse
 
 from utils.slack import get_user_information
@@ -50,35 +52,18 @@ def start_page(request):
     bestVerwalter = ', '.join(bestVerwalter)
 
     # Administrator
-    data = KioskUser.objects.filter(visible=True, rechte='Admin')
+    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
     admins = []
     for item in data:
         admins.append(item.first_name + ' ' + item.last_name)
     admins = ', '.join(admins)
 
     # Verwalter
-    data = KioskUser.objects.filter(visible=True, rechte='Accountant')
+    data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_verwaltung')
     accountants = []
     for item in data:
         accountants.append(item.first_name + ' ' + item.last_name)
     accountants = ', '.join(accountants)
-
-    '''
-    # Get the news: starred + latest 3
-    newsStarred = Start_News.objects.filter(visible=True,starred=True).order_by('-date')
-    news = Start_News.objects.filter(visible=True,starred=False).order_by('-date')[:3]
-
-    news = list(news.values())
-    newsStarred = list(newsStarred.values())
-    news = news + newsStarred
-    news = sorted(news, key=lambda k: k['date'], reverse=True)
-    # Add TimeZone information: It is stored as UTC-Time in the SQLite-Database
-    for k,v in enumerate(news):
-        #news[k]['date'] = pytz.timezone('UTC').localize(v['date'])
-        #news[k]['created'] = pytz.timezone('UTC').localize(v['created'])
-        # Add enumerator
-        news[k]['html_id'] = 'collapse_'+str(k)
-    '''
 
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
@@ -146,7 +131,7 @@ def kontakt_page(request):
 
         if form.is_valid():
             try:
-                data = KioskUser.objects.filter(visible=True, rechte='Admin')
+                data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
                 msg = 'Es kam eine neue Nachricht '+chr(252)+'ber das Kontaktformular herein. Bitte k'+chr(252)+'mmere dich im Admin-Bereich um diese Anfrage.'
                 for u in data:
                     slack_send_msg(msg, user=u)
@@ -441,7 +426,7 @@ def strToCents(num):
 
 # Der Verwalter pflegt den Einkauf ins System ein
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def einkauf_annahme_page(request):
     currentUser = request.user
     # Besorge alle User
@@ -459,7 +444,7 @@ def einkauf_annahme_page(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def einkauf_annahme_user_page(request, userID):
 
     notifications = ''
@@ -602,49 +587,46 @@ def einkauf_annahme_user_page(request, userID):
 
 
 @login_required
-@permission_required('profil.do_admin_tasks',raise_exception=True)
+@permission_required('profil.do_verwaltung_financial_operations',raise_exception=True)
 def transaktion_page(request):
 
     currentUser = request.user
-    errorMsg = ''
-    successMsg = ''
-    form = None
+    form = TransaktionenForm()
 
     if request.method == "POST":
         # Hier kommen die eingegebenen Daten der Transaktion an.
         form = TransaktionenForm(request.POST)
 
         if not form.is_valid():
-            errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
+            messages.error(request, 'Formaler Eingabefehler. Bitte erneut eingeben.')
 
         else:
-
             schuldner = KioskUser.objects.get(id=form.cleaned_data['idFrom'])
             schuldnerKto = Kontostand.objects.get(nutzer=schuldner)
 
             if form.cleaned_data['idTo'] == form.cleaned_data['idFrom']:
-                errorMsg = chr(220)+'berweiser(in) und Empf'+chr(228)+'nger(in) sind identisch.'
+                messages.error(request, chr(220)+'berweiser(in) und Empf'+chr(228)+'nger(in) sind identisch.')
 
             elif int(100*float(form['betrag'].value())) > schuldnerKto.stand and schuldner.username not in ('Bank','Dieb','Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
-                errorMsg = 'Kontostand des Schuldners ist nicht gedeckt.'
+                messages.error(request, 'Kontostand des Schuldners ist nicht gedeckt.')
 
             else:
-                returnHttp = GeldTransaktionen.makeManualTransaktion(form,currentUser)
+                returnHttp = GeldTransaktionen.makeManualTransaktion(form, currentUser)
 
-                if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+                if getattr(settings,'ACTIVATE_SLACK_INTERACTION'):
                     try:
                         slack_PostTransactionInformation(returnHttp)
                     except:
                         pass
 
-                successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '+returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' '+chr(252)+'berwiesen.'
+                messages.success(request,
+                                 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde von '
+                                 + returnHttp['userFrom'].username+' an '+returnHttp['userTo'].username+' '
+                                 + chr(252)+'berwiesen.')
+                return HttpResponseRedirect(reverse('transaktion_page'))
 
     # Besorge alle User
-    #allUsers = KioskUser.objects.filter(visible=True).order_by('username')
     allUsers = readFromDatabase('getUsersForTransaction')
-
-    if form is None or successMsg!='':
-        form = TransaktionenForm()
 
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
@@ -653,9 +635,7 @@ def transaktion_page(request):
 
     return render(request, 'kiosk/transaktion_page.html',
         {'user': currentUser, 'allUsers': allUsers,
-        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-        'errorMsg': errorMsg, 'successMsg': successMsg, 'form': form,})
-
+        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'form': form})
 
 
 # Anmelden neuer Nutzer, Light-Version: Jeder darf das tun, aber nur Basics, jeder wird Standardnutzer
@@ -692,11 +672,13 @@ def neuerNutzer_page(request):
             res.is_staff = False
             res.is_active = True
             res.instruierterKaeufer = False
-            res.rechte = 'Buyer'
             res.visible = True
 
             u = res.save()
             u.refresh_from_db()
+
+            u.groups.add(Group.objects.get(name='Nutzer'))
+            u.groups.add(Group.objects.get(name='Einkaufer'))
 
             # Generate Confirmation Email
             user = u.username
@@ -741,13 +723,11 @@ def neuerNutzer_page(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_financial_operations',raise_exception=True)
 def einzahlung_page(request):
 
     currentUser = request.user
-    errorMsg = ''
-    successMsg = ''
-    form = None
+    form = EinzahlungenForm()
 
     if request.method == "POST":
 
@@ -755,7 +735,7 @@ def einzahlung_page(request):
         form = EinzahlungenForm(request.POST)
 
         if not form.is_valid():
-            errorMsg = 'Formaler Eingabefehler. Bitte erneut eingeben.'
+            messages.error(request, 'Formaler Eingabefehler. Bitte erneut eingeben.')
 
         # Testen bei Auszahlung, ob nicht zu viel ausgezahlt wird
         else:
@@ -766,18 +746,21 @@ def einzahlung_page(request):
                 auszKto = Kontostand.objects.get(nutzer=auszUser)
 
             if form['typ'].value() == 'Auszahlung' and int(100*float(form['betrag'].value())) > auszKto.stand:
-                    errorMsg = 'Das Konto deckt den eingegebenen Betrag nicht ab.'
+                    messages.error(request, 'Das Konto deckt den eingegebenen Betrag nicht ab.')
 
             else:
-                returnHttp = GeldTransaktionen.makeEinzahlung(form,currentUser)
+                returnHttp = GeldTransaktionen.makeEinzahlung(form, currentUser)
 
-                if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
+                if getattr(settings,'ACTIVATE_SLACK_INTERACTION'):
                     try:
                         slack_PostTransactionInformation(returnHttp)
                     except:
                         pass
 
-                successMsg = 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)+' wurde f'+chr(252)+'r '+auszUser.username+' '+returnHttp['type']+'.'
+                messages.success(request,
+                                 'Der Betrag von '+str('%.2f' % returnHttp['betrag'])+' '+chr(8364)
+                                 + ' wurde f'+chr(252)+'r '+auszUser.username+' '+returnHttp['type']+'.')
+                return HttpResponseRedirect(reverse('einzahlung_page'))
 
     # Anzeige von Kontostand des Nutzers (fuer Auszahlungen)
     if request.method == "GET" and 'getUserKontostand' in request.GET.keys():
@@ -789,9 +772,6 @@ def einzahlung_page(request):
     # Besorge alle User
     allUsers = readFromDatabase('getUsersForEinzahlung')
 
-    if form is None or successMsg!='':
-        form = EinzahlungenForm()
-
     # Hole den Kioskinhalt
     kioskItems = Kiosk.getKioskContent()
     # Einkaufsliste abfragen
@@ -799,8 +779,7 @@ def einzahlung_page(request):
 
     return render(request, 'kiosk/einzahlung_page.html',
         {'user': currentUser, 'form': form, 'allUsers': allUsers,
-        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste,
-        'errorMsg': errorMsg, 'successMsg': successMsg})
+        'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste})
 
 
 
@@ -853,16 +832,17 @@ def meine_einkaufe_page(request):
 
 
 @login_required
-@permission_required('profil.do_admin_tasks',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def fillKioskUp(request):
 
     checkKioskContentAndFillUp()
+    messages.success(request, 'Die Einkaufslisten wurden aktualisiert.')
 
     return redirect('home_page')
 
 
 @login_required
-@permission_required('profil.do_verwaltung', raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations', raise_exception=True)
 def inventory(request):
     currentUser = request.user
 
@@ -942,7 +922,7 @@ def inventory(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung', raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations', raise_exception=True)
 def inventory_done(request):
     currentUser = request.user
     # Hole den Kioskinhalt
@@ -1176,7 +1156,7 @@ def regelwerk(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def rueckbuchung(request):
 
     # Abfrage aller Nutzer
@@ -1197,7 +1177,7 @@ def rueckbuchung(request):
 
 
 @login_required
-@permission_required('profil.do_verwaltung',raise_exception=True)
+@permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def rueckbuchung_user(request, userID):
 
     user = KioskUser.objects.get(id=userID)

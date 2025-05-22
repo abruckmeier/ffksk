@@ -1,42 +1,15 @@
 from typing import TypedDict, NotRequired
-
 from django.db import models
 from django.utils import timezone
-from dateutil import tz
-import pytz
-from datetime import date
 from django.core.validators import MinValueValidator
 from django.db import transaction
-
 from profil.models import KioskUser
-from django.db import connection
 from django.conf import settings
 from django.template.loader import render_to_string
 from .queries import readFromDatabase
 from django.db.models import Max
-
-
-
-
-# Create your models here.
-
-class Start_News(models.Model):
-    heading = models.CharField(max_length=256)
-    date = models.DateTimeField(default=timezone.now)
-    content = models.TextField(max_length=2048, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
-    starred = models.BooleanField(default=False)
-    visible = models.BooleanField(default=True)
-
-    def __str__(self):
-        return(str(self.date) + ': ' + str(self.heading))
-
-    class Meta:
-        verbose_name = 'Startneuigkeit'
-        verbose_name_plural = 'Startneuigkeiten'
-
-
+from rules.contrib.models import RulesModel
+from kiosk import rules as my_rules
 
 
 class Kontakt_Nachricht(models.Model):
@@ -62,8 +35,6 @@ class Produktpalette(models.Model):
     inAufstockung = models.BooleanField(default=True)
     produktErstellt = models.DateTimeField(auto_now_add=True)
     produktGeaendert = models.DateTimeField(auto_now=True)
-    #kommentar = models.TextField(max_length=512,blank=True)
-    farbeFuerPlot = models.CharField(max_length=7,blank=True)
     is_beverage = models.BooleanField(default=False,
                                       help_text='Set to True if the product comes with pledge (Pfand)')
 
@@ -421,8 +392,14 @@ class Kiosk(models.Model):
         donation = ProduktVerkaufspreise.getPreisAufstockung(item.produktpalette.id)
 
         # Check if user is allowed to buy something and has enough money
-        allowedConusmers = readFromDatabase('getUsersToConsume')
-        if user.id not in [x['id'] for x in allowedConusmers] and not user.username=='Dieb':
+        allowed_consumers = KioskUser.objects.filter(
+            is_active=True,
+            visible=True,
+            aktivBis__gt=timezone.now(),
+            groups__permissions__codename='perm_kauf',
+            is_functional_user=False,
+        )
+        if not allowed_consumers.filter(id=user.id).exists() and not user.username=='Dieb':
             msg = 'Du bist nicht berechtigt, Produkte zu kaufen.'
             print(msg)
             retVals['msg'].append(msg)
@@ -570,10 +547,7 @@ def doRueckbuchung(userID,productID,anzahlZurueck):
 from .bot import slack_MsgToUserAboutNonNormalBankBalance
 
 
-
-
-
-class GeldTransaktionen(models.Model):
+class GeldTransaktionen(RulesModel):
     AutoTrans_ID = models.AutoField(primary_key=True)
     vonnutzer = models.ForeignKey(
         KioskUser, on_delete=models.CASCADE,related_name='nutzerVon')
@@ -582,6 +556,12 @@ class GeldTransaktionen(models.Model):
     betrag = models.IntegerField(validators=[MinValueValidator(0)])
     kommentar = models.TextField(max_length=512,blank=True)
     datum = models.DateTimeField(auto_now_add=timezone.now)
+    user_conducted = models.ForeignKey(
+        KioskUser, on_delete=models.CASCADE, related_name='conducted_by',
+        null=True, blank=True,
+        help_text='User who conducted the transaction. If not set, it is assumed that the transaction was '
+                  'conducted by the system (e.g. automatic transactions).',
+    )
 
     def __str__(self):
         betr = '%.2f' % (self.betrag/100)
@@ -607,10 +587,11 @@ class GeldTransaktionen(models.Model):
 
         return(allTransactions)
 
-
+    @classmethod
     @transaction.atomic
-    def doTransaction(vonnutzer,zunutzer,betrag,datum, kommentar):
-        t = GeldTransaktionen(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar)
+    def doTransaction(cls, vonnutzer, zunutzer,betrag,datum, kommentar, user_conducted=None):
+        t = cls(vonnutzer=vonnutzer, zunutzer=zunutzer, betrag = betrag, datum=datum, kommentar=kommentar,
+                              user_conducted=user_conducted)
 
         # Bargeld transaction among Bargeld-users are calculated negatively. But not, as soon as one "normal" user is a part of the transaction
         if t.vonnutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld') and t.zunutzer.username in ('Bargeld','Bargeld_Dieb','Bargeld_im_Tresor', 'PayPal_Bargeld'):
@@ -640,9 +621,9 @@ class GeldTransaktionen(models.Model):
 
         return t
 
-
+    @classmethod
     @transaction.atomic
-    def makeManualTransaktion(form,currentUser):
+    def makeManualTransaktion(cls, form, currentUser):
         # Durchfuehren einer Ueberweisung aus dem Admin-Bereich
 
         idFrom = int(form['idFrom'].value())
@@ -655,8 +636,8 @@ class GeldTransaktionen(models.Model):
 
         kommentar = kommentar + ' (' + userFrom.username + ' --> ' + userTo.username + ')'
 
-        GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
-            betrag=betrag, datum=timezone.now(), kommentar=kommentar)
+        cls.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
+            betrag=betrag, datum=timezone.now(), kommentar=kommentar, user_conducted=currentUser)
 
         return {'returnDict':{'betrag':betrag/100,'userFrom':userFrom.username,'userTo':userTo.username},
                 'type':'manTransaction',
@@ -666,9 +647,9 @@ class GeldTransaktionen(models.Model):
                 'user':currentUser
                 }
 
-
+    @classmethod
     @transaction.atomic
-    def makeEinzahlung(form,currentUser):
+    def makeEinzahlung(cls, form, currentUser):
         # Durchfuehren einer Einzahlung bzw. Auszahlung (GegenUser ist 'Bargeld')
         barUser = KioskUser.objects.get(username='Bargeld')
 
@@ -689,8 +670,8 @@ class GeldTransaktionen(models.Model):
 
         kommentar = kommentar + ' (' + form['typ'].value() + ')'
 
-        GeldTransaktionen.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
-            betrag=betrag, datum=timezone.now(), kommentar=kommentar)
+        cls.doTransaction(vonnutzer=userFrom, zunutzer=userTo,
+            betrag=betrag, datum=timezone.now(), kommentar=kommentar, user_conducted=currentUser)
 
         return {'type':ezaz,
                 'userFrom':userFrom,
@@ -702,6 +683,9 @@ class GeldTransaktionen(models.Model):
     class Meta:
         verbose_name = 'Geldtransaktion'
         verbose_name_plural = 'Geldtransaktionen'
+        rules_permissions = {
+            'view': my_rules.perm_is_financial_admin_and_transaction_is_paypal,
+        }
 
 
 # Aus den GeldTransaktionen ergibt sich eigentlich der Kontostand, aber zur Sicherheit (Loeschen von Tabelleneintraegen, Bugs, etc.) wird der Kontostand zusaetzlich gespeichert, bei jeder Transaktion wird dem aktuellen Stand die neue Transaktion angerechnet. Keine weitere Kopplung -> andere Tabellen koennen crashen, ohne den Kontostand zu beschaedigen.

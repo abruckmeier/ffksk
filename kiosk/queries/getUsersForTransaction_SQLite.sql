@@ -21,6 +21,6 @@ from
     last_name,
     "slackName"
   from profil_kioskuser
-  where username in ('Bank','Bargeld_Dieb','Bargeld_im_Tresor','Bargeld','Gespendet','Spendenkonto','PayPal_Bargeld')
+  where username in ('Bank','Bargeld_Dieb','Bargeld_im_Tresor','Bargeld','Spendenkonto','PayPal_Bargeld')
 ) ua
 order by lower(username)
