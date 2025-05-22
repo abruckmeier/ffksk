@@ -14,10 +14,45 @@
 			Info
 		</div>
 		<div class="panel-body justified smallText">
-			W&#228;hle eine(n) Eink&#228;ufer(in) aus und es erscheint eine Eingabemaske zur Verbuchung einer Ein- oder Auszahlung.<br>
-			Klicke dazu den entsprechenden Modus in der Eingabemaske an. Ein Kommentar ist nicht n&#246;tig und kann leer gelassen werden. Mit einem Klick auf "Transaktion t&#228;tigen" wird die Eingabe verbucht.
-			<br>
-			<b>Tipp: </b>F&#252;r Auszahlungen ist manchmal ein Klick auf "Kontostand einblenden" hilfreich.
+      <b>Bei Bargeld Ein- und Auszahlungen bitte entsprechend
+        <a href="{%  url 'einzahlung_page' %}">Einzahlungen / Auszahlungen</a>
+        verwenden.
+      </b>
+      <br /><br />
+			Überweisungen bitte sorgfältig und mit Bedacht durchführen.
+      Überweisungen von und zu funktionalen Konten werden im Folgenden beschrieben.
+      Diese sind gängige Transaktionen, die im Kiosk vorkommen können. Bei anderen Transaktionen
+      bitte Rücksprache mit einem Admin halten.
+
+      <ul>
+        <li>
+          <b>Bank &#8594; User &nbsp; </b>Der User bekommt vom Kiosk Geld auf sein Konto gutgeschrieben.
+        </li>
+        <li>
+          <b>Bank &#8594; Spendenkonto &nbsp; </b>Der Kiosk spendet Geld an das Spendenkonto.
+        </li>
+        <li>
+          <b>Bargeld &#8594; Bank &nbsp; </b>Bargeldspenden an den Kiosk.
+        </li>
+        <li>
+          <b>Bargeld &#8594; Bargeld_im_Tresor &nbsp; </b>Bargeld wird in den Tresor im Sekretariat gelegt.
+        </li>
+        <li>
+          <b>Bargeld &#8594; Bargeld_Dieb &nbsp; </b>Nach Bargeldzählung wird die Differenz als Transaktion verbucht.
+        </li>
+        <li>
+          <b>Gespendet &nbsp; </b>Wird nicht verwendet.
+        </li>
+        <li>
+          <b>Dieb &nbsp; </b>Mit diesem User sind keine Transaktionen vorgesehen.
+        </li>
+        <li>
+          <b>User &#8594; PayPal_Bargeld &nbsp; </b>Dem User wird Geld via PayPal überwiesen. Dies wird hier vermerkt.
+        </li>
+        <li>
+          <b>Spendenkonto &#8594; Bargeld &nbsp; </b>Das Geld, das auf dem Spendenkonto liegt, wird geleert und als Bargeld herausgenommen. Danach kann dieses weitergereicht werden. Eine Auszahlung via PayPal ist auch möglich.
+        </li>
+      </ul>
 		</div>
 	</div>
 
@@ -35,44 +70,51 @@
 	{% endif %}
 
 
-	<div class="dropdown">
+  <div class="btn-group">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Eine(n) Geldgeber(in) ausw&#228;hlen
+      <span class="caret"></span>
+    </button>
 
-		<button class="btn btn-primary dropdown-toggle inline" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			Eine(n) Geldgeber(in) ausw&#228;hlen
-			<span class="caret"></span>
-		</button>
-		&nbsp;&nbsp;
-		<div id="userFromAtButton" class="inline bold"></div>
-		
-		<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
-			{% for item in allUsers %}
-				<li><a onclick="goOnWithUserFrom({{item.id}},'{{item.username}}')">
-						{{item.username}} ({{item.first_name}} {{item.last_name}})
-					</a></li>
-			{% endfor %}
-		</ul>
-	</div>	
+    <div id="userFromAtButton" class="inline bold"></div>
+
+    <div class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+      <input type="text" class="form-control mb-2" id="userSearchFrom" placeholder="Namen filtern..." onkeyup="filterUsersFrom()">
+      <ul id="userList" class="list-unstyled">
+        {% for item in allUsers %}
+          <li><a onclick="goOnWithUserFrom({{item.id}},'{{item.username}}')"
+                 class="dropdown-menu-man">
+              {{item.username}} ({{item.first_name}} {{item.last_name}})
+            </a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
 
 	<div id="divEmpfaenger" style="display: none;" class="panel panel-default">
 		<br>
 
-		<div class="dropdown indented">
-			<button class="btn btn-primary dropdown-toggle inline" type="button" id="dropdownHeadTo" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Eine(n) Geldempf&#228;nger(in) ausw&#228;hlen
-				<span class="caret"></span>
-			</button>
-			&nbsp;&nbsp;
-			<div id="userToAtButton" class="inline bold"></div>
-			
-			<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHeadTo">
-				{% for item in allUsers %}
-					<li><a onclick="goOnWithUserTo({{item.id}},'{{item.username}}')">
-							{{item.username}} ({{item.first_name}} {{item.last_name}})
-						</a></li>
-				{% endfor %}
-			</ul>
-		</div>	
+    <div class="btn-group indented">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Eine(n) Geldempf&#228;nger(in) ausw&#228;hlen
+        <span class="caret"></span>
+      </button>
+
+      <div id="userToAtButton" class="inline bold"></div>
+
+      <div class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+        <input type="text" class="form-control mb-2" id="userSearchTo" placeholder="Namen filtern..." onkeyup="filterUsersTo()">
+        <ul id="userListTo" class="list-unstyled">
+          {% for item in allUsers %}
+            <li><a onclick="goOnWithUserTo({{item.id}},'{{item.username}}')"
+                   class="dropdown-menu-man">
+                {{item.username}} ({{item.first_name}} {{item.last_name}})
+              </a></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
 
 	
 		<div class="indented">
@@ -143,6 +185,24 @@
 
 	<script type="text/javascript">
 
+    function filterUsersFrom() {
+      const searchInput = document.getElementById('userSearchFrom').value.toLowerCase();
+      const userList = document.getElementById('userList').getElementsByTagName('li');
+      for (let i = 0; i < userList.length; i++) {
+        const userText = userList[i].innerText.toLowerCase();
+        userList[i].style.display = userText.includes(searchInput) ? '' : 'none';
+      }
+    }
+
+    function filterUsersTo() {
+      const searchInput = document.getElementById('userSearchTo').value.toLowerCase();
+      const userList = document.getElementById('userListTo').getElementsByTagName('li');
+      for (let i = 0; i < userList.length; i++) {
+        const userText = userList[i].innerText.toLowerCase();
+        userList[i].style.display = userText.includes(searchInput) ? '' : 'none';
+      }
+    }
+
 		function goOnWithUserFrom(userID,username) {
 			$("div#divEmpfaenger").show(400);
 			$('input[name="idFrom"]').val(userID);
@@ -159,4 +219,19 @@
 
 	</script>	
 
+{% endblock %}
+
+{% block css %}
+  <style>
+    .dropdown-menu-man {
+      text-decoration: none;
+      color:#333;
+      padding: 3px 20px;
+      display: block;
+    }
+    .dropdown-menu-man:hover {
+      background-color: #f5f5f5;
+      text-decoration: none;
+    }
+  </style>
 {% endblock %}

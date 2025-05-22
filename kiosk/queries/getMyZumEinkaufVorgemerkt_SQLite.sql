@@ -5,7 +5,8 @@ select
   d.verkaufspreis * count(*) / 100.0 as einkaufspreis,
   ('input_id_angeliefert_' || b.id) as input_id_angeliefert,
   ('input_id_bezahlt_' || b.id) as input_id_bezahlt,
-  e.kommentar as kommentar
+  e.kommentar as kommentar,
+  b.is_beverage as is_beverage
 from
   kiosk_zumEinkaufVorgemerkt a
 join kiosk_produktpalette b

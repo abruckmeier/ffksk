@@ -34,7 +34,6 @@ def initNecessaryUsers():
         ('Bargeld_Dieb', 73),
         ('Bargeld_im_Tresor', 72),
         ('Dieb', 4),
-        ('Gespendet', 90),
         ('Spendenkonto', 102),
     ]
 
@@ -53,7 +52,6 @@ def initNecessaryUsers():
                 is_verified = True,
                 visible= False,
                 aktivBis= '2999-12-31',
-                rechte= 'User',
                 is_functional_user=True,
             )
         )

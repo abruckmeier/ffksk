@@ -6,17 +6,20 @@
 		<h4>Besorgungen annehmen <small>von {{user.first_name}} {{user.last_name}}</small></h4>
 	</div>
 
+  <div>
+		{{notifications|safe}}
+	</div>
+
 	<div class="panel panel-default">
 		<div class="panel-heading bold">
 			Info
 		</div>
 		<div class="panel-body justified smallText">
-			F&#252;lle die Zeilen mit Produkten vollst&#228;ndig aus, die du verbuchen m&#246;chtest, leere und unvollst&#228;ndig ausgef&#252;llte Zeilen werden ignoriert.
+			F&#252;lle die Zeilen mit Produkten vollst&#228;ndig aus, die du verbuchen m&#246;chtest,
+      leere und unvollst&#228;ndig ausgef&#252;llte Zeilen werden ignoriert.
+      <br />
+      Es können momentan entweder nur herkömmliche Produkte oder nur Getränke gleichzeitig verbucht werden.
 		</div>
-	</div>
-
-	<div>
-		{{notifications|safe}}
 	</div>
 
 	{% if not seineVorgemerktenEinkaeufe %}
@@ -46,7 +49,7 @@
 							<input type="text" name="{{item.input_id_angeliefert}}" id="{{item.input_id_angeliefert}}" class="form-control" style="width:60px;" placeholder="x">
 						</td>
 						<td>
-							<input type="text" name="{{item.input_id_bezahlt}}" id="{{item.input_id_bezahlt}}" class="form-control" style="width:60px;" placeholder="x,yz €">
+							<input type="text" name="{{item.input_id_bezahlt}}" id="{{item.input_id_bezahlt}}" class="form-control" style="width:70px;" placeholder="x,yz €">
 						</td>
 					</tr>
 				
@@ -54,9 +57,70 @@
 			</table>
 		
 			<input type="text" name="userID" id="userID" style="display: none" readonly value="{{userID}}">
-			<button type="submit" class="btn btn-primary">Annehmen!</button>
+			<button type="submit" class="btn btn-primary" name="submit_products">Produkte annehmen</button>
 
 		</form>
+
+    <hr />
+
+    <div class="panel panel-default">
+      <div class="panel-heading bold">
+        Info für Getränke
+      </div>
+      <div class="panel-body justified smallText">
+        Trage mindestens die angelieferte Menge an Flaschen und den dafür bezahlten Preis OHNE PFAND ein.
+        Bezahltes Pfand ist in das dafür bereitgestellte Feld extra einzutragen.
+        <br />
+        Wird gleichzeitig Pfand zurückgegeben, muss dieser Betrag einfach vom bisher eingetragenen
+        Pfandwert SUBTRAHIERT werden. Der Gesamtwert darf auch negativ sein.
+      </div>
+    </div>
+
+    <form method="POST" class="">{% csrf_token %}
+      {{ beverages_formset.management_form }}
+
+      <table class="table table-striped smallText autoSize">
+				<tr>
+					<th>Produkt</th>
+					<th>Anzahl zu kaufen</th>
+					<th>Maximaler Einkaufspreis</th>
+					<th>Angelieferte Menge</th>
+					<th>Bezahlter Preis in &#8364;<br>(Ohne Pfand)</th>
+          <th>Pfand in &#8364;<br>(optional, siehe Infobox)</th>
+				</tr>
+
+				{% for b_form in beverages_formset %}
+
+					<tr>
+            {{ b_form.id }}{{ b_form.product_id }} {{ b_form.user_id }}
+						<td>
+              {{b_form.product_name.value}}
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.product_name.name }}"
+                     value="{{ b_form.product_name.value }}">
+            </td>
+						<td>
+              {{b_form.max_number_elements.value}}
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.max_number_elements.name }}"
+                     value="{{ b_form.max_number_elements.value }}">
+            </td>
+						<td>
+              {{b_form.max_price.value}} &#8364;
+              <input type="hidden"
+                     name="{{ b_form.prefix }}-{{ b_form.id }}{{ b_form.max_price.name }}"
+                     value="{{ b_form.max_price.value }}">
+            </td>
+						<td>{{b_form.delivered_elements}}<br />{{b_form.delivered_elements.errors}}</td>
+            <td>{{b_form.price_paid}}<br />{{b_form.price_paid.errors}}</td>
+            <td>{{b_form.pledge}}<br />{{b_form.pledge.errors}}</td>
+					</tr>
+
+				{% endfor %}
+			</table>
+
+    <button type="submit" class="btn btn-primary" name="submit_beverages">Getränke annehmen</button>
+    </form>
 
 	{% endif %}
 
