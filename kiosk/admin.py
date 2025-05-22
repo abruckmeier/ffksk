@@ -1,10 +1,7 @@
 from django.contrib import admin
-from django.db.models import Subquery
-
 from .models import Produktpalette, Kioskkapazitaet, ProduktVerkaufspreise, Produktkommentar, Kontakt_Nachricht
 from .models import Einkaufsliste, ZumEinkaufVorgemerkt, Kiosk, Gekauft, Kontostand, EinkaufslisteGroups, GeldTransaktionen
 from rules.contrib.admin import ObjectPermissionsModelAdmin
-import rules
 
 
 class KioskkapazitaetInline(admin.TabularInline):
