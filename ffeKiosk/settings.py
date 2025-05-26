@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 from decouple import config
@@ -162,9 +163,8 @@ CONTACT = {
 }
 
 ## PayPal (E-Mail) Integration
-IMAP_HOST = config('IMAP_HOST', default=None)
-IMAP_USERNAME = config('IMAP_USERNAME', default=None)
-IMAP_PASSWORD = config('IMAP_PASSWORD', default=None)
+OAUTH_TOKEN = json.loads(config('OAUTH_TOKEN'))
+OAUTH_SCOPES = config('OAUTH_SCOPES', cast=lambda v: [s.strip() for s in v.split(',')])
 IMAP_SEARCH_FROM_EMAIL = config('IMAP_SEARCH_FROM_EMAIL', default=None)
 
 # Finanzielle Konstanten -> spaeter in den KioskBot geben

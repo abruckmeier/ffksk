@@ -6,7 +6,7 @@ from kiosk.models import GeldTransaktionen
 class Mail(models.Model):
     """Downloaded and extracted mail from the Outlook server that was sent from PayPal"""
 
-    message_id = models.IntegerField(unique=True, help_text='ID from Outlook')
+    message_id = models.CharField(unique=True, max_length=16, help_text='ID from Outlook')
     envelope_str = models.TextField(unique=True, help_text='Envelope string from Outlook')
     mail_ts = models.DateTimeField(help_text='Mail received (envelope)')
     data = models.TextField(help_text='Mail data')

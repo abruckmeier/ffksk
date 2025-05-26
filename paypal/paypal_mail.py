@@ -1,4 +1,7 @@
-from imapclient import IMAPClient
+import base64
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from email.utils import parsedate_to_datetime
 from imapclient.response_types import Envelope
 from typing import List, TypedDict, Tuple
 import re
@@ -16,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class DownloadedMail(TypedDict):
     """Attributes that are extracted from mails on the server"""
-    message_id: int
+    message_id: str
     flags: tuple
     envelope: Envelope
     data: str
@@ -40,24 +43,73 @@ class MailAssignmentResponse(TypedDict):
     reason: str
 
 
+def gmail_to_envelope(gmail_msg):
+    """Convert a Gmail message to an Envelope object."""
+    headers = {h['name']: h['value'] for h in gmail_msg['payload']['headers']}
+    subject = headers.get('Subject', '')
+    from_ = headers.get('From', '')
+    to = headers.get('To', '')
+    date = parsedate_to_datetime(headers.get('Date', ''))
+    message_id = headers.get('Message-ID', '')
+    in_reply_to = headers.get('In-Reply-To', '')
+    cc = headers.get('Cc', '')
+    bcc = headers.get('Bcc', '')
+
+    # Envelope erwartet Adresslisten als Tupel von Tupeln (name, email)
+    def parse_addr(addr):
+        # Hier ggf. mit email.utils.parseaddr oder getaddresses arbeiten
+        return ((None, addr),) if addr else ()
+
+    envelope = Envelope(
+        date=date,
+        subject=subject.encode('utf-8'),
+        from_=parse_addr(from_),
+        sender=parse_addr(from_),
+        reply_to=parse_addr(from_),
+        to=parse_addr(to),
+        cc=parse_addr(cc),
+        bcc=parse_addr(bcc),
+        in_reply_to=in_reply_to.encode('utf-8') if in_reply_to else None,
+        message_id=message_id.encode('utf-8') if message_id else None,
+    )
+    return envelope
+
+
 def get_recent_mails(ts_since: datetime) -> List[DownloadedMail]:
     """Get mails from PayPal since the given timestamp and return list of downloaded mails for further processing."""
 
     mails = []
 
-    server = IMAPClient(host=settings.IMAP_HOST, ssl=True)
-    server.login(settings.IMAP_USERNAME, settings.IMAP_PASSWORD)
-    server.select_folder('INBOX')
-    messages = server.search(['FROM', settings.IMAP_SEARCH_FROM_EMAIL,
-                              'SINCE', ts_since])
-    response = server.fetch(messages, ['FLAGS', 'ENVELOPE', 'RFC822'])
-    for message_id, data in response.items():
-        mails.append(DownloadedMail(
-            message_id=message_id, flags=data[b'FLAGS'],
-            envelope=data[b'ENVELOPE'], data=data[b'RFC822'].decode())
-        )
+    creds = Credentials.from_authorized_user_info(info=settings.OAUTH_TOKEN,
+                                                  scopes=settings.OAUTH_SCOPES)
+    service = build('gmail', 'v1', credentials=creds)
+    results = service.users().messages().list(
+        userId='me',
+        labelIds=['INBOX'],
+        q=f'{"from:" + settings.IMAP_SEARCH_FROM_EMAIL + " " if settings.IMAP_SEARCH_FROM_EMAIL else ""}'
+          f'after:{int(ts_since.timestamp())}',
+        maxResults=100,
+    ).execute()
 
-    server.logout()
+    for message in results.get('messages', []):
+        # Get the full message details
+        msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
+        envelope = gmail_to_envelope(msg)
+
+        # Decode the body data if available
+        body_data = msg['payload'].get('body', {}).get('data')
+        if body_data:
+            data = base64.urlsafe_b64decode(body_data).decode('utf-8', errors='ignore')
+        else:
+            data = ''
+
+        mails.append(DownloadedMail(
+            message_id=msg['id'],
+            flags=tuple(msg.get('labelIds', [])),
+            envelope=envelope,
+            data=data,
+        ))
+
     return mails
 
 
