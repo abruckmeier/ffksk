@@ -22,7 +22,7 @@ CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() 
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # Backup file encryption password
-BACKUP_FILE_SYMMETRIC_KEY=config('BACKUP_FILE_SYMMETRIC_KEY')
+BACKUP_FILE_SYMMETRIC_KEY = config('BACKUP_FILE_SYMMETRIC_KEY')
 
 # DATABASE
 DATABASES = {
@@ -154,7 +154,7 @@ BACKUP = {
     'active_local_backup': config('ACTIVATE_LOCAL_BACKUP', cast=bool, default=False),
     'active_slack_backup': config('ACTIVATE_SLACK_BACKUP', cast=bool, default=False),
     'localBackupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)), 'backup'),
-    'sendWeeklyBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
+    'sendBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
 }
 
 CONTACT = {

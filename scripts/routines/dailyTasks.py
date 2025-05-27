@@ -13,14 +13,11 @@ if __name__ == '__main__':
 
 
 # Import the Modules
-from django.conf import settings
 from django.db.models import Q
 from datetime import datetime, timedelta, UTC
 import pytz
 from slack_sdk import WebClient
 import time
-import subprocess
-from decouple import config
 from io import BytesIO
 from utils.slack import get_user_information
 from kiosk.queries import readFromDatabase
@@ -28,6 +25,11 @@ from kiosk.bot import slack_send_msg, checkKioskContentAndFillUp
 from profil.models import KioskUser
 from kiosk.models import ZumEinkaufVorgemerkt, GeldTransaktionen
 from paypal.paypal_mail import routine_with_messaging
+from io import StringIO
+from django.core.management import call_command
+from django.conf import settings
+from cryptography.fernet import Fernet
+import gzip
 
 logger = logging.getLogger(__name__)
 
@@ -99,65 +101,32 @@ def electBestContributors():
 
 
 # Conduct the daily rotating Save of the Database (to local filesystem)
-def dailyBackup(nowDate):
+def conduct_backup(nowDate):
 
-    from io import StringIO
-    from django.core.management import call_command
-    from django.conf import settings
-    from cryptography.fernet import Fernet
+    # Get information and stop if not activated
+    backupSettings = getattr(settings, 'BACKUP')
+    if not backupSettings['active_local_backup'] and not backupSettings['active_slack_backup']:
+        logger.info('Backup not activated in settings. Stop.')
+        return 'Backup not activated in settings.'
 
+    # Conduct backup via dumpdata and encrypt it
+    logger.info('Starting backup via dumpdata...')
     f = Fernet(settings.BACKUP_FILE_SYMMETRIC_KEY)
 
     buffer = StringIO()
     call_command('dumpdata', '--all', stdout=buffer)
     buffer.seek(0)
+    logger.info('Backupd finished. Now encrypting the data...')
 
-    buffer2 = BytesIO()
-    buffer2.write(f.encrypt(buffer.read().encode('utf-8')))
-    buffer2.seek(0)
+    buffer_enc = BytesIO()
+    buffer_enc.write(f.encrypt(buffer.read().encode('utf-8')))
+    buffer_enc.seek(0)
+    logger.info('Data encrypted. Now writing to file and/or to Slack...')
 
-
-    # Get information and stop if not activated
-    backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active_local_backup']:
-        print('Local backup not activated in settings. Stop.')
-        return 'Local backup not activated in settings.'
-
-    # Get the backup folder and create the day-specific file name of the backup file
-    backupFolder = backupSettings['localBackupFolder']
-    if not os.path.exists(backupFolder):
-        print('Backup Folder does not exist. Create it...')
-        os.makedirs(backupFolder)
-
-    # Conduct backup
-    cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
-           rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
-           rf"| gzip > {os.path.join(backupFolder, f'save_{str(nowDate.weekday())}.gz')}")
-    subprocess.run(cmd, shell=True)
-
-    return os.path.join(backupFolder, f'save_{str(nowDate.weekday())}.gz')
-
-
-def weeklyBackup(nowDate):
-
-    # Get information and stop if not activated
-    backupSettings = getattr(settings,'BACKUP')
-    if not backupSettings['active_local_backup'] and not backupSettings['active_slack_backup']:
-        logger.info('Backup not activated in settings. Stop.')
-        return 'Backup not activated in settings.'
-
-    # Conduct backup -> Create tar file
-    buffer = BytesIO()
-    cmd = (rf"pg_dump --dbname=postgresql://{config('POSTGRES_USER')}:{config('POSTGRES_PASSWORD')}"
-           rf"@{config('POSTGRES_HOST')}:{config('POSTGRES_PORT')}/{config('POSTGRES_DB')} "
-           rf"| gzip")
-    logger.info('Start running subprocess')
-    returned_process = subprocess.run(cmd, shell=True, capture_output=True)
-    logger.info(f'Subprocess has finished with returncode {returned_process.returncode}. '
-                f'File will be written now with length {len(returned_process.stdout)}. '
-                f'Error-Msg is "{returned_process.stderr.decode("utf-8")}".')
-    buffer.write(returned_process.stdout)
-    buffer.seek(0)
+    buffer_gz = BytesIO()
+    with gzip.GzipFile(fileobj=buffer_gz, mode='wb') as gzip_file:
+        gzip_file.write(buffer_enc.getvalue())
+    buffer_gz.seek(0)
 
     # Create the day-specific file name of the backup file
     attDatabaseName = 'save_' + datetime.strftime(nowDate, '%Y-%m-%dT%H-%M-%S-%fZ') + '.gz'
@@ -173,41 +142,44 @@ def weeklyBackup(nowDate):
 
         # Copy the file to the destination
         with open(os.path.join(backupFolder, attDatabaseName), 'wb') as f:
-            f.write(buffer.getvalue())
+            f.write(buffer_gz.getvalue())
 
-    # Send the database attached as Slack-message
-    if backupSettings['active_slack_backup']:
-        logger.info(f'Store the data as Slack message to those users: {backupSettings["sendWeeklyBackupToUsers"]}')
-        slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
-        sc = WebClient(slack_token)
+        # Send the database attached as Slack-message
+        if backupSettings['active_slack_backup']:
+            logger.info(f'Store the data as Slack message to those users: {backupSettings["sendBackupToUsers"]}')
+            slack_token = getattr(settings, 'SLACK_O_AUTH_TOKEN')
+            sc = WebClient(slack_token)
 
-        for usr in backupSettings['sendWeeklyBackupToUsers']:
-            logger.info(f'Now, write to Slack user {usr}')
+            for usr in backupSettings['sendBackupToUsers']:
+                logger.info(f'Now, write to Slack user {usr}')
 
-            error, user_address, return_msg = get_user_information(usr)
-            if error:
-                logger.warning(f'Slack user not found on Slack. Skipping to send file.')
-                continue
+                error, user_address, return_msg = get_user_information(usr)
+                if error:
+                    logger.warning(f'Slack user not found on Slack. Skipping to send file.')
+                    continue
 
-            # Get the conversation channel for the user-Kioskbot interaction
-            channel_resp = sc.conversations_open(users=user_address)
+                # Get the conversation channel for the user-Kioskbot interaction
+                channel_resp = sc.conversations_open(users=user_address)
 
-            # Upload the file
-            ret = sc.files_upload_v2(
-                channel=channel_resp.get('channel').get('id'),
-                filename=attDatabaseName,
-                file=buffer,
-            )
-            logger.info(f'Done sending message. Return value: {ret}')
+                # Upload the file
+                ret = sc.files_upload_v2(
+                    channel=channel_resp.get('channel').get('id'),
+                    filename=attDatabaseName,
+                    file=buffer_gz,
+                )
+                logger.info(f'Done sending message. Return value: {ret}')
 
-            # Send additional message to the receivers of the attached database
-            slack_send_msg('You received the database attached as backup in an other message to the kioskbot. Do not '
-                          'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
+                # Send additional message to the receivers of the attached database
+                slack_send_msg(
+                    'You received the database attached as backup in an other message to the kioskbot. Do not '
+                    'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
 
-    return {
-        'weeklyStoredAtServer':str(os.path.join(backupFolder, attDatabaseName)) if backupSettings['active_local_backup'] else 'Not activated',
-        'weeklySentToUsers': ['@'+x for x in backupSettings['sendWeeklyBackupToUsers']] if backupSettings['active_slack_backup'] else ['Not activated'],
-    }
+        return {
+            'weeklyStoredAtServer': str(os.path.join(backupFolder, attDatabaseName)) if backupSettings[
+                'active_local_backup'] else 'Not activated',
+            'weeklySentToUsers': ['@' + x for x in backupSettings['sendBackupToUsers']] if backupSettings[
+                'active_slack_backup'] else ['Not activated'],
+        }
 
 
 #
@@ -225,7 +197,7 @@ def deleteOldWeeklyBackupsFromSlackAdmin(nowDate):
     slack_token = getattr(settings,'SLACK_O_AUTH_TOKEN')
     sc = WebClient(slack_token)
 
-    for usr in backupSettings['sendWeeklyBackupToUsers']:
+    for usr in backupSettings['sendBackupToUsers']:
         logger.info(f'Now, delete old messages in conversation with Slack user {usr}')
 
         error, user_address, return_msg = get_user_information(usr)
@@ -441,61 +413,36 @@ def routine():
             logger.info('Error on posting the best buyers and administrators.')
 
 
-
-    # Conduct the daily rotating Save of the Database
-    logger.info('Do the daily backup of the database.')
+    # Conduct a daily Backup of the database: Send via Slack to the Admins
+    # Furthermore, delete old weekly backups from the conversation
+    logger.info('Do the daily backup.')
     try:
-        dest = dailyBackup(nowDate)
-        msg = 'Daily Backup of the Database File successfully stored under `'+dest+'`.'
+        ret = conduct_backup(nowDate)
+        logger.info('Daily Backup finished.')
+
+        logger.info('Start deleting old backups from Slack...')
+        deleteOldWeeklyBackupsFromSlackAdmin(nowDate)
+        logger.info('Done deleting old backups.')
+
+        msg = 'Daily backup and deletion of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
 
         # Send message to all admins
         data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         for u in data:
             slack_send_msg(msg, user=u)
 
-        logger.info('Finished the daily backup.')
+        logger.info('Finished the weekly backup.')
 
-    except:
+    except Exception as e:
+        logger.exception(e)
         # Send failure message to all admins
         data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         try:
             for u in data:
-                slack_send_msg('The daily backup of the Database failed!', user=u)
+                slack_send_msg('The daily backup and deletion of the Database failed!', user=u)
             logger.info('Daily Backup failed. Slack Message sent.')
         except:
-            logger.info('Failing to send Slack Message with Fail Notice of database daily backup.')
-
-
-
-    # Conduct a weekly Backup of the database: Send via Slack to the Admins
-    # Furthermore, delete old weekly backups from the conversation
-    if True or nowDate.weekday()==3:  # Update: Do this every day
-        logger.info('Do the weekly backup. (everyday!)')
-        try:
-            logger.info('Start deleting old backups from Slack...')
-            deleteOldWeeklyBackupsFromSlackAdmin(nowDate)
-            logger.info('Done deleting old backups. Now start the backup...')
-            ret = weeklyBackup(nowDate)
-            logger.info('Weekly Backup finished')
-            msg = 'Weekly backup and deletion of the Database File successfully stored under `'+ret['weeklyStoredAtServer']+'` and sent to '+', '.join(ret['weeklySentToUsers'])+' .'
-
-            # Send message to all admins
-            data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
-            for u in data:
-                slack_send_msg(msg, user=u)
-
-            logger.info('Finished the weekly backup.')
-
-        except Exception as e:
-            logger.exception(e)
-            # Send failure message to all admins
-            data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
-            try:
-                for u in data:
-                    slack_send_msg('The weekly backup and deletion of the Database failed!', user=u)
-                logger.info('Weekly Backup failed. Slack Message sent.')
-            except:
-                logger.info('Failing to send Slack Message with Fail Notice of database weekly backup and deletion.')
+            logger.info('Failing to send Slack Message with Fail Notice of database daily backup and deletion.')
 
 
 
