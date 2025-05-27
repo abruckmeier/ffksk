@@ -120,7 +120,7 @@ class registrationStatus(LoginRequiredMixin, View):
 
             else:                
                 # Get the Administrator
-                data = KioskUser.objects.filter(visible=True, rechte='Admin')
+                data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
                 admins = []
                 for item in data:
                     admins.append(item.first_name + ' ' + item.last_name)
@@ -183,7 +183,7 @@ class AccountActivate(LoginRequiredMixin, View):
 
         else:
             # Get the Administrator
-            data = KioskUser.objects.filter(visible=True, rechte='Admin')
+            data = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
             admins = []
             for item in data:
                 admins.append(item.first_name + ' ' + item.last_name)

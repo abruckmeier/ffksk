@@ -5,7 +5,7 @@
 {% block content %}
 	
 	<div class="page-header noMarginTop">
-		<h4>Einzahlungen & Auszahlungen</h4>
+		<h4>Einzahlungen & Auszahlungen von Bargeld</h4>
 	</div>
 
 
@@ -14,41 +14,35 @@
 			Info
 		</div>
 		<div class="panel-body justified smallText">
+      Hier kann lediglich die Ein- und Auszahlung von Bargeld verbucht werden.
+      Verbuchungen von PayPal-Transaktionen werden anderweitig verwaltet. Siehe
+      <a href="{% url 'admin:paypal_mail_changelist' %}">Admin-Bereich</a>.
+      <br><br>
 			W&#228;hle eine(n) Eink&#228;ufer(in) aus und es erscheint eine Eingabemaske zur Verbuchung einer Ein- oder Auszahlung.<br>
 			Klicke dazu den entsprechenden Modus in der Eingabemaske an. Ein Kommentar ist nicht n&#246;tig und kann leer gelassen werden. Mit einem Klick auf "Transaktion t&#228;tigen" wird die Eingabe verbucht.
-			<br>
+			<br><br>
 			<b>Tipp: </b>F&#252;r Auszahlungen ist manchmal ein Klick auf "Kontostand einblenden" hilfreich.
 		</div>
 	</div>
 
 
-	{% if errorMsg != '' and errorMsg != None %}
-		<p class="alert alert-danger">
-			{{errorMsg}}
-		</p>
-	{% endif %}
-
-	{% if successMsg != '' and successMsg != None %}
-		<p class="alert alert-success">
-			{{successMsg}}
-		</p>
-	{% endif %}
-
-
-	<div class="dropdown">
-
-		<button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			Eine Person ausw&#228;hlen
-			<span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead">
-			{% for item in allUsers %}
-				<li><a onclick="goOnWithUser({{item.id}},'{{item.username}}')">
-						{{item.username}} ({{item.first_name}} {{item.last_name}})
-					</a></li>
-			{% endfor %}
-		</ul>
-	</div>	
+  <div class="btn-group">
+    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownHead" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Eine Person ausw&#228;hlen
+      <span class="caret"></span>
+    </button>
+    <div class="dropdown-menu ulTopMenuWidth" aria-labelledby="dropdownHead" style="max-height: 300px; overflow-y: auto; padding: 10px;">
+      <input type="text" class="form-control mb-2" id="userSearch" placeholder="Namen filtern..." onkeyup="filterUsers()">
+      <ul id="userList" class="list-unstyled">
+        {% for item in allUsers %}
+          <li><a onclick="goOnWithUser({{item.id}},'{{item.username}}')"
+                 class="dropdown-menu-man">
+              {{item.username}} ({{item.first_name}} {{item.last_name}})
+            </a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
 
 	<div id="divEingabeform" class="panel panel-default" style="display: none;">
@@ -120,6 +114,15 @@
 
 	<script type="text/javascript">
 
+    function filterUsers() {
+      const searchInput = document.getElementById('userSearch').value.toLowerCase();
+      const userList = document.getElementById('userList').getElementsByTagName('li');
+      for (let i = 0; i < userList.length; i++) {
+        const userText = userList[i].innerText.toLowerCase();
+        userList[i].style.display = userText.includes(searchInput) ? '' : 'none';
+      }
+    }
+
 		var tmp_user;
 		function goOnWithUser(userID,username) {
 			$("div#divEingabeform").show(400);
@@ -148,4 +151,19 @@
 
 	</script>	
 
+{% endblock %}
+
+{% block css %}
+  <style>
+    .dropdown-menu-man {
+      text-decoration: none;
+      color:#333;
+      padding: 3px 20px;
+      display: block;
+    }
+    .dropdown-menu-man:hover {
+      background-color: #f5f5f5;
+      text-decoration: none;
+    }
+  </style>
 {% endblock %}

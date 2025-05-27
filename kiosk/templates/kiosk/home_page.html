@@ -1,4 +1,4 @@
-{% extends 'kiosk/base.html' %}	
+{% extends 'kiosk/base.html' %}
 
 {% block content %}
 	
@@ -95,14 +95,8 @@
 			<div id="collapse_3" class="panel-collapse collapse">
 				<div class="panel-body justified">
 					
-					{% if perms.profil.perm_kauf %}
-						<a class="btn btn-info" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a><br><br>
-					{% endif %}
-
-					{% if perms.profil.perm_kauf and not perms.profil.do_einkauf %}
-						<a class="btn btn-info" style="color: #888888;" href="#">Eink&#228;ufer werden</a><br><br>
-					{% endif %}
-
+					<a class="btn btn-info" href="{% url 'slackComTest_page' %}">Benachrichtigungen auf Slack testen</a>
+          <br><br>
 					<a class="btn btn-info" href="{% url 'personal_info_change' %}">Persönliche Daten &#228;ndern</a>
 					<br><br>
 					<a class="btn btn-info" href="{% url 'password_change' %}">Passwort &#228;ndern</a>
@@ -113,7 +107,7 @@
 			</div>
 		</div>
 
-		{% if perms.profil.do_verwaltung %}
+		{% if perms.profil.do_verwaltung_product_operations or perms.profil.do_verwaltung_financial_operations or perms.profil.do_verwaltung_product_management %}
 			<div class="panel panel-default">
 				<div class="panel-heading" data-toggle="collapse" data-parent="#accordion" data-target="#collapse_4">
 					<h5 class="panel-title bold">
@@ -125,14 +119,24 @@
 				<div id="collapse_4" class="panel-collapse collapse">
 					<div class="panel-body justified">
 
-						<a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a>
-
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'einkauf_annahme_page' %}">Besorgungen annehmen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
+						  <a class="btn btn-info" href="{% url 'einzahlung_page' %}">Einzahlung / Auszahlung verbuchen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'rueckbuchungen_page' %}">R&#252;ckbuchung eines Kaufs</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'inventory' %}">Inventur durchf&#252;hren</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_financial_operations %}
+              <a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
+            {% endif %}
+            {% if perms.profil.do_verwaltung_product_operations %}
+						  <a class="btn btn-info" href="{% url 'fillKioskUp' %}">Aktualisierung der Einkaufsliste anstoßen</a>
+            {% endif %}
 					</div>
 				</div>
 			</div>
@@ -150,10 +154,6 @@
 				<div id="collapse_5" class="panel-collapse collapse">
 					<div class="panel-body justified">
 
-						<a class="btn btn-info" href="{% url 'transaktion_page' %}">Geldtransaktionen t&#228;tigen</a><br><br>
-
-						<a class="btn btn-info" href="{% url 'fillKioskUp' %}">Manuell automatische Aufstockung <br>der Bedarfsliste ausf&#252;hren</a><br><br>
-
 						<a class="btn btn-info" href="{% url 'statistics' %}">Statistiken anzeigen</a>
 					
 					</div>
@@ -162,6 +162,101 @@
 		{% endif %}
 
 	</div>
+
+  {% if perms.profil.do_verwaltung_product_operations or perms.profil.do_verwaltung_financial_operations or perms.profil.do_verwaltung_product_management or perms.do_admin_tasks %}
+    <div class="panel panel-default">
+      <div class="panel-heading bold">
+        Auflistung von Verwaltungsaufgaben
+      </div>
+      <div class="panel-body">
+        <table class="table table-striped autoSize smallText">
+          <tr>
+            <th>Person</th>
+            <th>Aufgabe</th>
+            <th>Intervall</th>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Verwalter:in für Produktabwicklung</td>
+            <td><a href="{%  url 'einkauf_annahme_page' %}">Einkaufannahme</a></td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'rueckbuchungen_page' %}">Rückbuchungen</a></td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'inventory' %}">Inventur</a></td>
+            <td>alle 1 - 2 Wochen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'fillKioskUp' %}">Aktualisierung der Einkaufsliste</a></td>
+            <td>Wenn Liste unvollständig erscheint, z.B. bei Änderung von Kiosk-Kapazitäten und neu erstellten Produkten. Ansonsten geschieht dies automatisch.</td>
+          </tr>
+
+          <tr>
+            <td rowspan="3">Verwalter:in für Produktmanagement</td>
+            <td><a href="{%  url 'admin:kiosk_produktpalette_changelist' %}">Produkte pflegen:</a> Waren ins Sortiment nehmen oder herausnehmen</td>
+            <td>auf Anregung und gerne Eigeninitiative</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'admin:kiosk_produktpalette_changelist' %}">Preise aktualisieren:</a> Abgleich der Preise im Kiosk mit gewöhnlichen Supermarktpreisen</td>
+            <td>ca. alle sechs Monate</td>
+          </tr>
+          <tr>
+            <td>Einkäufer:innen motivieren, Besorgungen durchzuführen. Leute direkt ansprechen, Mitteilungen auf Slack, ...</td>
+            <td>nach Bedarf</td>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Verwalter:in für Finanzabwicklung</td>
+            <td><a href="{%  url 'einzahlung_page' %}">Bargeld Ein- und Auszahlung.</a> Bitte die Anleitung auf der entsprechenden Seite beachten.</td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'admin:paypal_mail_changelist' %}">PayPal Ein- und Auszahlung.</a> Bitte die Anleitung auf der entsprechenden Seite genau beachten.</td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td>Bargeld in der Kasse zählen und mit <a href="{%  url 'admin:kiosk_kontostand_changelist' %}">Kontostand vom "Bargeld"-Nutzer</a> abgleichen. Bei Differenz eine <a href="{%  url 'transaktion_page' %}">Geldtransaktion</a> durchführen.</td>
+            <td>alle 2 Monate</td>
+          </tr>
+          <tr>
+            <td>Bargeld in den Tresor zurücklegen, wenn zu viel Geld in der Bargeldkasse liegt. Das Sekretariat verwaltet den Tresor. Geld einfach abgeben und eine entsprechende <a href="{%  url 'transaktion_page' %}">Geldtransaktion</a> durchführen.</td>
+            <td>bei Bedarf, wenn >300 € in der Kasse liegen</td>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Administrator</td>
+            <td>Kontaktnachrichten beantworten. Darunter fallen Slack-Nachrichten in den Channels und auch <a href="{%  url 'admin:kiosk_kontakt_nachricht_changelist' %}">Kontaktnachrichten auf der Webseite.</a> Benachrichtigung via Slack erfolgt.</td>
+            <td>bei Anfrage</td>
+          </tr>
+          <tr>
+            <td>Monitoring täglicher Tasks und des Backups. Logs erscheinen auf Slack</td>
+            <td>täglich</td>
+          </tr>
+          <tr>
+            <td>Spendenabwicklung. Festlegung der Spendenhöhe aus Profiten. Herausnehmen des Gelds vom Spendenkonto. Beide Geldsummen aus dem Kiosk nehmen und spenden.</td>
+            <td>jährlich zum Ende des Jahres</td>
+          </tr>
+          <tr>
+            <td>Sonstige Geldtransfers abwickeln</td>
+            <td>bei Bedarf</td>
+          </tr>
+
+          <tr>
+            <td rowspan="2">Superuser</td>
+            <td>Statistiken erheben und Maßnahmen einleiten, wenn Abweichungen vom Soll entstehen</td>
+            <td>monatlich</td>
+          </tr>
+          <tr>
+            <td>Bug Fixing, Erweiterungen, Codeverbesserungen</td>
+            <td>bei Bedarf</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  {% endif %}
 
 	<hr>
 	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>

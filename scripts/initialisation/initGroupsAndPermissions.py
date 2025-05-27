@@ -57,28 +57,13 @@ def InitGroupsAndPermissions():
     )
     p |= Permission.objects.filter(
         content_type__app_label='kiosk', 
-        content_type__model='kioskkapazitaet', 
-        codename__iregex=r'(add|change)_kioskkapazitaet',
-    )
-    p |= Permission.objects.filter(
-        content_type__app_label='kiosk', 
         content_type__model='kontakt_nachricht', 
         codename='change_kontakt_nachricht',
     )
     p |= Permission.objects.filter(
-        content_type__app_label='kiosk', 
-        content_type__model='produktpalette', 
-        codename__iregex=r'(add|change)_produktpalette',
-    )
-    p |= Permission.objects.filter(
-        content_type__app_label='kiosk', 
-        content_type__model='start_news', 
-        codename__iregex=r'(add|change)_start_news',
-    )
-    p |= Permission.objects.filter(
-        content_type__app_label='kiosk', 
-        content_type__model='produktverkaufspreise', 
-        codename='add_produktverkaufspreise',
+        content_type__app_label='kiosk',
+        content_type__model='zumeinkaufvorgemerkt',
+        codename__iregex=r'(view|delete)_zumeinkaufvorgemerkt',
     )
     p |= Permission.objects.filter(
         content_type__app_label='profil', 
@@ -90,11 +75,6 @@ def InitGroupsAndPermissions():
         content_type__model='kioskuser', 
         codename='do_admin_tasks',
     )
-    p |= Permission.objects.filter(
-        content_type__app_label='paypal',
-        content_type__model='mail',
-        codename='change_kioskuser',
-    )
     for pp in p:
         admin.permissions.add(pp)
 
@@ -102,17 +82,60 @@ def InitGroupsAndPermissions():
     # -----------
     # Verwalter
     # -----------
-    verwalter = GetOrCreateGroup(name='Verwalter')
-
+    verwalter = GetOrCreateGroup(name='Verwalter_Produktabwicklung')
     p = Permission.objects.none()
     p |= Permission.objects.filter(
         content_type__app_label='profil', 
         content_type__model='kioskuser', 
-        codename='do_verwaltung',
+        codename='do_verwaltung_product_operations',
     )
     for pp in p:
         verwalter.permissions.add(pp)
 
+    verwalter = GetOrCreateGroup(name='Verwalter_Finanzabwicklung')
+    p = Permission.objects.none()
+    p |= Permission.objects.filter(
+        content_type__app_label='profil',
+        content_type__model='kioskuser',
+        codename='do_verwaltung_financial_operations',
+    )
+    p |= Permission.objects.filter(
+        content_type__app_label='paypal',
+        content_type__model='mail',
+        codename='change_mail',
+    )
+    for pp in p:
+        verwalter.permissions.add(pp)
+
+    verwalter = GetOrCreateGroup(name='Verwalter_Produktmanagement')
+    p = Permission.objects.none()
+    p |= Permission.objects.filter(
+        content_type__app_label='profil',
+        content_type__model='kioskuser',
+        codename='do_verwaltung_product_management',
+    )
+    p |= Permission.objects.filter(
+        content_type__app_label='kiosk',
+        content_type__model='produktverkaufspreise',
+        codename__iregex=r'(add|view)_produktverkaufspreise',
+    )
+    p |= Permission.objects.filter(
+        content_type__app_label='kiosk',
+        content_type__model='produktpalette',
+        codename__iregex=r'(add|change)_produktpalette',
+    )
+    p |= Permission.objects.filter(
+        content_type__app_label='kiosk',
+        content_type__model='kioskkapazitaet',
+        codename__iregex=r'(add|change)_kioskkapazitaet',
+    )
+    p |= Permission.objects.filter(
+        content_type__app_label='kiosk',
+        content_type__model='produktkommentar',
+        codename__iregex=r'(add|change)_produktkommentar',
+    )
+    for pp in p:
+        verwalter.permissions.add(pp)
 
     # -----------
     # Einkäufer

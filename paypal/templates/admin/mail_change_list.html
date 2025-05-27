@@ -11,3 +11,64 @@
     </li>
     {{ block.super }}
 {% endblock %}
+
+{%  block search %}
+  <div id="toolbar" style="max-height: 132px; overflow: hidden; cursor: pointer;" onclick="toggleToolbar()">
+    <h2>Verwaltung der PayPal Einzahlungen</h2>
+    <p>
+      Hier kommen alle Mails, die mit PayPal zu tun haben an und werden ausgewertet.
+      Nur Mails mit Einzahl-Vorgängen sind relevant und werden in Geldtransaktionen umgewandelt.
+      Es kann auch Mails zu Auszahlungen oder andere Inhalte geben, diese werden hier ignoriert.
+      Auszahlungen werden anderweitig durchgeführt (siehe unten).
+    </p>
+
+    <h3 style="display: inline-block">Vorgehen bei PayPal-Einzahlung</h3>
+    <span class="caret"></span>
+    <ul>
+      <li>
+        Entweder sind neue Mails bereits aufgelistet oder neue Mails können manuell oben rechts via "Sync Mails" abgerufen werden.
+      </li>
+      <li>
+        War die Extraktion notwendiger Inhalte nicht erfolgreich, muss die Mail via Gmail geöffnet werden und die Einträge manuell übertragen werden. Jedoch nur, wenn es sich um eine Einzahlung handelt. Falls nicht, einfach den Haken bei "Mail is processed" setzen und die Mail ist somit abgearbeitet.
+        <br/>
+        Dann den Haken auf "Extract" setzen.
+      </li>
+      <li>
+        Nun kann die Mail links ausgewählt werden und dann die Aktion "Create Money Transaction..." durchgeführt werden.
+        Diese Aktion findet den korrekten User. Falls dies nicht funktioniert, muss beim entsprechenden User das Feld "PayPal Email" korrekt ausgefüllt werden. Danach nochmal die Aktion ausführen.
+      </li>
+      <li>
+        Nun sollte auch das "Assignment was successful" gesetzt sein. Damit wurde eine Einzahlung erstellt. Die Mail kann nun auf "Mail is processed" gesetzt werden.
+      </li>
+    </ul>
+
+    <h3 style="display: inline-block">Vorgehen bei PayPal-Auszahlung</h3>
+    <ul>
+      <li>
+        Unter <a href="{% url 'transaktion_page' %}">Überweisungen</a> muss eine Transaktion vom
+        User an das "PayPal_Bargeld" Konto durchgeführt werden.
+      </li>
+      <li>
+        Die Überweisung selbst wird dann über die PayPal-Webseite abgewickelt.
+        <br />
+        Die dazu hier ankommende Mail wird entsprechend ignoriert.
+      </li>
+    </ul>
+  </div>
+
+  {{ block.super }}
+{%  endblock %}
+
+{% block extrahead %}
+  {{  block.super }}
+  <script type="text/javascript">
+    function toggleToolbar() {
+      const toolbar = document.getElementById('toolbar');
+      if (toolbar.style.maxHeight === '132px') {
+        toolbar.style.maxHeight = 'none';
+      } else {
+        toolbar.style.maxHeight = '132px';
+      }
+    }
+  </script>
+{% endblock %}

@@ -1,6 +1,5 @@
 from django.apps import apps
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractUser, UserManager
 from datetime import date
 from django.contrib.auth.hashers import make_password
@@ -38,9 +37,6 @@ class KioskUser(AbstractUser):
 
     email = None
     is_verified = models.BooleanField(default=False)
-
-    permissions = (('User','Standardnutzer'),
-        ('Buyer','Eink'+chr(228)+'ufer'),('Accountant','Verwalter'),('Admin','Admin'))
     
     slackName = models.CharField(max_length=40, unique=True, help_text='Slack ID oder Name hinter @, falls keine '
                                                                        'Leerzeichen oder Umlaute.')
@@ -48,7 +44,6 @@ class KioskUser(AbstractUser):
                                    help_text='Name, der bei PayPal nach außen zu sehen ist')
     aktivBis = models.DateField(default=date.today)
     instruierterKaeufer = models.BooleanField(default=False)
-    rechte = models.CharField(max_length=15,default='User',choices=permissions)
     visible = models.BooleanField(default=True, help_text='Bank, Dieb, usw. sollen nicht gesehn und nicht angewaehlt '
                                                           'werden duerfen, z.B. bei Einkauf-Annahme')  
     activity_end_msg = models.IntegerField(
@@ -64,8 +59,10 @@ class KioskUser(AbstractUser):
     class Meta:
         default_manager_name = 'objects'
         permissions = (
-            ("do_admin_tasks","Einpflegen von Usern, Geldtransaktionen, ..."),
-            ("do_verwaltung","Einarbeiten von Waren ins Kiosk"),
-            ("do_einkauf","Eink"+chr(228)+"ufe vormerken und einkaufen"),
-            ("perm_kauf","Kaufen im Kiosk")
+            ("do_admin_tasks", "Kontaktnachrichten, Statistiken, Erweiterte Produktverwaltung, Nutzerverwaltung"),
+            ("do_verwaltung_product_operations", "Besorgungen annehmen, Einkäufe rückbuchen, Inventur durchführen"),
+            ("do_verwaltung_financial_operations", "Einzahlungen, Auszahlungen und Geldtransaktionen abwickeln"),
+            ("do_verwaltung_product_management", "Produktlisten und -preise pflegen"),
+            ("do_einkauf", "Produkte vormerken und besorgen"),
+            ("perm_kauf", "Einkaufen im Kiosk"),
         )

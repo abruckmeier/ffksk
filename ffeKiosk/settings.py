@@ -1,6 +1,8 @@
+import json
 import os
 import logging
 from decouple import config
+from django.contrib import messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,6 +39,7 @@ DATABASES = {
 # Application definition
 
 INSTALLED_APPS = [
+    'rules.apps.AutodiscoverRulesConfig',
     'widget_tweaks',
     'jchart',
     'django_db_logger',
@@ -81,8 +84,21 @@ TEMPLATES = [
     },
 ]
 
+MESSAGE_TAGS = {
+    messages.DEBUG: 'alert-info',
+    messages.INFO: 'alert-info',
+    messages.SUCCESS: 'alert-success',
+    messages.WARNING: 'alert-warning',
+    messages.ERROR: 'alert-danger',
+}
+
 WSGI_APPLICATION = 'ffeKiosk.wsgi.app'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTHENTICATION_BACKENDS = (
+    'rules.permissions.ObjectPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -146,9 +162,8 @@ CONTACT = {
 }
 
 ## PayPal (E-Mail) Integration
-IMAP_HOST = config('IMAP_HOST', default=None)
-IMAP_USERNAME = config('IMAP_USERNAME', default=None)
-IMAP_PASSWORD = config('IMAP_PASSWORD', default=None)
+OAUTH_TOKEN = json.loads(config('OAUTH_TOKEN'))
+OAUTH_SCOPES = config('OAUTH_SCOPES', cast=lambda v: [s.strip() for s in v.split(',')])
 IMAP_SEARCH_FROM_EMAIL = config('IMAP_SEARCH_FROM_EMAIL', default=None)
 
 # Finanzielle Konstanten -> spaeter in den KioskBot geben
