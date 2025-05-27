@@ -163,6 +163,101 @@
 
 	</div>
 
+  {% if perms.profil.do_verwaltung_product_operations or perms.profil.do_verwaltung_financial_operations or perms.profil.do_verwaltung_product_management or perms.do_admin_tasks %}
+    <div class="panel panel-default">
+      <div class="panel-heading bold">
+        Auflistung von Verwaltungsaufgaben
+      </div>
+      <div class="panel-body">
+        <table class="table table-striped autoSize smallText">
+          <tr>
+            <th>Person</th>
+            <th>Aufgabe</th>
+            <th>Intervall</th>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Verwalter:in für Produktabwicklung</td>
+            <td><a href="{%  url 'einkauf_annahme_page' %}">Einkaufannahme</a></td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'rueckbuchungen_page' %}">Rückbuchungen</a></td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'inventory' %}">Inventur</a></td>
+            <td>alle 1 - 2 Wochen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'fillKioskUp' %}">Aktualisierung der Einkaufsliste</a></td>
+            <td>Wenn Liste unvollständig erscheint, z.B. bei Änderung von Kiosk-Kapazitäten und neu erstellten Produkten. Ansonsten geschieht dies automatisch.</td>
+          </tr>
+
+          <tr>
+            <td rowspan="3">Verwalter:in für Produktmanagement</td>
+            <td><a href="{%  url 'admin:kiosk_produktpalette_changelist' %}">Produkte pflegen:</a> Waren ins Sortiment nehmen oder herausnehmen</td>
+            <td>auf Anregung und gerne Eigeninitiative</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'admin:kiosk_produktpalette_changelist' %}">Preise aktualisieren:</a> Abgleich der Preise im Kiosk mit gewöhnlichen Supermarktpreisen</td>
+            <td>ca. alle sechs Monate</td>
+          </tr>
+          <tr>
+            <td>Einkäufer:innen motivieren, Besorgungen durchzuführen. Leute direkt ansprechen, Mitteilungen auf Slack, ...</td>
+            <td>nach Bedarf</td>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Verwalter:in für Finanzabwicklung</td>
+            <td><a href="{%  url 'einzahlung_page' %}">Bargeld Ein- und Auszahlung.</a> Bitte die Anleitung auf der entsprechenden Seite beachten.</td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td><a href="{%  url 'admin:paypal_mail_changelist' %}">PayPal Ein- und Auszahlung.</a> Bitte die Anleitung auf der entsprechenden Seite genau beachten.</td>
+            <td>auf Anfrage der Einkäufer:innen</td>
+          </tr>
+          <tr>
+            <td>Bargeld in der Kasse zählen und mit <a href="{%  url 'admin:kiosk_kontostand_changelist' %}">Kontostand vom "Bargeld"-Nutzer</a> abgleichen. Bei Differenz eine <a href="{%  url 'transaktion_page' %}">Geldtransaktion</a> durchführen.</td>
+            <td>alle 2 Monate</td>
+          </tr>
+          <tr>
+            <td>Bargeld in den Tresor zurücklegen, wenn zu viel Geld in der Bargeldkasse liegt. Das Sekretariat verwaltet den Tresor. Geld einfach abgeben und eine entsprechende <a href="{%  url 'transaktion_page' %}">Geldtransaktion</a> durchführen.</td>
+            <td>bei Bedarf, wenn >300 € in der Kasse liegen</td>
+          </tr>
+
+          <tr>
+            <td rowspan="4">Administrator</td>
+            <td>Kontaktnachrichten beantworten. Darunter fallen Slack-Nachrichten in den Channels und auch <a href="{%  url 'admin:kiosk_kontakt_nachricht_changelist' %}">Kontaktnachrichten auf der Webseite.</a> Benachrichtigung via Slack erfolgt.</td>
+            <td>bei Anfrage</td>
+          </tr>
+          <tr>
+            <td>Monitoring täglicher Tasks und des Backups. Logs erscheinen auf Slack</td>
+            <td>täglich</td>
+          </tr>
+          <tr>
+            <td>Spendenabwicklung. Festlegung der Spendenhöhe aus Profiten. Herausnehmen des Gelds vom Spendenkonto. Beide Geldsummen aus dem Kiosk nehmen und spenden.</td>
+            <td>jährlich zum Ende des Jahres</td>
+          </tr>
+          <tr>
+            <td>Sonstige Geldtransfers abwickeln</td>
+            <td>bei Bedarf</td>
+          </tr>
+
+          <tr>
+            <td rowspan="2">Superuser</td>
+            <td>Statistiken erheben und Maßnahmen einleiten, wenn Abweichungen vom Soll entstehen</td>
+            <td>monatlich</td>
+          </tr>
+          <tr>
+            <td>Bug Fixing, Erweiterungen, Codeverbesserungen</td>
+            <td>bei Bedarf</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  {% endif %}
+
 	<hr>
 	<a class="bigLink" onclick="javascript:history.go(-1);">zur&#252;ck</a>
 
