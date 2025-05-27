@@ -19,12 +19,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = config('SESSION_EXPIRE_AT_BROWSER_CLOSE', defa
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
+# Backup file encryption password
+BACKUP_FILE_SYMMETRIC_KEY=config('BACKUP_FILE_SYMMETRIC_KEY')
+
 # DATABASE
 DATABASES = {
-    'old': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'myDatabase.sqlite3'),
-    },
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('POSTGRES_DB'),

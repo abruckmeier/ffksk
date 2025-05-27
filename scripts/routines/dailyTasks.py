@@ -101,6 +101,22 @@ def electBestContributors():
 # Conduct the daily rotating Save of the Database (to local filesystem)
 def dailyBackup(nowDate):
 
+    from io import StringIO
+    from django.core.management import call_command
+    from django.conf import settings
+    from cryptography.fernet import Fernet
+
+    f = Fernet(settings.BACKUP_FILE_SYMMETRIC_KEY)
+
+    buffer = StringIO()
+    call_command('dumpdata', '--all', stdout=buffer)
+    buffer.seek(0)
+
+    buffer2 = BytesIO()
+    buffer2.write(f.encrypt(buffer.read().encode('utf-8')))
+    buffer2.seek(0)
+
+
     # Get information and stop if not activated
     backupSettings = getattr(settings,'BACKUP')
     if not backupSettings['active_local_backup']:

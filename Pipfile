@@ -16,5 +16,6 @@ pytz = "*"
 python-decouple = "*"
 django-db-logger = "*"
 slack_sdk = "*"
+cryptography = "*"
 
 [dev-packages]
