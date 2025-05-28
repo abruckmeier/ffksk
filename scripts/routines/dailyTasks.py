@@ -392,7 +392,6 @@ def deleteInactiveUser(nowDate):
         u.save()
 
 
-# Run the Script
 def routine():
 
     nowDate = datetime.now(UTC)
