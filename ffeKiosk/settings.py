@@ -21,12 +21,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = config('SESSION_EXPIRE_AT_BROWSER_CLOSE', defa
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', cast=lambda v: [s.strip() for s in v.split(',')])
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
+# Backup file encryption password
+BACKUP_FILE_SYMMETRIC_KEY = config('BACKUP_FILE_SYMMETRIC_KEY')
+
 # DATABASE
 DATABASES = {
-    'old': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'myDatabase.sqlite3'),
-    },
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': config('POSTGRES_DB'),
@@ -155,7 +154,7 @@ BACKUP = {
     'active_local_backup': config('ACTIVATE_LOCAL_BACKUP', cast=bool, default=False),
     'active_slack_backup': config('ACTIVATE_SLACK_BACKUP', cast=bool, default=False),
     'localBackupFolder': os.path.join(os.path.dirname(os.path.abspath(BASE_DIR)), 'backup'),
-    'sendWeeklyBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
+    'sendBackupToUsers': config('SLACK_BACKUP_USERS_LIST', cast=lambda v: [s.strip() for s in v.split(',')]),
 }
 
 CONTACT = {
