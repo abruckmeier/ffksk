@@ -144,42 +144,42 @@ def conduct_backup(nowDate):
         with open(os.path.join(backupFolder, attDatabaseName), 'wb') as f:
             f.write(buffer_gz.getvalue())
 
-        # Send the database attached as Slack-message
-        if backupSettings['active_slack_backup']:
-            logger.info(f'Store the data as Slack message to those users: {backupSettings["sendBackupToUsers"]}')
-            slack_token = getattr(settings, 'SLACK_O_AUTH_TOKEN')
-            sc = WebClient(slack_token)
+    # Send the database attached as Slack-message
+    if backupSettings['active_slack_backup']:
+        logger.info(f'Store the data as Slack message to those users: {backupSettings["sendBackupToUsers"]}')
+        slack_token = getattr(settings, 'SLACK_O_AUTH_TOKEN')
+        sc = WebClient(slack_token)
 
-            for usr in backupSettings['sendBackupToUsers']:
-                logger.info(f'Now, write to Slack user {usr}')
+        for usr in backupSettings['sendBackupToUsers']:
+            logger.info(f'Now, write to Slack user {usr}')
 
-                error, user_address, return_msg = get_user_information(usr)
-                if error:
-                    logger.warning(f'Slack user not found on Slack. Skipping to send file.')
-                    continue
+            error, user_address, return_msg = get_user_information(usr)
+            if error:
+                logger.warning(f'Slack user not found on Slack. Skipping to send file.')
+                continue
 
-                # Get the conversation channel for the user-Kioskbot interaction
-                channel_resp = sc.conversations_open(users=user_address)
+            # Get the conversation channel for the user-Kioskbot interaction
+            channel_resp = sc.conversations_open(users=user_address)
 
-                # Upload the file
-                ret = sc.files_upload_v2(
-                    channel=channel_resp.get('channel').get('id'),
-                    filename=attDatabaseName,
-                    file=buffer_gz,
-                )
-                logger.info(f'Done sending message. Return value: {ret}')
+            # Upload the file
+            ret = sc.files_upload_v2(
+                channel=channel_resp.get('channel').get('id'),
+                filename=attDatabaseName,
+                file=buffer_gz,
+            )
+            logger.info(f'Done sending message. Return value: {ret}')
 
-                # Send additional message to the receivers of the attached database
-                slack_send_msg(
-                    'You received the database attached as backup in an other message to the kioskbot. Do not '
-                    'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
+            # Send additional message to the receivers of the attached database
+            slack_send_msg(
+                'You received the database attached as backup in an other message to the kioskbot. Do not '
+                'save the file otherwise! This file will be deleted in one year from the thread.', user=usr)
 
-        return {
-            'weeklyStoredAtServer': str(os.path.join(backupFolder, attDatabaseName)) if backupSettings[
-                'active_local_backup'] else 'Not activated',
-            'weeklySentToUsers': ['@' + x for x in backupSettings['sendBackupToUsers']] if backupSettings[
-                'active_slack_backup'] else ['Not activated'],
-        }
+    return {
+        'weeklyStoredAtServer': str(os.path.join(backupFolder, attDatabaseName)) if backupSettings[
+            'active_local_backup'] else 'Not activated',
+        'weeklySentToUsers': ['@' + x for x in backupSettings['sendBackupToUsers']] if backupSettings[
+            'active_slack_backup'] else ['Not activated'],
+    }
 
 
 #
