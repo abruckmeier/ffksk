@@ -120,7 +120,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     txt = mail.get('data')
     txt = re.sub(r'=\r\n', '', txt)
 
-    usr = re.findall(r'<span>Mitteilung von (?P<usr>[\w\s]+):', txt)
+    usr = re.findall(r'<strong>Mitteilung von (?P<usr>[\w\s]+)</strong>', txt)
     if len(usr) == 0:
         extraction_was_successful = False
         usr = None
