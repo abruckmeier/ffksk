@@ -450,8 +450,6 @@ def einkauf_annahme_page(request):
 @permission_required('profil.do_verwaltung_product_operations',raise_exception=True)
 def einkauf_annahme_user_page(request, userID):
 
-    notifications = ''
-
     # Einkaeufer wurde ausgewaehlt, jetzt seine vorgemerkten Einkaeufe zurueckgeben
     seineVorgemerktenEinkaeufe = ZumEinkaufVorgemerkt.getMyZumEinkaufVorgemerkt_without_beverages(userID)
     user = KioskUser.objects.get(id=userID)
@@ -538,7 +536,7 @@ def einkauf_annahme_user_page(request, userID):
 
     # Create the response for the website
     if ret:
-        notifications = chr(10).join([r['html'] for r in ret])
+        messages.success(request, chr(10).join([r['html'] for r in ret]))
 
         if getattr(settings, 'ACTIVATE_SLACK_INTERACTION'):
 
@@ -578,12 +576,13 @@ def einkauf_annahme_user_page(request, userID):
                 except:
                     pass
 
+        return HttpResponseRedirect(reverse('einkauf_annahme_user_page', kwargs={'userID': userID}))
+
     return render(request,
                   'kiosk/einkauf_annahme_user_page.html',
                   {
                       'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 
                       'seineVorgemerktenEinkaeufe': seineVorgemerktenEinkaeufe, 'user': user,
-                      'notifications': notifications,
                       'beverages_formset': beverages_formset,
                    }
                   )
@@ -849,12 +848,6 @@ def fillKioskUp(request):
 def inventory(request):
     currentUser = request.user
 
-    # Hole den Kioskinhalt
-    kioskItems = Kiosk.getKioskContent()
-
-    # Einkaufsliste abfragen
-    einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
     # Get the kiosk-content, prepared for inventory form
     inventoryList = Kiosk.getKioskContentForInventory()
 
@@ -893,12 +886,6 @@ def inventory(request):
 
         # Ueberpruefung vom Bot, ob Einkaeufe erledigt werden muessen. Bei Bedarf werden neue Listen zur Einkaufsliste hinzugefuegt.
         checkKioskContentAndFillUp()
-
-        # Hole den Kioskinhalt
-        kioskItems = Kiosk.getKioskContent()
-
-        # Einkaufsliste abfragen
-        einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
         request.session['inventory_data'] = {
             'loss': loss,
@@ -1187,9 +1174,7 @@ def rueckbuchung_user(request, userID):
     currentUser = request.user
     RueckbuchungFormSet = formset_factory(RueckbuchungForm, extra=0)
 
-    notifications = ''
-
-    if request.method=='POST':
+    if request.method == 'POST':
         formset = RueckbuchungFormSet(request.POST)
 
         if formset.is_valid():
@@ -1209,7 +1194,7 @@ def rueckbuchung_user(request, userID):
                     ret.append(r)
 
             # Create the response for the website
-            notifications = chr(10).join( [r['html'] for r in ret] )
+            messages.success(request, chr(10).join( [r['html'] for r in ret]))
 
             # Write Slack-Messages to the user
             if getattr(settings,'ACTIVATE_SLACK_INTERACTION') == True:
@@ -1221,10 +1206,7 @@ def rueckbuchung_user(request, userID):
                         slack_send_msg(r['slackMsg'], u)
                     except:    pass
 
-
-            # Get the new/updated formset
-            seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
-            formset = RueckbuchungFormSet(initial=seineKaeufe)
+            return HttpResponseRedirect(reverse('rueckbuchungen_user_page', args=[userID]))
 
     else:
         seineKaeufe = readFromDatabase('getBoughtItemsOfUser', [userID])
@@ -1236,7 +1218,7 @@ def rueckbuchung_user(request, userID):
     # Einkaufsliste abfragen
     einkaufsliste = Einkaufsliste.getEinkaufsliste()
 
-    return render(request, 'kiosk/rueckbuchungen_user_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'user': user, 'formset':formset, 'notifications': notifications, })
+    return render(request, 'kiosk/rueckbuchungen_user_page.html', {'kioskItems': kioskItems, 'einkaufsliste': einkaufsliste, 'user': user, 'formset':formset })
 
 
 
