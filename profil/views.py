@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.shortcuts import render, HttpResponseRedirect, reverse
 from django.views import View
 from django.contrib.auth.decorators import login_required
@@ -144,7 +145,7 @@ class registrationStatus(LoginRequiredMixin, View):
 
 
 # Verify the slack name on registration. When the token, given in the verification message is correct, the corresponding flag is set to True. A Slack-message will be sent to give further information: Welcome message
-class AccountActivate(LoginRequiredMixin, View):
+class AccountActivate(View):
 
     @transaction.atomic
     def get(self, request, uidb64, token):
@@ -155,7 +156,6 @@ class AccountActivate(LoginRequiredMixin, View):
             user = KioskUser.objects.get(pk=uid)
 
         except(TypeError, ValueError, OverflowError, KioskUser.DoesNotExist):
-            print('error')
             user = None
 
         # Set the flag to be email verified and save
@@ -171,13 +171,12 @@ class AccountActivate(LoginRequiredMixin, View):
             k = Kontostand(nutzer_id = user.id, stand=0)
             k.save()
 
-            login(request, user)
-
             # Send an slack message with further information: Welcome
             slack_PostWelcomeMessage(user)            
 
             # Add the information: Just email verified -> For text display on the following website
             request.session['just_verified'] = True
+            messages.success(request, 'Dein Account wurde erfolgreich aktiviert. Du kannst dich nun einloggen und den Kiosk nutzen.')
 
             return HttpResponseRedirect(reverse('registrationStatus'))
 
@@ -189,14 +188,6 @@ class AccountActivate(LoginRequiredMixin, View):
                 admins.append(item.first_name + ' ' + item.last_name)
             admins = ', '.join(admins)
 
-            # Hole den Kioskinhalt
-            kioskItems = Kiosk.getKioskContent()
-
-            # Einkaufsliste abfragen
-            einkaufsliste = Einkaufsliste.getEinkaufsliste()
-
             return render(request, 'registration/verification_failed.html',{
                     'admins': admins,
-                    'kioskItems': kioskItems, 
-                    'einkaufsliste': einkaufsliste,
                 })
