@@ -3,7 +3,7 @@
 
 {% block object-tools-items %}
     <li>
-        <a href="{% url 'paypal_sync' %}" class="button"
+        <a href="{% url 'paypal_sync' %}?with_login_redirect=true" class="button"
            title="Sync Mails"
            target="_blank">
             Sync Mails

@@ -162,7 +162,7 @@ CONTACT = {
 }
 
 ## PayPal (E-Mail) Integration
-OAUTH_TOKEN = json.loads(config('OAUTH_TOKEN'))
+OAUTH_CREDENTIALS = json.loads(config('OAUTH_CREDENTIALS'))
 OAUTH_SCOPES = config('OAUTH_SCOPES', cast=lambda v: [s.strip() for s in v.split(',')])
 IMAP_SEARCH_FROM_EMAIL = config('IMAP_SEARCH_FROM_EMAIL', default=None)
 
@@ -251,6 +251,12 @@ LOGGING = {
             'level': 'WARNING',
         },
         'paypal.paypal_mail': {
+            'handlers': ['console']
+                        + (['paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
+                        + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
+            'level': 'INFO',
+        },
+        'paypal': {
             'handlers': ['console']
                         + (['paypal_mail_file'] if config('LOG_TO_FILE', cast=bool, default=False) else [])
                         + (['db_log'] if config('LOG_TO_DB', cast=bool, default=False) else []),
