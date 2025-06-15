@@ -1,4 +1,9 @@
 import base64
+import json
+
+from django.http import HttpResponseRedirect, HttpResponse
+from django.urls import reverse
+from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from email.utils import parsedate_to_datetime
@@ -75,21 +80,43 @@ def gmail_to_envelope(gmail_msg):
     return envelope
 
 
+class CredentialsError(Exception):
+    pass
+
+
 def get_recent_mails(ts_since: datetime) -> List[DownloadedMail]:
-    """Get mails from PayPal since the given timestamp and return list of downloaded mails for further processing."""
+    """
+    Get mails from PayPal since the given timestamp and return list of downloaded mails for further processing.
+    If the token.json file is not found, or the token has expired, an exception is raised.
+    With that exception, the login to GMail can be triggered. (FileNotFoundError, CredentialsError, RefreshError)
+    """
 
     mails = []
 
-    creds = Credentials.from_authorized_user_info(info=settings.OAUTH_TOKEN,
+    try:
+        with open('token.json', 'r') as token_file:
+            oauth_token = json.loads(token_file.read())
+    except FileNotFoundError:
+        raise FileNotFoundError('The token.json file is missing. Please run the offline_token.py script to obtain it. Or follow the login sequence.')
+
+    try:
+        creds = Credentials.from_authorized_user_info(info=oauth_token,
                                                   scopes=settings.OAUTH_SCOPES)
+    except CredentialsError as e:
+        raise CredentialsError(f'Error loading credentials to class: {e}')
+
     service = build('gmail', 'v1', credentials=creds)
-    results = service.users().messages().list(
-        userId='me',
-        labelIds=['INBOX'],
-        q=f'{"from:" + settings.IMAP_SEARCH_FROM_EMAIL + " " if settings.IMAP_SEARCH_FROM_EMAIL else ""}'
-          f'after:{int(ts_since.timestamp())}',
-        maxResults=100,
-    ).execute()
+
+    try:
+        results = service.users().messages().list(
+            userId='me',
+            labelIds=['INBOX'],
+            q=f'{"from:" + settings.IMAP_SEARCH_FROM_EMAIL + " " if settings.IMAP_SEARCH_FROM_EMAIL else ""}'
+              f'after:{int(ts_since.timestamp())}',
+            maxResults=100,
+        ).execute()
+    except RefreshError as e:
+        raise CredentialsError(f'Error refreshing credentials: {e}')
 
     for message in results.get('messages', []):
         # Get the full message details
@@ -254,7 +281,7 @@ def assign_user_and_conduct_transaction(obj: Mail) -> MailAssignmentResponse:
     return response
 
 
-def routine() -> Tuple[bool, str]:
+def routine(with_login_redirect: bool = False) -> Tuple[bool, str, HttpResponse | None]:
     """From the last received mail on, search for new mails from PayPal.
     Store the mails in the database, extract relevant values.
     Assign the user to the PayPal transaction and create a Kiosk transaction.
@@ -276,10 +303,17 @@ def routine() -> Tuple[bool, str]:
     logger.info(f'Starting to download mails from server with paypal sender...')
     try:
         mails: List[DownloadedMail] = get_recent_mails(ts_since=ts_since)
+    except (FileNotFoundError, CredentialsError, RefreshError) as e:
+        msg = f'Obtaining mails failed. Maybe due to login error. Error: {e}'
+        logger.exception(msg)
+        if with_login_redirect:
+            return False, msg, HttpResponseRedirect(reverse('gmail_auth_page'))
+        else:
+            return False, msg, None
     except Exception as e:
         msg = f'Downloading mails failed. Error: {e}'
         logger.exception(msg)
-        return False, msg
+        return False, msg, None
     logger.info(f'... {len(mails)} mails downloaded')
 
     # Drop mails that are already in the database
@@ -325,17 +359,19 @@ def routine() -> Tuple[bool, str]:
             warn_msg += '\n' + _msg
 
     if not warn_msg:
-        return True, f'Successfully saved and assigned {len(objs)} transactions from mails'
+        return True, f'Successfully saved and assigned {len(objs)} transactions from mails', None
     else:
-        return False, f'Saved and assigned {len(objs)} transactions from mails with warnings.\n' + warn_msg
+        return False, f'Saved and assigned {len(objs)} transactions from mails with warnings.\n' + warn_msg, None
 
 
-def routine_with_messaging() -> Tuple[bool, str]:
+def routine_with_messaging(with_login_redirect: bool = False) -> Tuple[bool, str, HttpResponse | None]:
     """Run the routine and send messages to the admins via Slack, only if error occur.
     Return the response of the routine."""
     try:
         # Run routine
-        is_success, response_msg = routine()
+        is_success, response_msg, response = routine(
+            with_login_redirect=with_login_redirect
+        )
         # Slack Message to Admin on Failure
         if not is_success:
             # Send message to all admins
@@ -344,14 +380,15 @@ def routine_with_messaging() -> Tuple[bool, str]:
                 slack_send_msg(response_msg, user=u)
     except Exception as e:
         logger.exception(e)
+        response = None
         response_msg = f'An unexpected Exception has occurred: {str(e)}.'
         is_success = False
         # Send message to all admins
         admins = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
         for u in admins:
             slack_send_msg(response_msg, user=u)
-    return is_success, response_msg
+    return is_success, response_msg, response
 
 
 if __name__ == '__main__':
-    is_success, response_msg = routine_with_messaging()
+    is_success, response_msg, response = routine_with_messaging()

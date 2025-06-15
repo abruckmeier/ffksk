@@ -22,7 +22,7 @@ class SyncPayPalTransactions(CronSecretRequiredMixin, View):
 
     def get(self, request):
         """"""
-        is_success, response_msg = routine_with_messaging()
+        is_success, response_msg, _ = routine_with_messaging()
         return JsonResponse(dict(
             is_success=is_success,
             response_msg=response_msg,
