@@ -42,7 +42,7 @@ def obtain_token(
     )
     creds = flow.run_local_server(port=local_server_port)
     # Save the credentials for the next run
-    with open("token.json", "w") as token:
+    with open("/tmp/token.json", "w") as token:
         token.write(creds.to_json())
     return True
 
@@ -66,7 +66,6 @@ def gmail_auth_response(request: HttpRequest) -> HttpResponseRedirect | None:
 
     response_uri = request.build_absolute_uri()
     response_uri = response_uri.replace('http://', 'https://')
-    logger.warning(response_uri)
 
     flow = InstalledAppFlow.from_client_config(settings.OAUTH_CREDENTIALS, settings.OAUTH_SCOPES)
     flow.redirect_uri = request.build_absolute_uri(reverse('gmail_auth_response_page'))
@@ -74,7 +73,7 @@ def gmail_auth_response(request: HttpRequest) -> HttpResponseRedirect | None:
     flow.fetch_token(authorization_response=response_uri)
     # oauthlib.oauth2.rfc6749.errors.InsecureTransportError: (insecure_transport) OAuth 2 MUST utilize https.
 
-    with open('token.json', 'w') as token_file:
+    with open('/tmp/token.json', 'w') as token_file:
         token_file.write(flow.credentials.to_json())
 
     return
