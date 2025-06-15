@@ -94,7 +94,7 @@ def get_recent_mails(ts_since: datetime) -> List[DownloadedMail]:
     mails = []
 
     try:
-        with open('token.json', 'r') as token_file:
+        with open('/tmp/token.json', 'r') as token_file:
             oauth_token = json.loads(token_file.read())
     except FileNotFoundError:
         raise FileNotFoundError('The token.json file is missing. Please run the offline_token.py script to obtain it. Or follow the login sequence.')
