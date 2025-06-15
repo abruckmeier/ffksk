@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 def run_paypal_sync():
     """Run routine to get the PayPal-Mails and conduct the transactions for the Einzahlung. Response via Slack."""
-    is_success, response_msg = routine_with_messaging()
+    is_success, response_msg, _ = routine_with_messaging()
     if is_success:
         # Send message to all admins. If no success, message is already sent in function before.
         admins = KioskUser.objects.filter(groups__permissions__codename__icontains='do_admin_tasks')
