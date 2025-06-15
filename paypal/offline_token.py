@@ -53,7 +53,7 @@ def gmail_login_redirect(request: HttpRequest) -> HttpResponseRedirect:
     """
     flow = InstalledAppFlow.from_client_config(settings.OAUTH_CREDENTIALS, settings.OAUTH_SCOPES)
     flow.redirect_uri = request.build_absolute_uri(reverse('gmail_auth_response_page'))
-    auth_url, _ = flow.authorization_url()
+    auth_url, _ = flow.authorization_url(access_type='offline', prompt='consent')
     return HttpResponseRedirect(auth_url)
 
 
