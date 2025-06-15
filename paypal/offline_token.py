@@ -71,12 +71,8 @@ def gmail_auth_response(request: HttpRequest) -> HttpResponseRedirect | None:
     flow.redirect_uri = request.build_absolute_uri(reverse('gmail_auth_response_page'))
 
     flow.fetch_token(authorization_response=response_uri)
-    logger.warning(flow.credentials.to_json())
 
     with open('/tmp/token.json', 'w') as token_file:
         token_file.write(flow.credentials.to_json())
-
-    with open('/tmp/token.json', 'r') as token_file:
-        logger.warning(token_file.read())
 
     return

@@ -305,10 +305,11 @@ def routine(with_login_redirect: bool = False) -> Tuple[bool, str, HttpResponse 
         mails: List[DownloadedMail] = get_recent_mails(ts_since=ts_since)
     except (FileNotFoundError, CredentialsError, RefreshError) as e:
         msg = f'Obtaining mails failed. Maybe due to login error. Error: {e}'
-        logger.exception(msg)
         if with_login_redirect:
-            return False, msg, HttpResponseRedirect(reverse('gmail_auth_page'))
+            logger.warning(msg)
+            return True, msg, HttpResponseRedirect(reverse('gmail_auth_page'))
         else:
+            logger.exception(msg)
             return False, msg, None
     except Exception as e:
         msg = f'Downloading mails failed. Error: {e}'
