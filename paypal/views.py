@@ -91,5 +91,5 @@ class GmailAuthResponsePage(View):
 
         messages.success(request, 'login done')
 
-        # Write this into the token.json file
+        # Write this into the Token db table for further access
         return HttpResponseRedirect(reverse('paypal_sync'))

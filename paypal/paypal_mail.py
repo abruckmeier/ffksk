@@ -13,7 +13,7 @@ import re
 from django.conf import settings
 from datetime import datetime, timedelta
 from kiosk.bot import slack_send_msg, slack_PostTransactionInformation
-from paypal.models import Mail
+from paypal.models import Mail, Token
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
 from django.db import transaction
@@ -87,21 +87,21 @@ class CredentialsError(Exception):
 def get_recent_mails(ts_since: datetime) -> List[DownloadedMail]:
     """
     Get mails from PayPal since the given timestamp and return list of downloaded mails for further processing.
-    If the token.json file is not found, or the token has expired, an exception is raised.
+    If the token is not found in the database, or the token has expired, an exception is raised.
     With that exception, the login to GMail can be triggered. (FileNotFoundError, CredentialsError, RefreshError)
     """
 
     mails = []
 
-    try:
-        with open('/tmp/token.json', 'r') as token_file:
-            oauth_token = json.loads(token_file.read())
-    except FileNotFoundError:
-        raise FileNotFoundError('The token.json file is missing. Please run the offline_token.py script to obtain it. Or follow the login sequence.')
+    token_obj = Token.get_token()
+    if not token_obj:
+        raise FileNotFoundError('A token in database is missing. Please run the offline_token.py script to obtain it. '
+                                'Or follow the login sequence.')
+    oauth_token = json.loads(token_obj.token)
 
     try:
         creds = Credentials.from_authorized_user_info(info=oauth_token,
-                                                  scopes=settings.OAUTH_SCOPES)
+                                                      scopes=settings.OAUTH_SCOPES)
     except CredentialsError as e:
         raise CredentialsError(f'Error loading credentials to class: {e}')
 
