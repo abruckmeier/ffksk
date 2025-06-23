@@ -10,6 +10,9 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponseRedirect
 from django.urls import reverse
 from google_auth_oauthlib.flow import InstalledAppFlow
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def obtain_token(
@@ -50,7 +53,7 @@ def gmail_login_redirect(request: HttpRequest) -> HttpResponseRedirect:
     """
     flow = InstalledAppFlow.from_client_config(settings.OAUTH_CREDENTIALS, settings.OAUTH_SCOPES)
     flow.redirect_uri = request.build_absolute_uri(reverse('gmail_auth_response_page'))
-    auth_url, _ = flow.authorization_url()
+    auth_url, _ = flow.authorization_url(access_type='offline', prompt='consent')
     return HttpResponseRedirect(auth_url)
 
 
@@ -62,14 +65,14 @@ def gmail_auth_response(request: HttpRequest) -> HttpResponseRedirect | None:
     """
 
     response_uri = request.build_absolute_uri()
-    response_uri = response_uri.replace('http', 'https')
+    response_uri = response_uri.replace('http://', 'https://')
 
     flow = InstalledAppFlow.from_client_config(settings.OAUTH_CREDENTIALS, settings.OAUTH_SCOPES)
     flow.redirect_uri = request.build_absolute_uri(reverse('gmail_auth_response_page'))
 
     flow.fetch_token(authorization_response=response_uri)
 
-    with open('token.json', 'w') as token_file:
+    with open('/tmp/token.json', 'w') as token_file:
         token_file.write(flow.credentials.to_json())
 
     return
