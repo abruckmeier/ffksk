@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from profil.models import KioskUser
 from kiosk.models import GeldTransaktionen
 
@@ -39,3 +39,30 @@ class Mail(models.Model):
     class Meta:
         verbose_name = 'Mail'
         verbose_name_plural = 'Mails'
+
+
+class Token(models.Model):
+    """Token for accessing Gmail"""
+
+    token = models.TextField(help_text='Token to access Gmail')
+
+    def __str__(self):
+        return f'Token ID {self.id}'
+
+    class Meta:
+        verbose_name = 'GMail Token'
+        verbose_name_plural = 'GMail Tokens'
+
+    @classmethod
+    def get_token(cls) -> 'Token':
+        """Get the current token from the database."""
+        return cls.objects.order_by('-id').first()
+
+    @classmethod
+    @transaction.atomic
+    def set_new_token(cls, token: str) -> 'Token':
+        """Set a new token in the database."""
+        cls.objects.all().delete()
+        new_token = cls(token=token)
+        new_token.save()
+        return new_token

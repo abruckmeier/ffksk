@@ -1,5 +1,5 @@
 from django.contrib import admin
-from paypal.models import Mail
+from paypal.models import Mail, Token
 from django.contrib import messages
 from paypal.paypal_mail import assign_user_and_conduct_transaction, MailAssignmentResponse
 
@@ -43,3 +43,8 @@ class MailAdmin(admin.ModelAdmin):
                     f'(ID {_mail.id}) {response.get("reason")}',
                     messages.SUCCESS if response.get('success') else messages.ERROR,
                 )
+
+
+@admin.register(Token)
+class TokenAdmin(admin.ModelAdmin):
+    pass
