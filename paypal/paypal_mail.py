@@ -147,7 +147,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
     txt = mail.get('data')
     txt = re.sub(r'=\r\n', '', txt)
 
-    usr = re.findall(r'<strong>Mitteilung von (?P<usr>[\w\s]+)</strong>', txt)
+    usr = re.findall(r'<strong>Mitteilung von (?P<usr>[\w\s]+)<\/strong>', txt)
     if len(usr) == 0:
         extraction_was_successful = False
         usr = None
@@ -175,7 +175,7 @@ def extract_details_from_mail(mail: DownloadedMail) -> ExtractedMail:
             amount = None
 
     notice = re.findall(
-        r'<span>Mitteilung von [\w\W]+?\/quote-marks-left[\w\W]+?<span>(?P<message>[\w\W]+?)<\/span>[\w\W]+?\/quote-marks-right',
+        r'<strong>Mitteilung von [\w ]+<\/strong><\/td>[\w\W]+?<td align="right" width="55%">(?P<message>[\w\W]+?)<\/td>[\w\W]+?<\/tr>',
         txt,
     )
     if len(notice) == 0:
