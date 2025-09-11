@@ -60,21 +60,28 @@
 			<button type="submit" class="btn btn-primary" name="submit_products">Produkte annehmen</button>
 
 		</form>
+  {% endif %}
 
-    <hr />
+  <hr />
 
-    <div class="panel panel-default">
-      <div class="panel-heading bold">
-        Info für Getränke
-      </div>
-      <div class="panel-body justified smallText">
-        Trage mindestens die angelieferte Menge an Flaschen und den dafür bezahlten Preis OHNE PFAND ein.
-        Bezahltes Pfand ist in das dafür bereitgestellte Feld extra einzutragen.
-        <br />
-        Wird gleichzeitig Pfand zurückgegeben, muss dieser Betrag einfach vom bisher eingetragenen
-        Pfandwert SUBTRAHIERT werden. Der Gesamtwert darf auch negativ sein.
-      </div>
+  <div class="panel panel-default">
+    <div class="panel-heading bold">
+      Info für Getränke
     </div>
+    <div class="panel-body justified smallText">
+      Trage mindestens die angelieferte Menge an Flaschen und den dafür bezahlten Preis OHNE PFAND ein.
+      Bezahltes Pfand ist in das dafür bereitgestellte Feld extra einzutragen.
+      <br />
+      Wird gleichzeitig Pfand zurückgegeben, muss dieser Betrag einfach vom bisher eingetragenen
+      Pfandwert SUBTRAHIERT werden. Der Gesamtwert darf auch negativ sein.
+    </div>
+  </div>
+
+  {% if not beverages_formset.forms %}
+		<table class="table table-striped smallText">
+			<tr><th>keine angek&#252;ndigten Besorgungen</th></tr>
+		</table>
+	{% else %}
 
     <form method="POST" class="">{% csrf_token %}
       {{ beverages_formset.management_form }}
