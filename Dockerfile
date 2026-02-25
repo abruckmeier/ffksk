@@ -1,5 +1,5 @@
 # Django Backend Server (Serving Frontend, as well)
-FROM python:3.12-bookworm as develop
+FROM python:3.14-bookworm as develop
 ENV PYTHONBUFFERED 1
 RUN mkdir /ffksk
 WORKDIR /ffksk
