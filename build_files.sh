@@ -2,16 +2,16 @@
 
 # Build the project
 echo "Building the project..."
-python3.14 -m pip install pipenv
-python3.14 -m pipenv requirements > requirements.txt
-python3.14 -m pip install -r requirements.txt
+uv pip install pipenv
+uv run python -m pipenv requirements > requirements.txt
+uv pip install -r requirements.txt
 
 echo "Make Migration..."
-python3.14 manage.py migrate --noinput
+uv run python manage.py migrate --noinput
 
 echo "Collect Static..."
-python3.14 manage.py collectstatic --noinput --clear
+uv run python manage.py collectstatic --noinput --clear
 
 echo "Setup groups and their permissions"
-python3.14 manage.py shell -c "from scripts.initialisation import initGroupsAndPermissions as x; x.InitGroupsAndPermissions();"
-python3.14 manage.py shell -c "from scripts.initialisation import initNecessaryUsers as x; x.initNecessaryUsers();"
+uv run python manage.py shell -c "from scripts.initialisation import initGroupsAndPermissions as x; x.InitGroupsAndPermissions();"
+uv run python manage.py shell -c "from scripts.initialisation import initNecessaryUsers as x; x.initNecessaryUsers();"
