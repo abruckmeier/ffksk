@@ -448,12 +448,12 @@
         },
         "oauthlib": {
             "hashes": [
-                "sha256:624c28c13a0a59cabf9747dfa52af63be3e512a7f2714df16e91b5b3a145e6cd",
-                "sha256:efb274799819440f95b4ab3b818869f1ce9ae26c5beacba0201d1a1b76b54f86"
+                "sha256:3d73febdb6faa00f277c81fb04be7b7586fb96fc3b7f0b9c772dada69a25ede7",
+                "sha256:498a298876e996301950a5b053d12c31628bb7b895db03666430c69ce182eb61"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==4.0.0"
+            "version": "==4.0.1"
         },
         "proto-plus": {
             "hashes": [
@@ -625,14 +625,6 @@
             ],
             "markers": "python_version >= '3.4'",
             "version": "==2.0.0"
-        },
-        "rsa": {
-            "hashes": [
-                "sha256:68635866661c6836b8d39430f97a996acbd61bfa49406748ea243539fe239762",
-                "sha256:e7bdbfdb5497da4c07dfd35530e1a902659db6ff241e39d9953cad06ebd0ae75"
-            ],
-            "markers": "python_version >= '3.6' and python_version < '4'",
-            "version": "==4.9.1"
         },
         "rules": {
             "hashes": [
